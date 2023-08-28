@@ -1,2 +1,4 @@
-/backend
-/frontend
+/backend/database.py
+/backend/alembic.ini
+/env
+/.vscode
