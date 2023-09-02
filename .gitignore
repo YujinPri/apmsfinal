@@ -2,3 +2,25 @@
 /backend/alembic.ini
 /env
 /.vscode
+
+# dependencies
+/alumnimanagement/node_modules
+/alumnimanagement/.pnp
+/alumnimanagement/.pnp.js
+
+# testing
+/alumnimanagement/coverage
+
+# production
+/alumnimanagement/build
+
+# misc
+/alumnimanagement/.DS_Store
+/alumnimanagement/.env.local
+/alumnimanagement/.env.development.local
+/alumnimanagement/.env.test.local
+/alumnimanagement/.env.production.local
+
+/alumnimanagement/npm-debug.log*
+/alumnimanagement/yarn-debug.log*
+/alumnimanagement/yarn-error.log*
