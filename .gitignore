@@ -1,6 +1,11 @@
-/backend/database.py
-/backend/alembic.ini
-/env
+backend/migrate
+backend/database.py
+backend/alembic.ini
+backend/sayang.py
+backend/config.py
+backend/account.py
+env/
+
 /.vscode
 
 # dependencies
