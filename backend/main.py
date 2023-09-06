@@ -1,39 +1,39 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from starlette import status
 from typing import Annotated
 from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
 from passlib.context import CryptContext
-
 from database import getDB
-from auth import get_current_user
+import services
 import routers
-import auth
 import schemas
-import account
-import models
-
 
 app = FastAPI()
 
-# origins = ['http://localhost:3000']
+# Allow requests from your React app's domain
+origins = ["http://localhost:8000", "http://localhost:3000"]  
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-user_dependency = Annotated[dict, Depends(get_current_user)]
+user_dependency = Annotated[dict, Depends(services.get_current_user)]
 
+@app.get("/")
+async def root():
+    return {"message": "eyyyy"}
 
 @app.get("/", status_code=status.HTTP_200_OK)
 async def user(user: user_dependency, db: Session = Depends(getDB)):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
     return {"User": user}
-
 
 @app.post("/auth/token", response_model=schemas.Token)
 async def access_token(
@@ -41,14 +41,17 @@ async def access_token(
     db: Session = Depends(getDB),
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    user = auth.authenticate_user(form_data.username, form_data.password, db)
+    user = services.authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not Authenticate User.",
         )
-    token = auth.create_token(user.username, user.id, timedelta(minutes=3600))
-    return {"access_token": token, "token_type": "bearer"}
+    return await services.create_token(user,timedelta(minutes=3600))
+
+@app.get("/users/me", response_model=schemas.User)
+async def get_user(user: schemas.User = Depends(services.get_current_user)):
+    return user
 
 
 app.include_router(routers.alumni_router)

@@ -2,7 +2,6 @@ backend/alembic.ini
 backend/sayang.py
 backend/config.py
 backend/account.py
-env/
 
 /.vscode
 

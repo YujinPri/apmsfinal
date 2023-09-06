@@ -38,10 +38,19 @@ class UserBase(BaseModel):
 
         return value
 
-
 class UserCreate(UserBase):
     pass
 
+class User(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    first_name: str
+    last_name: str
+    profile_picture: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -130,3 +139,5 @@ class OfficerUpdate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    expires: datetime 
+
