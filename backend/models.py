@@ -30,6 +30,7 @@ class Alumni(Base):
     course = Column(String)
     degree = Column(String)
     batch_year = Column(Integer)
+    verified = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="alumni")  # Define the back reference
 
