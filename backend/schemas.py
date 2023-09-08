@@ -4,6 +4,11 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from database import SessionLocal
 from datetime import datetime
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    expires: datetime 
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -60,7 +65,7 @@ class UserUpdate(BaseModel):
     profile_picture: Optional[str] = None
 
 
-class AlumniBase(UserBase):
+class AlumniBase(BaseModel):
     course: str
     degree: str
     batch_year: int
@@ -110,7 +115,7 @@ class AlumniUpdate(BaseModel):
     batch_year: Optional[int] = None
 
 
-class OfficerBase(UserBase):
+class OfficerBase(BaseModel):
     is_admin: bool
 
 
@@ -125,7 +130,6 @@ class Officer(OfficerBase):
     class Config:
         from_attributes = True
 
-
 class OfficerResponse(BaseModel):
     id: int
     user_id: int
@@ -135,9 +139,4 @@ class OfficerResponse(BaseModel):
 class OfficerUpdate(BaseModel):
     is_admin: Optional[bool] = None
 
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    expires: datetime 
 

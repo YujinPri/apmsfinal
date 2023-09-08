@@ -4,6 +4,8 @@ backend/config.py
 backend/account.py
 env/
 
+apmsenv/
+backend/__pycache__
 /.vscode
 
 # dependencies

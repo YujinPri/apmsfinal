@@ -49,37 +49,43 @@ async def get_current_user(*, db: Session = Depends(getDB), token: Annotated[str
         )
     return schemas.User.from_orm(user)
 
-### Alumni Router
-
-async def create_alumni(db: Session, alumni_create: schemas.AlumniCreate):
+async def create_user(db: Session, user_create: schemas.UserCreate):
     # Check if the Username is already in use
-    if (db.query(models.User).filter(models.User.username == alumni_create.username).first()):
+    if (db.query(models.User).filter(models.User.username == user_create.username).first()):
         raise HTTPException(status_code=400, detail="Username is already in use")
 
     # Check if the Email is already in use
-    if db.query(models.User).filter(models.User.email == alumni_create.email).first():
+    if db.query(models.User).filter(models.User.email == user_create.email).first():
         raise HTTPException(status_code=400, detail="Email is already in use")
 
     try:
-        hashed_pass = bcrypt_context.hash(alumni_create.plain_password)
+        hashed_pass = bcrypt_context.hash(user_create.plain_password)
     
         # Create a new User record with all input data and the hashed password
         user = models.User(
-            username=alumni_create.username,
+            username=user_create.username,
             hashed_pass=hashed_pass,
-            email=alumni_create.email,
-            first_name=alumni_create.first_name,
-            last_name=alumni_create.last_name,
-            profile_picture=alumni_create.profile_picture,
+            email=user_create.email,
+            first_name=user_create.first_name,
+            last_name=user_create.last_name,
+            profile_picture=user_create.profile_picture,
         )
 
         db.add(user)
         db.commit()
-        db.refresh(user)  # Refresh to obtain the newly generated user ID
+        db.refresh(user)  
+        return user
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400,detail="Alumni creation failed")
 
-        # Now, create a new Alumni record associated with the user's ID
+
+### Alumni Router
+async def create_alumni(db: Session, alumni_create: schemas.AlumniCreate, active_user: schemas.User):
+    try:
         alumni = models.Alumni(
-            user_id=user.id,
+            user_id=active_user.id,
             course=alumni_create.course,
             degree=alumni_create.degree,
             batch_year=alumni_create.batch_year,
@@ -88,14 +94,13 @@ async def create_alumni(db: Session, alumni_create: schemas.AlumniCreate):
         db.add(alumni)
         db.commit()
         db.refresh(alumni)  # Refresh to obtain the newly generated alumni ID
-
         return alumni
     except Exception as e:
         # Handle exceptions, such as duplicate usernames or emails
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail="Alumni creation failed. Either email or username was already in use",
+            detail="Alumni creation failed.",
         )
 
 async def read_alumni(alumni_id: int, db: Session):
@@ -126,49 +131,27 @@ async def read_alumni(alumni_id: int, db: Session):
 
     return alumni_display_dict
 
-async def create_officer(db: Session, officer_create: schemas.OfficerCreate):
-    if (
-        db.query(models.User)
-        .filter(models.User.username == officer_create.username)
-        .first()
-    ):
-        raise HTTPException(status_code=400, detail="Username is already in use")
 
-    # Check if the email is already in use
-    if db.query(models.User).filter(models.User.email == officer_create.email).first():
-        raise HTTPException(status_code=400, detail="Email is already in use")
-
+### Officer Router
+async def create_officer(db: Session, officer_create: schemas.OfficerCreate, active_user: schemas.User):
     try:
-        hashed_pass = bcrypt_context.hash(officer_create.plain_password)
-
-        # Create a new User record with all input data and the hashed password
-        user = models.User(
-            username=officer_create.username,
-            hashed_pass=hashed_pass,
-            email=officer_create.email,
-            first_name=officer_create.first_name,
-            last_name=officer_create.last_name,
-            profile_picture=officer_create.profile_picture,
+        officer = models.Officer(
+            user_id=active_user.id,
+            course=officer_create.course,
+            degree=officer_create.degree,
+            batch_year=officer_create.batch_year,
         )
-
-        db.add(user)
-        db.commit()
-        db.refresh(user)  # Refresh to obtain the newly generated user ID
-
-        # Now, create a new officer record associated with the user's ID
-        officer = models.Officer(user_id=user.id, is_admin=officer_create.is_admin)
 
         db.add(officer)
         db.commit()
         db.refresh(officer)  # Refresh to obtain the newly generated officer ID
-
         return officer
     except Exception as e:
         # Handle exceptions, such as duplicate usernames or emails
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail="Officer creation failed. Either email or username was already in use",
+            detail="Alumni creation failed.",
         )
 
 

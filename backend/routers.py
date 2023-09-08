@@ -5,27 +5,30 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, getDB
 from typing import Annotated
 from typing import List
-import models
 import schemas
 import services
 
 user_dependency = Annotated[dict, Depends(services.get_current_user)]
 
+user_router = APIRouter(prefix="/user", tags=["user"])
 alumni_router = APIRouter(prefix="/alumni", tags=["alumni"])
 officer_router = APIRouter(prefix="/officer", tags=["officer"])
 
+@user_router.post("/", response_model=schemas.User)
+async def create_user(user_create: schemas.UserCreate, db: Session = Depends(getDB)):
+    return await services.create_user(db, user_create)
 
 @alumni_router.post("/", response_model=schemas.AlumniResponse)
-async def create_alumni(alumni_create: schemas.AlumniCreate ,db: Session = Depends(getDB)):
-    return await services.create_alumni(db, alumni_create)
+async def create_alumni(alumni_create: schemas.AlumniCreate, user: user_dependency, db: Session = Depends(getDB)):
+    return await services.create_alumni(db, alumni_create, user)
 
 @alumni_router.get("/{alumni_id}", response_model=schemas.AlumniDisplay)
 async def read_alumni(alumni_id: int, user: user_dependency, db: Session = Depends(getDB)):
     return await services.read_alumni(alumni_id, db)
 
 @officer_router.post("/", response_model=schemas.OfficerResponse)
-async def create_officer(officer_create: schemas.OfficerCreate, db: Session = Depends(getDB)):
-    return await services.create_officer(db, officer_create)
+async def create_officer(officer_create: schemas.OfficerCreate, user: user_dependency, db: Session = Depends(getDB)):
+    return await services.create_officer(db, officer_create, user)
 
 
 # @alumni_router.get("/", response_model=List[schemas.Alumni])
