@@ -31,9 +31,14 @@ user_dependency = Annotated[dict, Depends(services.get_current_user)]
 async def root():
     return {"message": "eyyyy"}
 
-@app.get("/", status_code=status.HTTP_200_OK)
+@app.get("/user", status_code=status.HTTP_200_OK)
 async def user(user: user_dependency, db: Session = Depends(getDB)):
     return {"User": user}
+
+@app.get("/user/me", response_model=schemas.User)
+async def get_user(user: schemas.User = Depends(services.get_current_user)):
+    return user
+    
 
 @app.post("/auth/token", response_model=schemas.Token)
 async def access_token(
@@ -49,9 +54,7 @@ async def access_token(
         )
     return await services.create_token(user,timedelta(minutes=3600))
 
-@app.get("/users/me", response_model=schemas.User)
-async def get_user(user: schemas.User = Depends(services.get_current_user)):
-    return user
+
 
 
 app.include_router(routers.alumni_router)

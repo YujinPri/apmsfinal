@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Topbar from "./components/topbar/Topbar";
-import Register from "./components/registration/Registration";
 import { createTheme, ThemeProvider } from "@mui/material";
-
+import MainLayout from "./layout/MainLayout";
 
 const theme = createTheme({
   palette: {
@@ -25,29 +23,28 @@ const theme = createTheme({
 });
 
 const App = () => {
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
+  // const [token] = useContext(UserContext);
 
-  useEffect(() => {
-    async function getData() {
-      try {
-        const response = await axios.get("http://localhost:8000/");
-        setMessage(response.data.message);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    }
+  // useEffect(() => {
+  //   async function getData() {
+  //     try {
+  //       const response = await axios.get("http://localhost:8000/");
+  //       setMessage(response.data.message);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   }
 
-    getData();
-  }, []); // Empty dependency array ensures this effect runs once after initial render
+  //   getData();
+  // }, []); 
 
   return (
-    // <ThemeProvider theme={theme}>
-      <div>
-        <Topbar />
-        {message}
-        <Register />
-      </div>
-    // </ThemeProvider>
+    <ThemeProvider theme={theme}>
+      <MainLayout>
+        {/* <Topbar /> */}
+      </MainLayout>
+    </ThemeProvider>
   );
 };
 

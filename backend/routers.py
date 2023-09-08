@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, getDB
 from typing import Annotated
 from typing import List
+from datetime import timedelta, datetime
 import schemas
 import services
 
@@ -14,9 +15,10 @@ user_router = APIRouter(prefix="/user", tags=["user"])
 alumni_router = APIRouter(prefix="/alumni", tags=["alumni"])
 officer_router = APIRouter(prefix="/officer", tags=["officer"])
 
-@user_router.post("/", response_model=schemas.User)
+@user_router.post("/")
 async def create_user(user_create: schemas.UserCreate, db: Session = Depends(getDB)):
-    return await services.create_user(db, user_create)
+    user = await services.create_user(db, user_create)
+    return await services.create_token(user,timedelta(minutes=3600))
 
 @alumni_router.post("/", response_model=schemas.AlumniResponse)
 async def create_alumni(alumni_create: schemas.AlumniCreate, user: user_dependency, db: Session = Depends(getDB)):

@@ -1,23 +1,33 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import { UserProvider } from "./context/UserContext";
-import { createBrowserRouter, RouterProvider, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import LoginPage from "../src/pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage from "./pages/HomePage";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: 
-    <UserProvider>
-      <App />
-    </UserProvider>
+    path: "/register",
+    element: (
+      <UserProvider>
+        <RegisterPage />
+      </UserProvider>
+    ),
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/home",
+    element: (
+      <UserProvider>
+        <HomePage />
+      </UserProvider>
+    ),
   },
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <RouterProvider router={router} />
-  // <UserProvider>
-  //   <App />
-  // </UserProvider>
-);
+root.render(<RouterProvider router={router} />);
