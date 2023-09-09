@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import axios from "axios";
 import { createTheme, ThemeProvider } from "@mui/material";
 import MainLayout from "./layout/MainLayout";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import PrivateRoutes from "./context/privateRoutes";
+import { UserProvider } from "./context/UserContext";
+import Login from "./components/Login";
+import Register from "./components/Registration";
+import Topbar from "./components/Topbar";
+
 
 const theme = createTheme({
   palette: {
@@ -23,27 +34,21 @@ const theme = createTheme({
 });
 
 const App = () => {
-  // const [message, setMessage] = useState("");
-  // const [token] = useContext(UserContext);
-
-  // useEffect(() => {
-  //   async function getData() {
-  //     try {
-  //       const response = await axios.get("http://localhost:8000/");
-  //       setMessage(response.data.message);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   }
-
-  //   getData();
-  // }, []); 
-
   return (
     <ThemeProvider theme={theme}>
-      <MainLayout>
-        
-      </MainLayout>
+      <Router>
+        <UserProvider>
+          <Routes>
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route element={<PrivateRoutes />}>
+              <Route element={<MainLayout />}>
+                <Route path="/home" element=<div>enloww</div> />
+              </Route>
+            </Route>
+          </Routes>
+        </UserProvider>
+      </Router>
     </ThemeProvider>
   );
 };

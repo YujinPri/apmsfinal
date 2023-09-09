@@ -1,12 +1,17 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 export const UserContext = createContext();
 
-export const UserProvider = (props) => {
+export const UserProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("userToken"));
+  const [user, setUser] = useState(localStorage.getItem("userData"));
 
   useEffect(() => {
+
+    if(token == null) localStorage.setItem("userToken", null);
+    if(user == null) localStorage.setItem("userData", null);
+
     const fetchUser = async () => {
       try {
         const response = await axios.get("http://localhost:8000/user/me", {
@@ -18,22 +23,38 @@ export const UserProvider = (props) => {
 
         if (response.status !== 200) {
           setToken(null);
-          localStorage.removeItem("userToken"); // Remove invalid token from localStorage
+        } else {
+          localStorage.setItem("userToken", token);
+          setUser(JSON.stringify(response.data));
+          localStorage.setItem("userData", user);
         }
-
-        localStorage.setItem("userToken", token);
       } catch (error) {
         console.error("Error fetching user:", error);
         setToken(null);
-        localStorage.removeItem("userToken"); // Remove invalid token from localStorage
       }
     };
     fetchUser();
-  }, [token]);
+  }, [token, user]);
+
+  const logout = async () => {
+    setToken(null)
+    setUser(null);
+  };
+
+  const contextData = {
+    token,
+    user,
+    setToken,
+    logout,
+  };
 
   return (
-    <UserContext.Provider value={[token, setToken]}>
-      {props.children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextData}>{children}</UserContext.Provider>
   );
 };
+
+export const useAuth = () => {
+  return useContext(UserContext);
+};
+
+export default UserContext;

@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { UserContext } from "../context/UserContext";
+import React, { useState } from "react";
+import { useAuth } from "../context/UserContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -23,7 +23,7 @@ const Login = ({ user }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [, setToken] = useContext(UserContext);
+  const { setToken } = useAuth();
   const navigate = useNavigate(); // Get the navigate function
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -42,9 +42,13 @@ const Login = ({ user }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:8000/auth/token", dataString, {
-        headers,
-      });
+      const response = await axios.post(
+        "http://localhost:8000/auth/token",
+        dataString,
+        {
+          headers,
+        }
+      );
       const data = response.data;
 
       if (response.status !== 200) {

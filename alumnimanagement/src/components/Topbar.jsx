@@ -1,28 +1,11 @@
-import React, { useContext, useState, useEffect } from "react";
+import React from "react";
 import "./styles/topbar.css";
-import { Link } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Button } from "@mui/material";
-import { UserContext } from "../context/UserContext";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/UserContext";
 
 const Topbar = () => {
-  const [token, setToken] = useContext(UserContext);
-  const navigate = useNavigate(); // Initialize the useNavigate hook
-
-  const handleLogout = () => {
-    setToken(null);
-    navigate("/login");
-  };
-
-  // Use the useState hook to manage the visibility of "register" and "login" links
-  const [showAuthLinks, setShowAuthLinks] = useState(true);
-
-  useEffect(() => {
-    // Update the visibility of "register" and "login" links based on the token state
-    setShowAuthLinks(!token);
-  }, [token]);
-
+  const { token, setToken, logout } = useAuth();
   return (
     <div>
       <div className="topbar">
@@ -32,29 +15,16 @@ const Topbar = () => {
           </div>
           <div className="topbarRight d-flex">
             <div className="topbarFunctions d-flex gap-2 pe-4 border-right">
-              {token ? (
-                // If token is true (logged in), render the "logout" button
+              {token && (
                 <span>
-                  <Button className="button" onClick={handleLogout}>
-                    logout
+                  <Button
+                    className="button"
+                    onClick={logout}
+                    variant="contained" // You can use 'outlined' or 'text' for different styles
+                  >
+                    Logout
                   </Button>
                 </span>
-              ) : (
-                // If token is false (not logged in), render the "register" and "login" links
-                showAuthLinks && (
-                  <>
-                    <span>
-                      <Link to="/register" className="text-decoration-none">
-                        register
-                      </Link>
-                    </span>
-                    <span>
-                      <Link to="/login" className="text-decoration-none">
-                        login
-                      </Link>
-                    </span>
-                  </>
-                )
               )}
             </div>
             <div className="ps-4">

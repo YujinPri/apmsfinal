@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { UserContext } from "../context/UserContext";
+import { useAuth } from "../context/UserContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -41,7 +41,7 @@ const Register = ({ user }) => {
   const [password, setPassword] = useState("");
   const [confirmationPassword, setConfirmationPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [, setToken] = useContext(UserContext);
+  const { setToken } = useAuth();
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate(); // Get the navigate function
   const [loading, setLoading] = useState(false);

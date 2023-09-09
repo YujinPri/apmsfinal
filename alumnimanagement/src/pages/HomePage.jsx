@@ -5,8 +5,7 @@ import Topbar from "../components/Topbar";
 function HomePage() {
   return (
     <MainLayout>
-      <Topbar />
-      
+          
     </MainLayout>
   );
 }
