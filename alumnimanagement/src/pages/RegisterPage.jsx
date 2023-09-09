@@ -1,11 +1,11 @@
 import React from "react";
 import MainLayout from "../layout/MainLayout";
-import Register from "../components/registration/Registration";
+import Register from "../components/Registration";
 
 function RegisterPage() {
   return (
     <MainLayout>
-      <Register/>
+      <Register user="alumni" />
     </MainLayout>
   );
 }

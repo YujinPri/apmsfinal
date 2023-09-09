@@ -1,9 +1,9 @@
 import React, { useContext, useState, useEffect } from "react";
-import "./topbar.css";
+import "./styles/topbar.css";
 import { Link } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Button } from "@mui/material";
-import { UserContext } from "../../context/UserContext";
+import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
 const Topbar = () => {
@@ -28,7 +28,6 @@ const Topbar = () => {
       <div className="topbar">
         <div className="topbarWrapper">
           <div className="topbarLeft">
-            <div className="topbarTitle">PUPQC APMS</div>
             <div className="topbarTitle">PUPQC APMS</div>
           </div>
           <div className="topbarRight d-flex">

@@ -1,9 +1,11 @@
 import React, { useContext, useState } from "react";
-import { styled } from "@mui/material/styles";
-// import { UserContext } from "../../context/UserContext";
+import { UserContext } from "../context/UserContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import LinearProgress from "@mui/material/LinearProgress";
 import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Button,
   Card,
@@ -12,42 +14,44 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const VisuallyHiddenInput = styled("input")`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-`;
-
-const Login = () => {
+const Login = ({ user }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  // const [, setToken] = useContext(UserContext);
+  const [, setToken] = useContext(UserContext);
+  const navigate = useNavigate(); // Get the navigate function
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const submitRegistration = async () => {
-    try {
-      const response = await axios.post("http://localhost:8000/user/", {
-        username: username,
-        plain_password: password,
-      });
+  const submitLogin = async () => {
+    const dataString =
+      "grant_type=&username=" +
+      username +
+      "&password=" +
+      password +
+      "&scope=&client_id=&client_secret=";
 
+    const headers = {
+      "Content-Type": "application/x-www-form-urlencoded",
+    };
+
+    try {
+      setLoading(true);
+      const response = await axios.post("http://localhost:8000/auth/token", dataString, {
+        headers,
+      });
       const data = response.data;
 
       if (response.status !== 200) {
         setErrorMessage(data.detail);
       } else {
-        // setToken(data.access_token);
+        setToken(data.access_token);
+        navigate("/home");
       }
     } catch (error) {
       if (error.response) {
@@ -59,6 +63,12 @@ const Login = () => {
       }
       handleClick();
     }
+    setLoading(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitLogin();
   };
 
   const handleClick = () => {
@@ -72,13 +82,13 @@ const Login = () => {
     handleClick(false);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    submitRegistration();
-  };
-
   return (
     <div className="column">
+      {loading && (
+        <Box sx={{ width: "100%" }}>
+          <LinearProgress />
+        </Box>
+      )}
       <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
           {errorMessage}
@@ -95,9 +105,16 @@ const Login = () => {
         >
           <CardContent>
             <Typography gutterBottom variant="h5">
-              alumni login
+              {user} login
             </Typography>
-          
+            <Typography
+              gutterBottom
+              color="textSecondary"
+              variant="body2"
+              component="p"
+            >
+              ready to relive memories? just loginn!
+            </Typography>
             <Grid container spacing={1.5}>
               <Grid xs={12} item>
                 <TextField
@@ -111,7 +128,7 @@ const Login = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={12}>
+              <Grid item xs={12}>
                 <TextField
                   label="password"
                   placeholder="Input password"
@@ -124,7 +141,6 @@ const Login = () => {
                   required
                 />
               </Grid>
-
               <Button
                 type="submit"
                 variant="contained"
@@ -135,6 +151,12 @@ const Login = () => {
                 login
               </Button>
             </Grid>
+            <Link
+              to={"/register"}
+              style={{ display: "block", textAlign: "center", marginTop: 8 }}
+            >
+              sign up instead
+            </Link>
           </CardContent>
         </Card>
       </form>

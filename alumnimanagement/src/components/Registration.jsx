@@ -1,11 +1,13 @@
 import React, { useContext, useState } from "react";
 import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { UserContext } from "../../context/UserContext";
+import { UserContext } from "../context/UserContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import LinearProgress from "@mui/material/LinearProgress";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Button,
   Card,
@@ -30,28 +32,7 @@ const VisuallyHiddenInput = styled("input")`
   width: 1px;
 `;
 
-import {
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Typography,
-} from "@mui/material";
-
-const VisuallyHiddenInput = styled("input")`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-`;
-
-const Register = () => {
+const Register = ({ user }) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [firstname, setFirstName] = useState("");
@@ -63,9 +44,11 @@ const Register = () => {
   const [, setToken] = useContext(UserContext);
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate(); // Get the navigate function
+  const [loading, setLoading] = useState(false);
 
   const submitRegistration = async () => {
     try {
+      setLoading(true);
       const response = await axios.post("http://localhost:8000/user/", {
         username: username,
         email: email,
@@ -93,6 +76,7 @@ const Register = () => {
       }
       handleClick();
     }
+    setLoading(false);
   };
 
   const handleClick = () => {
@@ -118,6 +102,11 @@ const Register = () => {
 
   return (
     <div className="column">
+      {loading && (
+        <Box sx={{ width: "100%" }}>
+          <LinearProgress />
+        </Box>
+      )}
       <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
           {errorMessage}
@@ -134,7 +123,7 @@ const Register = () => {
         >
           <CardContent>
             <Typography gutterBottom variant="h5">
-              alumni registration
+              {user} registration
             </Typography>
             <Typography
               gutterBottom
@@ -174,6 +163,7 @@ const Register = () => {
                   component="label"
                   variant="contained"
                   startIcon={<CloudUploadIcon />}
+                  onChange={(e) => setProfilePicture(e.target.value)}
                   href="#file-upload"
                 >
                   upload
@@ -237,6 +227,12 @@ const Register = () => {
                 register
               </Button>
             </Grid>
+            <Link
+              to={"/login"}
+              style={{ display: "block", textAlign: "center", marginTop: 8 }}
+            >
+              login instead
+            </Link>
           </CardContent>
         </Card>
       </form>
