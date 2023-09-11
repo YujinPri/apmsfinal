@@ -36,3 +36,4 @@ starlette
 tortoise-orm      
 typing_extensions 
 uvicorn           
+# dunno
