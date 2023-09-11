@@ -1,10 +1,10 @@
 import React from "react";
-import Register from "../components/Registration";
+import Register from "../components/Register";
+import { useAuth } from "../context/UserContext";
 
 function RegisterPage() {
-  return (
-      <Register user="alumni" />
-  );
+  const { setToken } = useAuth();
+  return <Register user="alumni" setToken={setToken} />;
 }
 
 export default RegisterPage;

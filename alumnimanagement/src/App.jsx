@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import axios from "axios";
 import { createTheme, ThemeProvider } from "@mui/material";
 import MainLayout from "./layout/MainLayout";
-import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import PrivateRoutes from "./context/privateRoutes";
+import PrivateRoutes from "./routes/privateRoutes";
+import OnSessionRoutes from "./routes/onSessionRoutes";
 import { UserProvider } from "./context/UserContext";
-import Login from "./components/Login";
-import Register from "./components/Registration";
-import Topbar from "./components/Topbar";
-
 
 const theme = createTheme({
   palette: {
@@ -22,35 +16,43 @@ const theme = createTheme({
     secondary: {
       main: "#e7e7e7", // Text color
     },
+    common: {
+      white: "#ffffff", // 60% white
+      dark: "#282a3e", // 30% #282a3e
+      light: "#e7e7e7", // 10% #e7e7e7
+    },
   },
   typography: {
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Nunito, Arial, sans-serif", // Font family
     h1: {
       fontSize: "2rem", // Topbar title font size
-      fontWeight: 900,
+      fontWeight: 900, // Bold style
     },
-    // Add more typography styles as needed
+    body1: {
+      fontSize: "inherit", // Inherit the font size from the parent element
+    },
   },
 });
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <UserProvider>
+    <Router>
+      <UserProvider>
+        <ThemeProvider theme={theme}>
           <Routes>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+            <Route element={<OnSessionRoutes />}>
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Route>
             <Route element={<PrivateRoutes />}>
               <Route element={<MainLayout />}>
                 <Route path="/home" element=<div>enloww</div> />
               </Route>
             </Route>
           </Routes>
-        </UserProvider>
-      </Router>
-    </ThemeProvider>
+        </ThemeProvider>
+      </UserProvider>
+    </Router>
   );
 };
-
 export default App;

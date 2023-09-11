@@ -22,11 +22,12 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 const Login = ({ user }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
   const { setToken } = useAuth();
   const navigate = useNavigate(); // Get the navigate function
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
+  const [severity, setSeverity] = useState("error");
 
   const submitLogin = async () => {
     const dataString =
@@ -52,20 +53,24 @@ const Login = ({ user }) => {
       const data = response.data;
 
       if (response.status !== 200) {
-        setErrorMessage(data.detail);
+        setMessage(data.detail);
+        setSeverity("error")
       } else {
         setToken(data.access_token);
         navigate("/home");
       }
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data.detail);
+        setMessage(error.response.data.detail);
+        setSeverity("error")
       } else if (error.request) {
-        setErrorMessage("No response received from the server");
+        setMessage("No response received from the server");
+        setSeverity("error")
       } else {
-        setErrorMessage("Error:" + error.message);
+        setMessage("Error:" + error.message);
+        setSeverity("error")
       }
-      handleClick();
+      setOpen(true);
     }
     setLoading(false);
   };
@@ -75,27 +80,23 @@ const Login = ({ user }) => {
     submitLogin();
   };
 
-  const handleClick = () => {
-    setOpen(true);
-  };
-
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    handleClick(false);
+    setOpen(false);
   };
 
   return (
     <div className="column">
       {loading && (
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>
       )}
-      <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          {errorMessage}
+      <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+          {message}
         </Alert>
       </Snackbar>
       <form className="box" onSubmit={handleSubmit}>

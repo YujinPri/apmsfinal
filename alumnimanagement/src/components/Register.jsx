@@ -1,7 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { useAuth } from "../context/UserContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -32,7 +31,7 @@ const VisuallyHiddenInput = styled("input")`
   width: 1px;
 `;
 
-const Register = ({ user }) => {
+const Register = ({ user, setToken }) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [firstname, setFirstName] = useState("");
@@ -40,8 +39,8 @@ const Register = ({ user }) => {
   const [profilepicture, setProfilePicture] = useState("");
   const [password, setPassword] = useState("");
   const [confirmationPassword, setConfirmationPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const { setToken } = useAuth();
+  const [message, setMessage] = useState("");
+  const [severity, setSeverity] = useState("error");
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate(); // Get the navigate function
   const [loading, setLoading] = useState(false);
@@ -59,35 +58,36 @@ const Register = ({ user }) => {
       });
 
       const data = response.data;
-
+      
       if (response.status !== 200) {
-        setErrorMessage(data.detail);
+        setMessage(data.detail);
+        setSeverity("error");
       } else {
+        setMessage("successfully logged in");
+        setSeverity("success");
         setToken(data.access_token);
         navigate("/home");
       }
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data.detail);
+        setMessage(error.response.data.detail);
+        setSeverity("error");
       } else if (error.request) {
-        setErrorMessage("No response received from the server");
+        setMessage("No response received from the server");
       } else {
-        setErrorMessage("Error:" + error.message);
+        setMessage("Error:" + error.message);
+        setSeverity("error");
       }
-      handleClick();
+      setOpen(true);
     }
     setLoading(false);
-  };
-
-  const handleClick = () => {
-    setOpen(true);
   };
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    handleClick(false);
+    setOpen(false);
   };
 
   const handleSubmit = (e) => {
@@ -95,21 +95,22 @@ const Register = ({ user }) => {
     if (password === confirmationPassword) {
       submitRegistration();
     } else {
-      setErrorMessage("passwords doesn't match");
-      handleClick();
+      setMessage("passwords doesn't match");
+      setSeverity("error");
+      setOpen(true);
     }
   };
 
   return (
     <div className="column">
       {loading && (
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>
       )}
-      <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          {errorMessage}
+      <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+          {message}
         </Alert>
       </Snackbar>
       <form className="box" onSubmit={handleSubmit}>
