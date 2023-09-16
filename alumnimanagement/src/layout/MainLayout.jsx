@@ -4,12 +4,12 @@ import Feed from "../components/Feed";
 import Navbar from "../components/Navbar";
 import Rightbar from "../components/Rightbar";
 import { Box, Stack } from "@mui/material";
-function MainLayout({ children }) {
+function MainLayout({ children, mode, setMode }) {
   return (
     <Box>
       <Navbar />
       <Stack direction="row">
-        <Sidebar />
+        <Sidebar mode={mode} setMode={setMode}/>
         <Feed />
         <Rightbar />
       </Stack>

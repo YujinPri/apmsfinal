@@ -2,6 +2,7 @@ import {
   Campaign,
   Event,
   Home,
+  ModeNight,
   MonetizationOn,
   Newspaper,
   Notifications,
@@ -17,11 +18,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Switch,
   Typography,
 } from "@mui/material";
 import React from "react";
 
-function Sidebar() {
+function Sidebar({ mode, setMode }) {
   const [selectedIndex, setSelectedIndex] = React.useState(1);
 
   const handleListItemClick = (event, index) => {
@@ -29,19 +31,33 @@ function Sidebar() {
   };
 
   return (
-    <Box flex={2} p={1} sx={{ overflow: "auto", display: { xs: "none", sm: "block" } }}>
-      <Box position="fixed">
+    <Box
+      flex={2}
+      p={1}
+      sx={{ overflow: "auto", display: { xs: "none", sm: "block" } }}
+    >
+      <Box position="fixed" sx={{ maxWidth: "30%" }}>
         <Card variant="outlined">
-          <CardContent sx={{ display: "flex", alignItems: "center", gap: 2, padding: 2 }}>
+          <CardContent
+            sx={{ display: "flex", alignItems: "center", gap: 2, padding: 2 }}
+          >
             <Avatar />
             <Box>
-              <Typography variant="h5">rose anne loyola</Typography>
-              <Typography sx={{ textAlign: "end" }}>officer</Typography>
+              <Typography variant="h6" fontWeight={800}>
+                rose anne loyola
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ textAlign: "end" }}
+              >
+                officer
+              </Typography>
             </Box>
           </CardContent>
         </Card>
         <List>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#home"
@@ -54,7 +70,7 @@ function Sidebar() {
               <ListItemText primary="home" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#notification"
@@ -67,7 +83,7 @@ function Sidebar() {
               <ListItemText primary="notification" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#about"
@@ -80,7 +96,7 @@ function Sidebar() {
               <ListItemText primary="about" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#announcements"
@@ -93,7 +109,7 @@ function Sidebar() {
               <ListItemText primary="announcements" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#news"
@@ -106,7 +122,7 @@ function Sidebar() {
               <ListItemText primary="news" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#events"
@@ -119,7 +135,7 @@ function Sidebar() {
               <ListItemText primary="events" />
             </ListItemButton>
           </ListItem>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton
               component="a"
               href="#fundraise"
@@ -130,6 +146,16 @@ function Sidebar() {
                 <MonetizationOn />
               </ListItemIcon>
               <ListItemText primary="fundraise" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton component="a" href="#simple-list">
+              <ListItemIcon>
+                <ModeNight />
+              </ListItemIcon>
+              <Switch
+                onChange={(e) => setMode(mode === "light" ? "dark" : "light")}
+              />
             </ListItemButton>
           </ListItem>
         </List>
