@@ -45,9 +45,7 @@ const App = () => {
               <Route path="/login" element={<LoginPage />} />
             </Route>
             <Route element={<PrivateRoutes />}>
-              <Route element={<MainLayout />}>
-                <Route path="/home" element=<div>enloww</div> />
-              </Route>
+              <Route  path="/home"  element={<MainLayout />} />
             </Route>
           </Routes>
         </ThemeProvider>

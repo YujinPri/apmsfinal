@@ -21,7 +21,7 @@ class User(Base):
     is_alumni = Column(Boolean, default=False)
     is_officer = Column(Boolean, default=False)
 
-    alumni = relationship("Alumni", back_populates="users", uselist=False)
+    alumni = relationship("Alumni", back_populates="user", uselist=False)
 
     def __repr__(self):
         return f"<User(username={self.username}, email={self.email})>"
@@ -48,15 +48,15 @@ class Alumni(Base):
     email_address = Column(String)
     civil_status = Column(String)
     sex = Column(String)
-    academic_program_id = Column(Integer, ForeignKey('academic_programs.id'))
+    academic_program_id = Column(Integer, ForeignKey('academic_programs.id', ondelete="CASCADE"))
     civil_service_eligibility = Column(Boolean)
     present_employment_status = Column(String)
     user = relationship("User", back_populates="alumni")
     special_skills_certifications = relationship("SpecialSkillsCertification", back_populates="alumni")
     employment = relationship("Employment", back_populates="alumni")
     feedbacks = relationship("Feedback", back_populates="alumni")
-    academic_program = relationship("AcademicPrograms", back_populates="alumni")
     prccertifications = relationship("PRCAlumniCertification", back_populates="alumni")
+    academic_programs = relationship("AcademicPrograms", back_populates="alumni")
 
     def __repr__(self):
         return f"<Alumni(id={self.id}, user_id={self.user_id}, course={self.course}, degree={self.degree}, batch_year={self.batch_year})>"
@@ -69,29 +69,37 @@ class PRCCertification(Base):
     board_name = Column(String, unique=True)
     prc_title = Column(String, unique=True)
     logo = Column(String)
+    alumni_certifications = relationship("PRCAlumniCertification", back_populates="prc_certification")
+
 
 
 class PRCAlumniCertification(Base):
     __tablename__ = 'alumni_certifications'
 
     id = Column(Integer, primary_key=True)
-    prc_certification_id = Column(Integer, ForeignKey('prc_certifications.id'), nullable=False)
+    alumni_id = Column(Integer, ForeignKey('alumni.id', ondelete="CASCADE"), nullable=False)
+    prc_certification_id = Column(Integer, ForeignKey('prc_certifications.id', ondelete="CASCADE"), nullable=False)
     certificate_number = Column(String)
     certification_date = Column(Date)
     certification_authority = Column(String)
+    alumni = relationship("Alumni", back_populates="prccertifications")
+    prc_certification = relationship("PRCCertification", back_populates="alumni_certifications")
 
 class AcademicPrograms(Base):
     __tablename__ = "academic_programs"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    alumni = relationship("Alumni", back_populates="academic_programs")
+
+
 
 
 class SpecialSkillsCertification(Base):
     __tablename__ = 'special_skills_certifications'
 
     id = Column(Integer, primary_key=True)
-    alumni_id = Column(Integer, ForeignKey('alumni.id'))  # ForeignKey to link to alumni
+    alumni_id = Column(Integer, ForeignKey('alumni.id', ondelete="CASCADE"))  # ForeignKey to link to alumni
     alumni = relationship("Alumni", back_populates="special_skills_certifications")
     file_name = Column(String, nullable=False) # will appear as the name of the file
     file_url = Column(String, nullable=True)  # Store the certification file URL
@@ -104,7 +112,7 @@ class Employment(Base):
     __tablename__ = 'employment'
 
     id = Column(Integer, primary_key=True)
-    alumni_id = Column(Integer, ForeignKey('alumni.id'))
+    alumni_id = Column(Integer, ForeignKey('alumni.id', ondelete="CASCADE"))
     alumni = relationship("Alumni", back_populates="employment")
     company_name = Column(String, nullable=False)
     job_title = Column(String, nullable=False)
@@ -125,7 +133,7 @@ class Feedback(Base):
     __tablename__ = 'feedbacks'
 
     id = Column(Integer, primary_key=True)
-    alumni_id = Column(Integer, ForeignKey('alumni.id'))
+    alumni_id = Column(Integer, ForeignKey('alumni.id', ondelete="CASCADE"))
     alumni = relationship("Alumni", back_populates="feedbacks")
     area = Column(String, nullable=False)
     star_rating = Column(Integer, nullable=False)

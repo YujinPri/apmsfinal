@@ -8,17 +8,17 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
-import PersonAdd from "@mui/icons-material/PersonAdd";
-import Settings from "@mui/icons-material/Settings";
+import {PersonAdd, Settings, Edit, History} from "@mui/icons-material/";
 import Logout from "@mui/icons-material/Logout";
 
-export default function AccountMenu({ logout }) {
+export default function AccountMenu({ logout, link}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
+    console.log(link);
     setAnchorEl(null);
   };
   return (
@@ -33,7 +33,7 @@ export default function AccountMenu({ logout }) {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar sx={{ width: 32, height: 32 }} src={link} />
           </IconButton>
         </Tooltip>
       </Box>
@@ -73,29 +73,32 @@ export default function AccountMenu({ logout }) {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar /> Profile
-        </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <Avatar /> My account
+          <Avatar src={link} /> my profile
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
-            <PersonAdd fontSize="small" />
+            <Edit fontSize="small" />
           </ListItemIcon>
-          Add another account
+          edit profile
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <History fontSize="small" />
+          </ListItemIcon>
+          activity log
         </MenuItem>
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
-          Settings
+          settings
         </MenuItem>
         <MenuItem onClick={logout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
-          Logout
+          logout
         </MenuItem>
       </Menu>
     </React.Fragment>
