@@ -14,7 +14,14 @@ import React from "react";
 
 function Rightbar() {
   return (
-    <Box flex={2} p={2} sx={{ display: { xs: "none", sm: "block" } }}>
+    <Box
+      flex={2}
+      p={2}
+      sx={{
+        display: { xs: "none", sm: "block" },
+        backgroundColor: (theme) => theme.palette.secondary.main,
+      }}
+    >
       <Box
         position="fixed"
         sx={{
@@ -24,7 +31,7 @@ function Rightbar() {
           flexDirection: "column",
         }}
       >
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
           <CardContent
             sx={{ display: "flex", alignItems: "center", gap: 1, padding: 2 }}
           >
@@ -37,7 +44,7 @@ function Rightbar() {
             </Typography>
           </CardContent>
         </Card>
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
           <CardContent
             py={3}
             sx={{
