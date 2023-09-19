@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import MainLayout from "./layout/MainLayout";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import Login from "./components/Login";
+import Register from "./components/Register";
 import PrivateRoutes from "./routes/privateRoutes";
-import OnSessionRoutes from "./routes/onSessionRoutes";
-import { UserProvider } from "./context/UserContext";
+import PublicRoutes from "./routes/publicRoutes";
+import AlumniOfficerRoutes from "./routes/alumniOfficerRoutes";
 import Feed from "./components/Feed";
 import Explore from "./components/Explore";
 import Announcements from "./components/Announcements";
 import News from "./components/News";
 import Events from "./components/Events";
 import Fundraise from "./components/Fundraise";
+import Unauthorized from "./components/Unauthorized";
+import Missing from "./components/Missing";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -65,71 +67,78 @@ const App = () => {
     },
   });
   return (
-    <Router>
-      <UserProvider>
-        <ThemeProvider theme={theme}>
-          <Box bgcolor={"background.default"} color={"text.primary"}>
-            <Routes>
-              <Route element={<OnSessionRoutes />}>
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="" element={<LoginPage />} />
-              </Route>
-              <Route element={<PrivateRoutes />}>
-                <Route
-                  path="/home"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                      <Feed />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/explore"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-                      <Explore />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/announcements"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-                      <Announcements />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/news"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-                      <News />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/events"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-                      <Events />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/fundraise"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-                      <Fundraise />
-                    </MainLayout>
-                  }
-                />
-              </Route>
-            </Routes>
-          </Box>
-        </ThemeProvider>
-      </UserProvider>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <Box bgcolor={"background.default"} color={"text.primary"}>
+        <Routes>
+          <Route path="/" element={<PublicRoutes />}>
+            <Route path="register" element={<Register />} />
+            <Route path="login" element={<Login />} />
+            <Route path="" element={<Login />} />
+          </Route>
+          <Route path="/" element={<PrivateRoutes />}>
+            <Route
+              path="unauthorized"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                  <Unauthorized />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="home"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                  <Feed />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="explore"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
+                  <Explore />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="announcements"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
+                  <Announcements />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="news"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
+                  <News />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="events"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
+                  <Events />
+                </MainLayout>
+              }
+            />
+            <Route element={<AlumniOfficerRoutes />}>
+              <Route
+                path="fundraise"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
+                    <Fundraise />
+                  </MainLayout>
+                }
+              />
+            </Route>
+          </Route>
+          <Route path="*" element={<Missing />} />
+        </Routes>
+      </Box>
+    </ThemeProvider>
   );
 };
 export default App;

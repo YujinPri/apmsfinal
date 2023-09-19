@@ -52,7 +52,8 @@ class User(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    profile_picture: Optional[str] = None
+    profile_picture: Optional[str] = "#"
+    is_officer: bool = True
     
     class Config:
         from_attributes = True

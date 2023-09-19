@@ -10,7 +10,7 @@ import {
 import React from "react";
 import AccountMenu from "../ui/AccountMenu";
 import { School, Notifications } from "@mui/icons-material/";
-import { useAuth } from "../context/UserContext";
+import useAuth from "../hooks/useAuth";
 
 const NavToolbar = styled(Toolbar)({
   display: "flex",

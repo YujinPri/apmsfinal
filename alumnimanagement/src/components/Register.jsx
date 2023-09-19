@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import useAuth from "../hooks/useAuth";
 import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Snackbar from "@mui/material/Snackbar";
@@ -21,7 +22,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const Register = ({ user, setToken }) => {
+const Register = () => {
+  const { setToken } = useAuth();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [open, setOpen] = React.useState(false);
@@ -140,7 +142,7 @@ const Register = ({ user, setToken }) => {
         >
           <CardContent>
             <Typography gutterBottom variant="h5">
-              {user} registration
+              alumni registration
             </Typography>
             <Typography
               gutterBottom

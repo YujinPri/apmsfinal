@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/UserContext";
+import useAuth from "../hooks/useAuth";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -19,7 +19,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const Login = ({ user }) => {
+const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -116,7 +116,7 @@ const Login = ({ user }) => {
         >
           <CardContent>
             <Typography gutterBottom variant="h5">
-              {user} login
+              alumni login
             </Typography>
             <Typography
               gutterBottom

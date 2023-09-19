@@ -20,8 +20,6 @@ oauth2bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 ## USER AUTHENTICATION RELATED SERVICES
 
-
-
 def authenticate_user(username: str, password: str, db):
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
