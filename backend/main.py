@@ -57,10 +57,4 @@ async def access_token(
 
 
 
-app.include_router(routers.alumni_router)
-app.include_router(routers.officer_router)
 app.include_router(routers.user_router)
-
-
-# app.include_router(auth.auth_router)
-# app.include_router(account.account_router)

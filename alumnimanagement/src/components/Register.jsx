@@ -8,8 +8,10 @@ import LinearProgress from "@mui/material/LinearProgress";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import {
+  Avatar,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   Grid,
   TextField,
@@ -19,46 +21,55 @@ const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const VisuallyHiddenInput = styled("input")`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-`;
-
 const Register = ({ user, setToken }) => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [firstname, setFirstName] = useState("");
-  const [lastname, setLastName] = useState("");
-  const [profilepicture, setProfilePicture] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmationPassword, setConfirmationPassword] = useState("");
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate(); // Get the navigate function
   const [loading, setLoading] = useState(false);
 
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    firstname: "",
+    lastname: "",
+    profilepicture: "",
+    temporaryprofilepicture: "#",
+    password: "",
+    confirmationPassword: "",
+  });
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]; // Get the selected file
+    if (file) {
+      // If a file is selected, update the formData and display its name
+      setFormData({ ...formData, profilepicture: file });
+    } else {
+      // If no file is selected, set the value to "#"
+      setFormData({ ...formData, profilepicture: "#" });
+    }
+  };
+
   const submitRegistration = async () => {
     try {
       setLoading(true);
       const response = await axios.post("http://localhost:8000/user/", {
-        username: username,
-        email: email,
-        first_name: firstname,
-        last_name: lastname,
-        profile_picture: profilepicture,
-        plain_password: password,
+        username: formData.username,
+        email: formData.email,
+        first_name: formData.firstname,
+        last_name: formData.lastname,
+        // profile_picture: formData.profilepicture,
+        profile_picture: formData.temporaryprofilepicture,
+        plain_password: formData.password,
       });
 
       const data = response.data;
-      
+
       if (response.status !== 200) {
         setMessage(data.detail);
         setSeverity("error");
@@ -92,7 +103,7 @@ const Register = ({ user, setToken }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password === confirmationPassword) {
+    if (formData.password === formData.confirmationPassword) {
       submitRegistration();
     } else {
       setMessage("passwords doesn't match");
@@ -102,7 +113,14 @@ const Register = ({ user, setToken }) => {
   };
 
   return (
-    <div className="column">
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       {loading && (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
@@ -115,11 +133,9 @@ const Register = ({ user, setToken }) => {
       </Snackbar>
       <form className="box" onSubmit={handleSubmit}>
         <Card
-          style={{
+          sx={{
             maxWidth: 600,
-            margin: "0 auto",
             padding: "20px 5px",
-            marginTop: "10vh",
           }}
         >
           <CardContent>
@@ -135,89 +151,130 @@ const Register = ({ user, setToken }) => {
               fill up the form and our team will get back to you within 24 hours
             </Typography>
             <Grid container spacing={1.5}>
-              <Grid xs={3} item>
+              <Grid xs={12} item>
+                <CardActionArea
+                  component="label" // Make the whole area act as a label for the input
+                  htmlFor="profile-picture"
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      padding: 2,
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="profile-picture"
+                      name="profilepicture"
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                    {formData.profilepicture ? (
+                      <>
+                        <Avatar
+                          alt="Profile"
+                          src={URL.createObjectURL(formData.profilepicture)}
+                          sx={{ width: "100px", height: "100px" }}
+                        />
+                        <Typography variant="body2">
+                          {formData.profilepicture.name}
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar
+                          alt="Profile"
+                          src="/default-profile-image.jpg" // Add a default profile image source
+                          sx={{ width: "100px", height: "100px" }}
+                        />
+                        <Typography variant="body2">
+                          upload profile picture
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                </CardActionArea>
+              </Grid>
+              <Grid xs={12} sm={6} item>
                 <TextField
+                  name="username"
                   label="username"
                   placeholder="input username"
                   variant="outlined"
                   fullWidth
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={formData.username}
+                  onChange={handleFieldChange}
                   required
                 />
               </Grid>
-              <Grid xs={6} item>
+              <Grid xs={12} sm={6} item>
                 <TextField
+                  name="email"
                   label="email"
                   type="email"
                   placeholder="input email"
                   variant="outlined"
                   fullWidth
-                  onChange={(e) => setEmail(e.target.value)}
-                  value={email}
-                  className="input"
+                  onChange={handleFieldChange}
+                  value={formData.email}
                   required
                 />
               </Grid>
-              <Grid xs={3} item>
-                <Button
-                  component="label"
-                  variant="contained"
-                  startIcon={<CloudUploadIcon />}
-                  onChange={(e) => setProfilePicture(e.target.value)}
-                  href="#file-upload"
-                >
-                  upload
-                  <VisuallyHiddenInput type="text" value={"#"} />
-                </Button>
-              </Grid>
               <Grid xs={12} sm={6} item>
                 <TextField
+                  name="firstname"
                   label="first name"
                   placeholder="input first name"
                   variant="outlined"
                   fullWidth
-                  value={firstname}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={formData.firstname}
+                  onChange={handleFieldChange}
                   required
                 />
               </Grid>
               <Grid xs={12} sm={6} item>
                 <TextField
+                  name="lastname"
                   label="last name"
                   placeholder="input last name"
                   variant="outlined"
                   fullWidth
-                  value={lastname}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={formData.lastname}
+                  onChange={handleFieldChange}
                   required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
+                  name="password"
                   label="password"
                   placeholder="Input password"
                   variant="outlined"
                   fullWidth
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleFieldChange}
                   className="input"
                   required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
+                  name="confirmationPassword"
                   label="confirm password"
                   placeholder="confirm password"
                   variant="outlined"
                   fullWidth
                   type="password"
-                  value={confirmationPassword}
-                  onChange={(e) => setConfirmationPassword(e.target.value)}
+                  value={formData.confirmationPassword}
+                  onChange={handleFieldChange}
                   required
                 />
               </Grid>
+
               <Button
                 type="submit"
                 variant="contained"
@@ -237,7 +294,7 @@ const Register = ({ user, setToken }) => {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </Box>
   );
 };
 

@@ -20,6 +20,8 @@ oauth2bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 ## USER AUTHENTICATION RELATED SERVICES
 
+
+
 def authenticate_user(username: str, password: str, db):
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
@@ -130,71 +132,3 @@ async def read_alumni(alumni_id: int, db: Session):
     }
 
     return alumni_display_dict
-
-
-### Officer Router
-async def create_officer(db: Session, officer_create: schemas.OfficerCreate, active_user: schemas.User):
-    try:
-        officer = models.Officer(
-            user_id=active_user.id,
-            course=officer_create.course,
-            degree=officer_create.degree,
-            batch_year=officer_create.batch_year,
-        )
-
-        db.add(officer)
-        db.commit()
-        db.refresh(officer)  # Refresh to obtain the newly generated officer ID
-        return officer
-    except Exception as e:
-        # Handle exceptions, such as duplicate usernames or emails
-        db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="Alumni creation failed.",
-        )
-
-
-# async def get_current_officer(db: Session, token: Annotated[str, Depends(oauth2bearer)]):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         user = db.query(models.User).get(payload['id'])
-#         # username: str = payload.get("sub")
-#         # user_id: int = payload.get("id")
-#         if user is None:
-#             raise HTTPException(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 detail="Could not Authenticate User",
-#             )
-#         return schemas.Officer.from_attributes(user)
-#     except JWTError:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Could not Authenticate User",
-#         )
-
-# async def get_current_alumni(db: Session, token: Annotated[str, Depends(oauth2bearer)]):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         user = db.query(models.User).get(payload['id'])
-#         # username: str = payload.get("sub")
-#         # user_id: int = payload.get("id")
-#         if user is None:
-#             raise HTTPException(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 detail="Could not Authenticate User",
-#             )
-#         return schemas.Alumni.from_attributes(user)
-#     except JWTError:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Could not Authenticate User",
-#         )
-
-
-
-
-# async def display_user(user: user_dependency, db: Session = Depends(getDB)):
-#     if user is None:
-#         raise HTTPException(status_code=401, detail="Authentication Failed")
-#     return {"User": user}

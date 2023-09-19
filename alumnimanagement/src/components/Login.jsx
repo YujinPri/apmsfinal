@@ -54,7 +54,7 @@ const Login = ({ user }) => {
 
       if (response.status !== 200) {
         setMessage(data.detail);
-        setSeverity("error")
+        setSeverity("error");
       } else {
         setToken(data.access_token);
         navigate("/home");
@@ -62,13 +62,13 @@ const Login = ({ user }) => {
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail);
-        setSeverity("error")
+        setSeverity("error");
       } else if (error.request) {
         setMessage("No response received from the server");
-        setSeverity("error")
+        setSeverity("error");
       } else {
         setMessage("Error:" + error.message);
-        setSeverity("error")
+        setSeverity("error");
       }
       setOpen(true);
     }
@@ -88,7 +88,15 @@ const Login = ({ user }) => {
   };
 
   return (
-    <div className="column">
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {" "}
       {loading && (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
@@ -103,9 +111,7 @@ const Login = ({ user }) => {
         <Card
           style={{
             maxWidth: 600,
-            margin: "0 auto",
             padding: "20px 5px",
-            marginTop: "10vh",
           }}
         >
           <CardContent>
@@ -165,7 +171,7 @@ const Login = ({ user }) => {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </Box>
   );
 };
 
