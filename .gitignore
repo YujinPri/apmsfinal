@@ -1,57 +1,47 @@
-node_modules
+env/
 backend/alembic.ini
 backend/sayang.py
 backend/config.py
 backend/account.py
-env/
+backend/__pycache__
 
 apmsenv/
-backend/__pycache__
-/.vscode
+.vscode
 
-# dependencies
-/alumnimanagement/node_modules
-/alumnimanagement/.pnp
-/alumnimanagement/.pnp.js
-
-# testing
-/alumnimanagement/coverage
-
-# production
-/alumnimanagement/build
-
-# misc
-/alumnimanagement/.DS_Store
-/alumnimanagement/.env.local
-/alumnimanagement/.env.development.local
-/alumnimanagement/.env.test.local
-/alumnimanagement/.env.production.local
-
-/alumnimanagement/npm-debug.log*
-/alumnimanagement/yarn-debug.log*
-/alumnimanagement/yarn-error.log*
+alumnimanagement/node_modules
+alumnimanagement/.pnp
+alumnimanagement/.pnp.js
+alumnimanagement/coverage
+alumnimanagement/build
+alumnimanagement/.DS_Store
+alumnimanagement/.env.local
+alumnimanagement/.env.development.local
+alumnimanagement/.env.test.local
+alumnimanagement/.env.production.local
+alumnimanagement/npm-debug.log*
+alumnimanagement/yarn-debug.log*
+alumnimanagement/yarn-error.log*
 
 # Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+frontend/logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+frontend/
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+frontend/*.local
+frontend/# Editor directories and files
+frontend/.vscode/*
+frontend/!.vscode/extensions.json
+frontend/.idea
+frontend/.DS_Store
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
