@@ -1,8 +1,8 @@
 from datetime import timedelta, datetime
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from app import models, schemas
-from app.config import settings
+from backend import models, schemas
+from backend.config import settings
 import json
 
 

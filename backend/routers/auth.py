@@ -5,11 +5,11 @@ from pydantic import EmailStr
 from fastapi.security import OAuth2PasswordRequestForm 
 from typing import Annotated
 from jose import jwt
-from app import schemas, models, utils
-from app.oauth2 import oauth2bearer
+from backend import schemas, models, utils
+from backend.oauth2 import oauth2bearer
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.config import settings
+from backend.database import get_db
+from backend.config import settings
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError  
 from jwt import PyJWTError 
 

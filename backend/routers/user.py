@@ -1,15 +1,15 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from app import utils
-from app.database import get_db
+from backend import utils
+from backend.database import get_db
 from starlette import status
-from app.schemas import UserBaseSchema, Token 
+from backend.schemas import UserBaseSchema, Token 
 from sqlalchemy.orm import Session
-from app.oauth2 import get_current_user
+from backend.oauth2 import get_current_user
 from fastapi import Depends
 from typing import Annotated
-from app.config import settings
+from backend.config import settings
 
 
 router = APIRouter()

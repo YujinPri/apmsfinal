@@ -7,9 +7,9 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from app.database import get_db
+from backend.database import get_db
 from . import models, schemas
-from app.config import settings
+from backend.config import settings
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/users/auth/token")
