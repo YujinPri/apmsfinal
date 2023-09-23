@@ -44,3 +44,8 @@ frontend/*.ntvs*
 frontend/*.njsproj
 frontend/*.sln
 frontend/*.sw?
+__pycache__
+apmsvenv/
+.env
+__pycache__
+apmsvenv/
