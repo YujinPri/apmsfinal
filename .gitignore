@@ -1,26 +1,3 @@
-env/
-backend/alembic.ini
-backend/sayang.py
-backend/config.py
-backend/account.py
-backend/__pycache__
-
-apmsenv/
-.vscode
-
-alumnimanagement/node_modules
-alumnimanagement/.pnp
-alumnimanagement/.pnp.js
-alumnimanagement/coverage
-alumnimanagement/build
-alumnimanagement/.DS_Store
-alumnimanagement/.env.local
-alumnimanagement/.env.development.local
-alumnimanagement/.env.test.local
-alumnimanagement/.env.production.local
-alumnimanagement/npm-debug.log*
-alumnimanagement/yarn-debug.log*
-alumnimanagement/yarn-error.log*
 
 # Logs
 frontend/logs
@@ -47,5 +24,4 @@ frontend/*.sw?
 __pycache__
 apmsvenv/
 .env
-__pycache__
-apmsvenv/
+
