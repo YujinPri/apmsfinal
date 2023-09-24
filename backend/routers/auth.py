@@ -14,6 +14,7 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from jwt import PyJWTError 
 
 
+
 router = APIRouter()
 
 # Register a new user
@@ -58,37 +59,6 @@ async def create_alumni(payload: schemas.CreateUserSchema, db: Session = Depends
 @router.post('/register/officer', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 async def create_officer(payload: schemas.CreateUserSchema, db: Session = Depends(get_db)):
     return create_user(payload, db, is_officer=True)
-
-
-# Login user
-@router.post('/login', response_model=schemas.Token)
-def login(*, form_data: OAuth2PasswordRequestForm = Depends(), response: Response, db: Session = Depends(get_db)):
-    # Check if the user exist
-    user = db.query(models.User).filter(models.User.username == form_data.username.lower()).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Incorrect Email or Password')
-
-    # Check if the password is valid
-    if not utils.verify_password(form_data.password, user.password): # type: ignore
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Incorrect Email or Password')
-    
-
-    user_obj = schemas.UserBaseSchema(**user.__dict__)
-    
-    access_token = utils.create_token(user_obj)
-    refresh_token = utils.create_token(user_obj, True)
-
-    # Store refresh and access tokens in cookie
-    response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN * 60,
-                        settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
-    response.set_cookie('refresh_token', refresh_token,
-                        settings.REFRESH_TOKEN_EXPIRES_IN * 60, settings.REFRESH_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
-    response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN * 60,
-                        settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
-    
-    return utils.token_return(access_token)
 
 # Refresh access token
 @router.get('/refresh', response_model=schemas.Token)
@@ -140,4 +110,37 @@ def logout(response: Response, token: str = Depends(oauth2bearer)):
 
 
     return {'status': 'success'}
+
+
+
+# # Login user
+# @router.post('/login', response_model=schemas.Token)
+# def login(*, form_data: OAuth2PasswordRequestForm = Depends(), response: Response, db: Session = Depends(get_db)):
+#     # Check if the user exist
+#     user = db.query(models.User).filter(models.User.username == form_data.username.lower()).first()
+#     if not user:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+#                             detail='Incorrect Email or Password')
+
+#     # Check if the password is valid
+#     if not utils.verify_password(form_data.password, user.password): # type: ignore
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+#                             detail='Incorrect Email or Password')
+    
+
+#     user_obj = schemas.UserBaseSchema(**user.__dict__)
+    
+#     access_token = utils.create_token(user_obj)
+#     refresh_token = utils.create_token(user_obj, True)
+
+#     # Store refresh and access tokens in cookie
+#     response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN * 60,
+#                         settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
+#     response.set_cookie('refresh_token', refresh_token,
+#                         settings.REFRESH_TOKEN_EXPIRES_IN * 60, settings.REFRESH_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
+#     response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN * 60,
+#                         settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
+        
+#     return utils.token_return(access_token)
+
 
