@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from backend import utils
 from backend.database import get_db
 from starlette import status
-from backend.schemas import UserBaseSchema, Token 
+from backend.schemas import UserResponse
 from sqlalchemy.orm import Session
 from backend.oauth2 import get_current_user
 from backend import schemas, models
@@ -18,7 +18,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 def login_user(username: str, password: str, response: Response, db: Session):
-    user = db.query(models.User).filter(models.User.username == username.lower()).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='Incorrect Email or Password')
@@ -26,10 +26,9 @@ def login_user(username: str, password: str, response: Response, db: Session):
     if not utils.verify_password(password, user.password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='Incorrect Email or Password')
-
-    user_obj = schemas.UserBaseSchema(**user.__dict__)
-    access_token = utils.create_token(user_obj)
-    refresh_token = utils.create_token(user_obj, True)
+    
+    access_token = utils.create_token(user)
+    refresh_token = utils.create_token(user, True)
 
     response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN * 60,
                         settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
@@ -39,8 +38,8 @@ def login_user(username: str, password: str, response: Response, db: Session):
                         settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
     return access_token
 
-@router.get("/user/me", response_model= UserBaseSchema)
-async def get_user(user: UserBaseSchema = Depends(get_current_user)):
+@router.get("/user/me", response_model= UserResponse)
+async def get_user(user: UserResponse = Depends(get_current_user)):
     return user
 
 
@@ -58,20 +57,4 @@ async def access_token(
             detail="Could not Authenticate User.",
         )
     access_token = login_user(form_data.username, form_data.password, response, db)
-    return utils.token_return(access_token)
-
-
-# @router.post("/auth/token", response_model=Token)
-# async def access_token(
-#     *,
-#     db: Session = Depends(get_db),
-#     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-# ):
-#     user = utils.authenticate_user(form_data.username, form_data.password, db)
-#     if not user:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Could not Authenticate User.",
-#         )
-#     access_token = utils.create_token(user)
-#     return utils.token_return(access_token)
+    return utils.token_return(token=access_token, role=user.role)

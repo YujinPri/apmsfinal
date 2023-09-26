@@ -1,16 +1,10 @@
-
-import {
-  AppBar,
-  Badge,
-  Box,
-  Toolbar,
-  Typography,
-  styled,
-} from "@mui/material";
+import { AppBar, Badge, Box, Toolbar, Typography, styled } from "@mui/material";
 import React from "react";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import AccountMenu from "../ui/AccountMenu";
 import { School, Notifications } from "@mui/icons-material/";
-import useAuth from "../hooks/useAuth";
+import AuthContext from "../context/AuthProvider";
 
 const NavToolbar = styled(Toolbar)({
   display: "flex",
@@ -36,7 +30,14 @@ const UserIcon = styled(Box)(({ theme }) => ({
 }));
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const logout = async () => {
+    // if used in more components, this should be in context
+    // axios to /logout endpoint
+    setAuth({});
+    navigate("/login");
+  };
   return (
     <AppBar p={2} position="sticky">
       <NavToolbar>

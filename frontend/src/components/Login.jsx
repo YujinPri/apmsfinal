@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import axios from "../api/axios";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   Button,
   Card,
@@ -20,14 +20,29 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 const Login = () => {
+  const { setAuth } = useAuth();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/home";
+
+  const userRef = useRef();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const { setToken } = useAuth();
-  const navigate = useNavigate(); // Get the navigate function
+
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
   const [severity, setSeverity] = useState("error");
+
+  useEffect(() => {
+    userRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    setMessage("");
+  }, [username, password]);
 
   const submitLogin = async () => {
     const dataString =
@@ -41,35 +56,43 @@ const Login = () => {
       "Content-Type": "application/x-www-form-urlencoded",
     };
 
+    const axiosConfig = {
+      headers,
+      withCredentials: true, // Set this to true for cross-origin requests with credentials
+    };
+
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:8000/auth/token",
+        "http://localhost:8000/api/v1/users/auth/token",
         dataString,
-        {
-          headers,
-        }
+        axiosConfig
       );
-      const data = response.data;
+      const data = response?.data;
+      console.log(JSON.stringify(data));
 
       if (response.status !== 200) {
         setMessage(data.detail);
         setSeverity("error");
-      } else {
-        setToken(data.access_token);
-        navigate("/home");
       }
+
+      const access_token = data?.access_token;
+      const role = data?.role;
+      setAuth({ username, role, access_token });
+
+      setUsername("");
+      setPassword("");
+
+      navigate(from, { replace: true });
     } catch (error) {
-      if (error.response) {
-        setMessage(error.response.data.detail);
-        setSeverity("error");
-      } else if (error.request) {
+      if (error.response) setMessage(error?.response?.data?.detail);
+      else if (error.response?.status === 400)
+        setMessage("Missing Username or Password");
+      else if (error?.request)
         setMessage("No response received from the server");
-        setSeverity("error");
-      } else {
-        setMessage("Error:" + error.message);
-        setSeverity("error");
-      }
+      else setMessage("Error:" + error.message);
+
+      setSeverity("error");
       setOpen(true);
     }
     setLoading(false);
@@ -96,7 +119,6 @@ const Login = () => {
         alignItems: "center",
       }}
     >
-      {" "}
       {loading && (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
@@ -130,6 +152,7 @@ const Login = () => {
               <Grid xs={12} item>
                 <TextField
                   label="username"
+                  inputRef={userRef} 
                   placeholder="input username"
                   variant="outlined"
                   fullWidth

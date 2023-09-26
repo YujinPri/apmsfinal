@@ -2,7 +2,7 @@ import React from 'react'
 
 function Missing() {
   return (
-    <div>Missing</div>
+    <div>Missing hehiz</div>
   )
 }
 

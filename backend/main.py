@@ -11,13 +11,16 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    
 )
 
-
+@app.get('/test-cors')
+async def test_cors():
+    return {"message": "CORS test successful"}
 
 app.include_router(auth.router, tags=['Auth'], prefix='/api/v1/auth')
 app.include_router(user.router, tags=['Users'], prefix='/api/v1/users')

@@ -19,7 +19,7 @@ class CreateUserSchema(UserBaseSchema):
     passwordConfirm: str
     role: str 
     verified: bool 
-    password: constr(min_length=8) # type: ignore
+    password: str
 
     @validator("password")
     def validate_password_complexity(cls, value):
@@ -54,6 +54,7 @@ class LoginUserSchema(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: str
     expires: datetime 
 
 

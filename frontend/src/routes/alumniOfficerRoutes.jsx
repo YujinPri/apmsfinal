@@ -1,11 +1,10 @@
 import { useLocation, Navigate, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
-const AlumniOfficerRoutes = ({ allowedRoles }) => {
-  const { user } = useAuth();
+const AlumniOfficerRoutes = () => {
+  const { auth } = useAuth();
   const location = useLocation();
-  const usrObj = JSON.parse(user);
-  if (usrObj.is_officer) {
+  if (auth?.access_token && auth?.role == "officer") {
     return <Outlet />;
   } else {
     // If not an officer, navigate to the unauthorized route
@@ -14,3 +13,4 @@ const AlumniOfficerRoutes = ({ allowedRoles }) => {
 };
 
 export default AlumniOfficerRoutes;
+

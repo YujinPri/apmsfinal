@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import useAuth from "../hooks/useAuth";
-import { styled } from "@mui/material/styles";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -23,7 +20,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 const Register = () => {
-  const { setToken } = useAuth();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [open, setOpen] = React.useState(false);
@@ -58,29 +54,54 @@ const Register = () => {
   };
 
   const submitRegistration = async () => {
+    const axiosConfig = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    const payload = {
+      "username": formData.username,
+      "email": formData.email,
+      "profile_picture": formData.temporaryprofilepicture,
+      "first_name": formData.firstname,
+      "last_name": formData.lastname,
+      "role": "alumni",
+      "passwordConfirm": formData.confirmationPassword,
+      "verified": false,
+      "password": formData.password,
+    };
+
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:8000/user/", {
-        username: formData.username,
-        email: formData.email,
-        first_name: formData.firstname,
-        last_name: formData.lastname,
-        // profile_picture: formData.profilepicture,
-        profile_picture: formData.temporaryprofilepicture,
-        plain_password: formData.password,
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/auth/register/alumni",
+        payload,
+        axiosConfig
+      );
 
-      const data = response.data;
+      const data = response?.data;
 
       if (response.status !== 200) {
         setMessage(data.detail);
         setSeverity("error");
-      } else {
-        setMessage("successfully logged in");
-        setSeverity("success");
-        setToken(data.access_token);
-        navigate("/home");
       }
+
+      setMessage("successfully registered");
+      setSeverity("success");
+
+      setFormData({
+        username: "",
+        email: "",
+        firstname: "",
+        lastname: "",
+        profilepicture: "",
+        temporaryprofilepicture: "#",
+        password: "",
+        confirmationPassword: "",
+      });
+
+      navigate("/login");
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail);
@@ -96,22 +117,16 @@ const Register = () => {
     setLoading(false);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitRegistration();
+  };
+
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
     setOpen(false);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.password === formData.confirmationPassword) {
-      submitRegistration();
-    } else {
-      setMessage("passwords doesn't match");
-      setSeverity("error");
-      setOpen(true);
-    }
   };
 
   return (
@@ -123,11 +138,11 @@ const Register = () => {
         alignItems: "center",
       }}
     >
-      {loading && (
+      {loading ? (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>
-      )}
+      ) : null}
       <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
           {message}
@@ -178,7 +193,7 @@ const Register = () => {
                       <>
                         <Avatar
                           alt="Profile"
-                          src={URL.createObjectURL(formData.profilepicture)}
+                          src={URL?.createObjectURL(formData.profilepicture)}
                           sx={{ width: "100px", height: "100px" }}
                         />
                         <Typography variant="body2">
@@ -189,7 +204,7 @@ const Register = () => {
                       <>
                         <Avatar
                           alt="Profile"
-                          src="/default-profile-image.jpg" // Add a default profile image source
+                          src="../default-profile-image.jpg" // Add a default profile image source
                           sx={{ width: "100px", height: "100px" }}
                         />
                         <Typography variant="body2">

@@ -15,6 +15,7 @@ import Events from "./components/Events";
 import Fundraise from "./components/Fundraise";
 import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
+import Profile from "./components/Profile";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -121,6 +122,14 @@ const App = () => {
               element={
                 <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
                   <Events />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+                  <Profile />
                 </MainLayout>
               }
             />

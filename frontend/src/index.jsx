@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { UserProvider } from "./context/UserContext";
+import { AuthProvider } from "./context/AuthProvider";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
@@ -7,11 +7,11 @@ import App from "./App.jsx";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <UserProvider>
+      <AuthProvider>
         <Routes>
           <Route path="/*" element={<App />} />
         </Routes>
-      </UserProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
