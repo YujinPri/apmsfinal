@@ -1,10 +1,7 @@
-import { AppBar, Badge, Box, Toolbar, Typography, styled } from "@mui/material";
+import { AppBar, Badge, Box, Button, Toolbar, Typography, styled } from "@mui/material";
 import React from "react";
-import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import AccountMenu from "../ui/AccountMenu";
 import { School, Notifications } from "@mui/icons-material/";
-import AuthContext from "../context/AuthProvider";
 
 const NavToolbar = styled(Toolbar)({
   display: "flex",
@@ -30,14 +27,6 @@ const UserIcon = styled(Box)(({ theme }) => ({
 }));
 
 const Navbar = () => {
-  const { setAuth } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const logout = async () => {
-    // if used in more components, this should be in context
-    // axios to /logout endpoint
-    setAuth({});
-    navigate("/login");
-  };
   return (
     <AppBar p={2} position="sticky">
       <NavToolbar>
@@ -50,13 +39,11 @@ const Navbar = () => {
             <Notifications />
           </Badge>
           <AccountMenu
-            logout={logout}
             link="https://ucarecdn.com/c0549749-795b-4ae3-802c-3dfc275aa0b4/-/crop/1190x1000/5,0/-/resize/1035x870/"
           />
         </Icons>
         <UserIcon>
           <AccountMenu
-            logout={logout}
             link="https://ucarecdn.com/c0549749-795b-4ae3-802c-3dfc275aa0b4/-/crop/1190x1000/5,0/-/resize/1035x870/"
           />
           <Typography variant="span">Laufey</Typography>

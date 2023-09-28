@@ -9,7 +9,7 @@ const User = () => {
   const axiosPrivate = useAxiosPrivate();
 
   const location = useLocation();
-  const { auth } = useAuth();
+  const { auth, setAuth } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
@@ -17,20 +17,22 @@ const User = () => {
 
     const getUser = async () => {
       try {
-        const response = await axiosPrivate.get(
-          "http://localhost:8000/api/v1/users/user/me",
-          {
-            headers: {
-              Authorization: `Bearer ${auth?.access_token}`,
-            },
-            signal: controller.signal,
-          }
-        );
+        const response = await axiosPrivate.get("/users/user/me", {
+          signal: controller.signal,
+        });
         console.log(response.data);
         isMounted && setuser(response.data);
       } catch (err) {
-        if (err.name == "AbortError") console.log("Request was cancelled.");
-        navigate("/login", { state: { from: location }, replace: true });
+        console.error(err);
+        if (err.response.data.detail == "Token has expired") setAuth({}); //clears out all the token logs you out in short
+        navigate("/login", {
+          state: {
+            from: location,
+            message:
+              "you have been logout automatically for security purposes, please login again",
+          },
+          replace: true,
+        });
       }
     };
 

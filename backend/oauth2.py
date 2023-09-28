@@ -19,7 +19,6 @@ oauth2bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/users/auth/token")
 async def get_current_user(*, db: Session = Depends(get_db), token: Annotated[str, Depends(oauth2bearer)]):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        print(payload)
 
         username = json.loads(payload['sub'])['username']
 

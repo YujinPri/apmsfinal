@@ -16,6 +16,7 @@ import Fundraise from "./components/Fundraise";
 import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
 import Profile from "./components/Profile";
+import PersistLogin from "./routes/persistLogin";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -76,72 +77,74 @@ const App = () => {
             <Route path="login" element={<Login />} />
             <Route path="" element={<Login />} />
           </Route>
-          <Route path="/" element={<PrivateRoutes />}>
-            <Route
-              path="unauthorized"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                  <Unauthorized />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="home"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                  <Feed />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="explore"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-                  <Explore />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="announcements"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-                  <Announcements />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="news"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-                  <News />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="events"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-                  <Events />
-                </MainLayout>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-                  <Profile />
-                </MainLayout>
-              }
-            />
-            <Route element={<AlumniOfficerRoutes />}>
+          <Route element={<PersistLogin />}>
+            <Route path="/" element={<PrivateRoutes />}>
               <Route
-                path="fundraise"
+                path="unauthorized"
                 element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-                    <Fundraise />
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                    <Unauthorized />
                   </MainLayout>
                 }
               />
+              <Route
+                path="home"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                    <Feed />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="explore"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
+                    <Explore />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="announcements"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
+                    <Announcements />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="news"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
+                    <News />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="events"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
+                    <Events />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+                    <Profile />
+                  </MainLayout>
+                }
+              />
+              <Route element={<AlumniOfficerRoutes />}>
+                <Route
+                  path="fundraise"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
+                      <Fundraise />
+                    </MainLayout>
+                  }
+                />
+              </Route>
             </Route>
           </Route>
           <Route path="*" element={<Missing />} />

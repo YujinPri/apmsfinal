@@ -63,7 +63,6 @@ async def create_officer(payload: schemas.CreateUserSchema, db: Session = Depend
 def refresh_token(response: Response, request: Request, db: Session = Depends(get_db)):
     try:
         refresh_token = request.cookies.get("refresh_token")
-        print(refresh_token)
         payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
 
         username = json.loads(payload['sub'])['username']
@@ -90,15 +89,8 @@ def refresh_token(response: Response, request: Request, db: Session = Depends(ge
 
 # Logout user
 @router.get('/logout', status_code=status.HTTP_200_OK)
-def logout(response: Response, token: str = Depends(oauth2bearer)):
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        user_id = payload.get('username')
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail='Invalid token')
-
+def logout(response: Response):
     response.delete_cookie('access_token')
     response.delete_cookie('logged_in')
-
-
+    response.delete_cookie('refresh_token')
     return {'status': 'success'}

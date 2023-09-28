@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../api/axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -10,9 +9,12 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
+  Box,
   Grid,
   TextField,
   Typography,
+  FormControlLabel,
 } from "@mui/material";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -20,11 +22,13 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 const Login = () => {
-  const { setAuth } = useAuth();
+  const { setAuth, setPersist, persist } = useAuth();
 
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/home";
+  const refreshMessage =
+    location.state?.message || "ready to relive memories? just loginn!";
 
   const userRef = useRef();
 
@@ -39,10 +43,6 @@ const Login = () => {
   useEffect(() => {
     userRef.current.focus();
   }, []);
-
-  useEffect(() => {
-    setMessage("");
-  }, [username, password]);
 
   const submitLogin = async () => {
     const dataString =
@@ -110,15 +110,19 @@ const Login = () => {
     setOpen(false);
   };
 
+  const handleChange = (event) => {
+    setPersist(event.target.checked);
+    console.log(persist);
+  };
+
+  useEffect(() => {
+    localStorage.setItem("persist", persist)
+  }, [persist])
+  
+
+
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <>
       {loading && (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
@@ -129,72 +133,93 @@ const Login = () => {
           {message}
         </Alert>
       </Snackbar>
-      <form className="box" onSubmit={handleSubmit}>
-        <Card
-          style={{
-            maxWidth: 600,
-            padding: "20px 5px",
-          }}
-        >
-          <CardContent>
-            <Typography gutterBottom variant="h5">
-              alumni login
-            </Typography>
-            <Typography
-              gutterBottom
-              color="textSecondary"
-              variant="body2"
-              component="p"
-            >
-              ready to relive memories? just loginn!
-            </Typography>
-            <Grid container spacing={1.5}>
-              <Grid xs={12} item>
-                <TextField
-                  label="username"
-                  inputRef={userRef} 
-                  placeholder="input username"
-                  variant="outlined"
-                  fullWidth
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="password"
-                  placeholder="Input password"
-                  variant="outlined"
-                  fullWidth
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input"
-                  required
-                />
-              </Grid>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-                fullWidth
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <form className="box" onSubmit={handleSubmit}>
+          <Card
+            style={{
+              maxWidth: 600,
+              padding: "20px 5px",
+            }}
+          >
+            <CardContent>
+              <Typography gutterBottom variant="h5">
+                alumni login
+              </Typography>
+              <Typography
+                gutterBottom
+                color="textSecondary"
+                variant="body2"
+                component="p"
               >
-                login
-              </Button>
-            </Grid>
-            <Link
-              to={"/register"}
-              style={{ display: "block", textAlign: "center", marginTop: 8 }}
-            >
-              sign up instead
-            </Link>
-          </CardContent>
-        </Card>
-      </form>
-    </Box>
+                {refreshMessage}
+              </Typography>
+              <Grid container spacing={1.5}>
+                <Grid xs={12} item>
+                  <TextField
+                    label="username"
+                    inputRef={userRef}
+                    placeholder="input username"
+                    variant="outlined"
+                    fullWidth
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    label="password"
+                    placeholder="Input password"
+                    variant="outlined"
+                    fullWidth
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input"
+                    required
+                  />
+                </Grid>
+                <Box p={2} sx={{width:"100%", m:"0 auto"}}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2 }}
+                    fullWidth
+                  >
+                    login
+                  </Button>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={persist}
+                        onChange={handleChange}
+                        inputProps={{ "aria-label": "controlled" }}
+                      />
+                    }
+                    label="remember me on this device"
+                  />
+                </Box>
+              </Grid>
+              <Link
+                to={"/register"}
+                style={{ display: "block", textAlign: "center", marginTop: 8 }}
+              >
+                sign up instead
+              </Link>
+            </CardContent>
+          </Card>
+        </form>
+      </Box>
+    </>
   );
 };
 

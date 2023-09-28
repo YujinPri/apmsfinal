@@ -31,12 +31,6 @@ def create_token(user: models.User, is_refresh=False):
     payload = {"sub": json.dumps(user_obj.model_dump()), "exp": datetime.utcnow() + timedelta(seconds=expiration)}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-
-# async def create_token(user: models.User,  expiration: timedelta):
-#     user_obj = schemas.User.model_validate(user.__dict__)
-#     token = jwt.encode(user_obj.model_dump(), SECRET_KEY, algorithm=ALGORITHM)
-#     return dict(access_token=token, token_type="bearer", expires=datetime.utcnow() + expiration)
-
 def token_return(*, token: str, is_refresh=False, role: str):
     expiration = settings.REFRESH_TOKEN_EXPIRES_IN if is_refresh else settings.ACCESS_TOKEN_EXPIRES_IN 
     return {
