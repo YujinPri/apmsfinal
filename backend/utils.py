@@ -28,14 +28,15 @@ def authenticate_user(username: str, password: str, db):
 def create_token(user: models.User, is_refresh=False):
     expiration = settings.REFRESH_TOKEN_EXPIRES_IN if is_refresh else settings.ACCESS_TOKEN_EXPIRES_IN 
     user_obj = schemas.UserBaseSchema.model_validate(user.__dict__)
-    payload = {"sub": json.dumps(user_obj.model_dump()), "exp": datetime.utcnow() + timedelta(seconds=expiration)}
+    payload = {"sub": json.dumps(user_obj.model_dump()), "exp": datetime.utcnow() + timedelta(minutes=expiration)}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-def token_return(*, token: str, is_refresh=False, role: str):
+def token_return(*, token: str, is_refresh=False, role: str, verified: str = "incomplete"):
     expiration = settings.REFRESH_TOKEN_EXPIRES_IN if is_refresh else settings.ACCESS_TOKEN_EXPIRES_IN 
     return {
         "access_token": token,
         "token_type": "bearer",
         "role": role,
+        "verified": verified,
         "expires": datetime.utcnow() + timedelta(minutes=expiration)
     }

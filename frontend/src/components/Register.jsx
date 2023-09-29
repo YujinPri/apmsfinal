@@ -3,7 +3,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
-import axios from "axios";
+import axios from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Avatar,
@@ -32,7 +32,6 @@ const Register = () => {
     firstname: "",
     lastname: "",
     profilepicture: "",
-    temporaryprofilepicture: "#",
     password: "",
     confirmationPassword: "",
   });
@@ -45,37 +44,33 @@ const Register = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the selected file
     if (file) {
-      // If a file is selected, update the formData and display its name
       setFormData({ ...formData, profilepicture: file });
-    } else {
-      // If no file is selected, set the value to "#"
-      setFormData({ ...formData, profilepicture: "#" });
     }
+    console.log(formData.profilepicture);
   };
 
   const submitRegistration = async () => {
     const axiosConfig = {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
       },
     };
 
-    const payload = {
-      "username": formData.username,
-      "email": formData.email,
-      "profile_picture": formData.temporaryprofilepicture,
-      "first_name": formData.firstname,
-      "last_name": formData.lastname,
-      "role": "alumni",
-      "passwordConfirm": formData.confirmationPassword,
-      "verified": false,
-      "password": formData.password,
-    };
-
+    const payload = new FormData();
+    payload.append("username", formData.username);
+    payload.append("email", formData.email);
+    payload.append("first_name", formData.firstname);
+    payload.append("last_name", formData.lastname);
+    payload.append("role", "alumni");
+    payload.append("passwordConfirm", formData.confirmationPassword);
+    payload.append("profile_picture", formData.profilepicture);
+    payload.append("verified", "incomplete");
+    payload.append("password", formData.password);
     try {
       setLoading(true);
+      console.log(payload);
       const response = await axios.post(
-        "http://localhost:8000/api/v1/auth/register/alumni",
+        "/auth/register/alumni",
         payload,
         axiosConfig
       );
@@ -96,7 +91,6 @@ const Register = () => {
         firstname: "",
         lastname: "",
         profilepicture: "",
-        temporaryprofilepicture: "#",
         password: "",
         confirmationPassword: "",
       });

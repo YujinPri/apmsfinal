@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRES_IN: int
     JWT_ALGORITHM: str
     CLIENT_ORIGIN: str
+
+    CLOUD_NAME: str
+    API_KEY: str
+    API_SECRET: str
     
     SECRET_KEY: str
     ALGORITHM: str

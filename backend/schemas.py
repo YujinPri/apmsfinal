@@ -1,24 +1,25 @@
 from datetime import datetime
 import uuid
-from pydantic import BaseModel, EmailStr, constr, validator
-from fastapi import HTTPException
+from pydantic import BaseModel, EmailStr, validator
+from typing import Optional 
+from fastapi import File, Form, HTTPException, UploadFile
+
 
 class UserBaseSchema(BaseModel):
     username: str
     email: EmailStr
-    profile_picture: str
     first_name: str
     last_name: str
-    profile_picture: str = "#"
     role: str
 
     class Config:
         from_attributes = True
 
 class CreateUserSchema(UserBaseSchema):
+    profile_picture: str #Optional[UploadFile] = File(None)
     passwordConfirm: str
-    role: str 
-    verified: bool 
+    role: str
+    verified: str
     password: str
 
     @validator("password")
@@ -56,6 +57,7 @@ class Token(BaseModel):
     token_type: str
     role: str
     expires: datetime 
+    verified: str 
 
 
 class UserResponse(UserBaseSchema):

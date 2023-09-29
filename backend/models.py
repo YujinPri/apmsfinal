@@ -14,7 +14,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     password = Column(String, nullable=False)
     profile_picture = Column(String, server_default="#")
-    verified = Column(Boolean, nullable=False, server_default='False')
+    verified = Column(String, nullable=False, server_default="incomplete") #incomplete, pending, approved
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
