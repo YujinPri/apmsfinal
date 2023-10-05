@@ -1,0 +1,153 @@
+Enums for React taenang alembic yann
+
+CivilStatus
+ "Single"
+ "Married"
+ "Divorced"
+ "Widowed"
+
+Sex
+ "Male"
+ "Female"
+ "Other"
+
+EmploymentStatus
+ "Unemployed"
+ "Part-Time"
+ "Full-Time"
+
+PostGradAct # In the year following graduation, my primary activity or status was: #9 question
+  Employment:This covers any form of work or employment.
+  Education:Encompasses further education, postgraduate studies, or pursuing additional certifications.
+  Internship or Training: Involves internships, professional training, or gaining practical experience.
+  Freelancing or Self-Employment: Includes freelance work or starting a business venture.
+  Travel or Personal Time: Covers travel, taking time off for personal reasons, or a gap year.
+  Volunteering or Social Service: Involves volunteering or engaging in social service activities.
+  Career Transition: Represents changing career paths or industries.
+  Family or Personal Responsibilities: Includes responsibilities related to family, marriage, or personal matters.
+
+AcademicProgram
+ "Bachelor of Business Technology and Livelihood Education major in Home Economics (BBTLEDHE)"
+ "Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)"
+ "Bachelor of Science in Business Administration major in Marketing Management (BSBA-MM)"
+ "Bachelor of Science in Entrepreneurship (BSENTREP)"
+ "Bachelor of Science in Information Technology (BSIT)"
+ "Bachelor of Public Administration major in Public Financial Management (BPAPFM)"
+ "Diploma in Office Management Technology Medical Office Management (DOMTMOM)"
+
+JobClassification
+Management and Leadership
+Professional and Technical
+Office and Administrative
+Sales and Customer Service
+Healthcare and Medical
+Education and Training
+Manufacturing and Production
+Retail and Hospitality
+Finance and Accounting
+Information Technology (IT)
+Engineering and Technical
+Creative and Arts
+Agriculture and Farming
+Transportation and Logistics
+Social Services and Nonprofit
+Legal and Law Enforcement
+Military and Defense
+Construction and Trades
+Science and Research
+Customer Support and Call Centers
+Environmental and Sustainability
+Human Resources and Recruitment
+Marketing and Advertising
+Consulting and Advising
+
+
+
+MonthlyIncome
+ "Less than ₱9,100"
+ "₱9,100 to ₱18,200"
+ "₱18,200 to ₱36,400"
+ "₱36,400 to ₱63,700"
+ "₱63,700 to ₱109,200"
+ "₱109,200 to ₱182,000"
+ "Above ₱182,000"
+
+EmploymentContract
+ "Regular"
+ "Casual"
+ "Project"
+ "Seasonal"
+ "Fixed-term"
+ "Probationary"
+
+JobLevelPosition
+ "Entry Level"
+ "Junior"
+ "Mid-Level"
+ "Senior"
+ "Director"
+
+EmployerType
+ "Public"
+ "Private"
+
+LocationOfEmployment
+ "Local"
+ "International"
+
+FeedbackArea
+ "Curriculum"
+ "Facilities"
+ "Faculty"
+ "Library"
+ "Student Services"
+ "The Campus"
+ "The Alumni"
+ 
+Board 	                                                  PRC Title
+Board of Agricultural and Biosystems Engineering	        Agricultural and Biosystems Engineer
+Board of Architecture	                                    Architect
+Board of Interior Design	                                Interior Designer
+Board of Landscape Architecture	                          Landscape Architect
+Board of Master Plumbing	                                Master Plumber
+Board of Accountancy	                                  	Certified Public Accountant (CPA)
+Professional Regulatory Board of Real Estate Service	    Real Estate Broker
+Professional Regulatory Board for Librarians	            Librarian
+Professional Regulatory Board for Professional Teachers	  Professional Teacher
+Board of Aeronautical Engineering	                        Aeronautical Engineer
+Board of Agricultural and Biosystems Engineering	        Agricultural and Biosystems Engineer
+Board of Chemical Engineering	                            Chemical Engineer
+Board of Civil Engineering	                              Civil Engineer
+Board of Electrical Engineering	                          Electrical Engineer
+Board of Electronics Engineering	                        Electronics Engineer
+Board of Geodetic Engineering	                            Geodetic Engineer
+Board of Mechanical Engineering	                          Mechanical Engineer
+Board of Metallurgical Engineering                      	Metallurgical Engineer
+Board of Mining Engineering	                              Mining Engineer
+Board of Naval Architecture and Marine Engineering	      Naval Architect and Marine Engineer
+Board of Sanitary Engineering	                            Sanitary Engineer
+Board of Dentistry	                                      Dentist
+Board of Medical Technology	                              Medical Technologist
+Board of Medicine                                       	Medical Doctor (Physician)
+Board of Midwifery	                                      Midwife
+Board of Nursing	                                        Registered Nurse
+Board of Nutrition and Dietetics	                        Registered Nutritionist-Dietitian
+Board of Optometry	                                      Optometrist
+Board of Pharmacy	                                        Pharmacist
+Board of Physical and Occupational Therapy	              Physical Therapist
+Board of Physical and Occupational Therapy	              Occupational Therapist
+Board of Radiologic Technology	                          Radiologic Technologist
+Board of Respiratory Therapy	                            Respiratory Therapist
+Board of Food Technology	                                Registered Food Technologist
+Board of Chemistry	                                      Chemist
+Board of Environmental Planning                         	Environmental Planner
+Board of Fisheries	                                      Fisheries Technologist
+Board of Foresters	                                      Forester
+Board of Geology	                                        Geologist
+Board of Veterinary Medicine	                            Veterinarian
+Board of Customs Brokers	                                Customs Broker
+Board of Criminology	                                    Criminologist
+Board of Guidance and Counseling	                        Guidance Counselor
+Board of Psychology	                                      Psychologist
+Board of Psychology	                                      Psychometrician
+Board of Social Workers	                                  Social Worker

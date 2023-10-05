@@ -64,7 +64,7 @@ const Register = () => {
     payload.append("role", "alumni");
     payload.append("passwordConfirm", formData.confirmationPassword);
     payload.append("profile_picture", formData.profilepicture);
-    payload.append("verified", "incomplete");
+    payload.append("verified", "unapproved");
     payload.append("password", formData.password);
     try {
       setLoading(true);

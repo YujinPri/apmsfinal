@@ -43,7 +43,7 @@ async def create_user(*, username: str = Form(...), email: str = Form(...), firs
             last_name=last_name,
             role="officer" if is_officer else "alumni" , # Use ternary expression
             passwordConfirm=passwordConfirm,
-            verified="incomplete",
+            verified="unapproved",
             password=utils.hash_password(password),
             profile_picture = '',
         )

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from backend import utils
 from backend.database import get_db
@@ -10,7 +10,6 @@ from backend.oauth2 import get_current_user
 from backend import schemas, models
 from typing import Annotated
 from backend.config import settings
-
 
 router = APIRouter()
 
@@ -43,7 +42,7 @@ async def get_user(user: UserResponse = Depends(get_current_user)):
     return user
 
 
-@router.post("/auth/token", response_model=schemas.Token)
+@router.post("/auth/token")
 async def access_token(
     *,
     db: Session = Depends(get_db),
@@ -58,3 +57,4 @@ async def access_token(
         )
     access_token = login_user(form_data.username, form_data.password, response, db)
     return utils.token_return(token=access_token, role=user.role)
+
