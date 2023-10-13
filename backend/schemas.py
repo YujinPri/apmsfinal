@@ -1,7 +1,7 @@
 from datetime import date, datetime
 import uuid
 from pydantic import BaseModel, EmailStr, validator
-from typing import List, Optional 
+from typing import List, Optional, Text 
 from fastapi import File, Form, HTTPException, UploadFile
 from pydantic_sqlalchemy import sqlalchemy_to_pydantic
 
@@ -9,7 +9,7 @@ from pydantic_sqlalchemy import sqlalchemy_to_pydantic
 
 class UserBaseSchema(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     first_name: str
     last_name: str
     role: str
@@ -23,32 +23,6 @@ class CreateUserSchema(UserBaseSchema):
     role: str
     verified: str
     password: str
-
-    @validator("password")
-    def validate_password_complexity(cls, value):
-        # Minimum length requirement
-        min_length = 8
-        if len(value) < min_length:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Password must be at least {min_length} characters long.",
-            )
-
-        # Check for at least one digit
-        if not any(char.isdigit() for char in value):
-            raise HTTPException(
-                status_code=400, detail=f"Password must contain at least one digit."
-            )
-
-        # Check for at least one special character
-        special_characters = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/"
-        if not any(char in special_characters for char in value):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Password must contain at least one special character.",
-            )
-
-        return value
 
 class LoginUserSchema(BaseModel):
     username: str
@@ -67,22 +41,6 @@ class UserResponse(UserBaseSchema):
     created_at: datetime
     updated_at: datetime
 
-class ProfileResponse(BaseModel):
-    id: uuid.UUID
-    username: str
-    student_number: Optional[str]
-    role: str
-
-class DemographicProfile(ProfileResponse):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
-    gender: Optional[str]
-    birthdate: Optional[str]
-    profile_picture: Optional[str]
-    city: Optional[str]
-    address: Optional[str]
-    mobile_number: Optional[str]
 
 class DemographicProfileModify(BaseModel):
     student_number: Optional[str]
@@ -90,12 +48,35 @@ class DemographicProfileModify(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
     gender: Optional[str]
-    birthdate: Optional[str]
+    birthdate: Optional[date]
     profile_picture: Optional[str]
+    headline: Optional[Text]
     city: Optional[str]
+    region: Optional[str]
     address: Optional[str]
     mobile_number: Optional[str]
-    employment_status: Optional[str]
+    civil_status: Optional[str]
+
+class ProfileResponse(BaseModel):
+    id: uuid.UUID
+    username: str
+    student_number: Optional[str]
+    role: str
+
+class DemographicProfile(ProfileResponse):
+    student_number: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    gender: Optional[str]
+    birthdate: Optional[date]
+    profile_picture: Optional[str]
+    headline: Optional[Text]
+    city: Optional[str]
+    address: Optional[str]
+    region: Optional[str]
+    mobile_number: Optional[str]
+    civil_status: Optional[str]
 
 class AllDemographicProfilesResponse(BaseModel):
     demographic_profiles: List[DemographicProfile]
@@ -104,12 +85,20 @@ class AllDemographicProfilesResponse(BaseModel):
 
 class EducationProfile(ProfileResponse):
     year_graduated: Optional[int]
-    post_grad_act: Optional[List[str]]  # Assuming post_grad_act is a list of strings
+    degree: Optional[str]
+    field: Optional[str]
+    achievements_story: Optional[Text]
+    post_grad_act: Optional[List[str]] 
+    honors_and_awards: Optional[List[str]] 
     civil_service_eligibility: Optional[bool]
 
 class EducationProfileModify(BaseModel):
     year_graduated: Optional[int]
-    post_grad_act: Optional[List[str]]  # Assuming post_grad_act is a list of strings
+    degree: Optional[str]
+    field: Optional[str]
+    achievements_story: Optional[Text]
+    post_grad_act: Optional[List[str]] 
+    honors_and_awards: Optional[List[str]] 
     civil_service_eligibility: Optional[bool]
 
 class AllEducationProfilesResponse(BaseModel):
@@ -148,6 +137,12 @@ class GetEmploymentProfile(BaseModel):
     first_job: Optional[bool]
     
 class EmploymentProfilesResponse(BaseModel):
+    employment: List[GetEmploymentProfile]
+    page: int
+    per_page: int
+
+class EmploymentProfilesResponseMe(BaseModel):
+    present_employment_status: str
     employment: List[GetEmploymentProfile]
     page: int
     per_page: int

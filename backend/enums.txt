@@ -1,4 +1,3 @@
-Enums for React taenang alembic yann
 
 CivilStatus
  "Single"

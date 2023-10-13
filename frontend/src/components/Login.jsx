@@ -69,7 +69,6 @@ const Login = () => {
         axiosConfig
       );
       const data = response?.data;
-      console.log(JSON.stringify(data));
 
       if (response.status !== 200) {
         setMessage(data.detail);

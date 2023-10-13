@@ -2,7 +2,7 @@ from fastapi import Depends
 from backend.database import get_db
 from sqlalchemy.orm import Session
 import uuid
-from sqlalchemy import TIMESTAMP, Column, Float, String, Boolean, text, Boolean, ForeignKey, Integer, DateTime, Date, Table
+from sqlalchemy import TIMESTAMP, Column, Float, String, Boolean, text, Boolean, ForeignKey, Integer, Date, Text
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from database import Base
 from sqlalchemy.orm import relationship
@@ -28,52 +28,36 @@ class User(Base):
     # Alumni Info
     #Socio-Demographic Profile
     student_number = Column(String, unique=True, index=True)
+    headline = Column(Text)
     birthdate = Column(Date)
     city = Column(String)
+    region = Column(String)
     address = Column(String)
     mobile_number = Column(String)
     civil_status = Column(String)
     gender = Column(String)
 
-    #Education Profile
+    #Education Profile (make it only in the pup okay?)
     year_graduated = Column(Integer)
-    academic_program_id = Column(UUID(as_uuid=True), ForeignKey('academic_programs.id', ondelete="CASCADE"))
+    degree = Column(String)
+    field = Column(String)
     post_grad_act = Column(ARRAY(String))
+    honors_and_awards = Column(ARRAY(String))
     civil_service_eligibility = Column(Boolean)
-    special_skills_certifications = relationship("SpecialSkillsCertification", back_populates="users")
+    #nasa dulo dapat to. Ung post grad act and honors and awards may desc option jan na would be catched here sa achievements story nila as another paragraph sheeesh
+    #suggestive lang like (ignore this is you've already explained it)
+    achievements_story = Column(Text)
+
 
     #employed
     present_employment_status = Column(String, server_default="unemployed") #self-employed or employee or Unemployed or Not in the Labor Force
     employment = relationship("Employment", back_populates="users")
 
     testimonials = relationship("Testimonials", back_populates="users")
-    academic_programs = relationship("AcademicPrograms", back_populates="users")
-
     comments = relationship("Comment", back_populates='users')
     feeds = relationship("Feeds", back_populates='users')
     likes = relationship('Likes', back_populates='users') 
     reports = relationship('Reports', back_populates='users') 
-
-
-class AcademicPrograms(Base):
-    __tablename__ = "academic_programs"
-
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True, nullable=False)
-    users = relationship("User", back_populates="academic_programs")
-
-class SpecialSkillsCertification(Base):
-    __tablename__ = 'special_skills_certifications'
-
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"))  # ForeignKey to link to alumni
-    users = relationship("User", back_populates="special_skills_certifications")
-    file_name = Column(String, nullable=False) # will appear as the name of the file
-    file_url = Column(String, nullable=False)  # Store the certification file URL
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
-
 
 class Employment(Base):
     __tablename__ = 'employment'
@@ -106,6 +90,7 @@ class Testimonials(Base):
     area = Column(String, nullable=False)
     star_rating = Column(Integer, nullable=False)
     title = Column(String, nullable=False)
+    status = Column(String, server_default="unapproved")
     message = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
@@ -182,25 +167,3 @@ class Reports(Base):
     feed_id = Column(UUID(as_uuid=True), ForeignKey('feeds.id', ondelete="CASCADE"))
     feeds = relationship('Feeds', back_populates='reports')
     users = relationship('User', back_populates='reports')
-
-
-# class PRCCertification(Base):
-#     __tablename__ = 'prc_certifications'
-
-#     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
-#     board_name = Column(String, unique=True, nullable=False)
-#     prc_title = Column(String, unique=True, nullable=False)
-#     logo = Column(String)
-#     alumni_certifications = relationship("PRCAlumniCertification", back_populates="prc_certification")
-
-# class PRCAlumniCertification(Base):
-#     __tablename__ = 'alumni_certifications'
-
-#     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
-#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
-#     prc_certification_id = Column(UUID(as_uuid=True), ForeignKey('prc_certifications.id', ondelete="CASCADE"), nullable=False)
-#     certificate_number = Column(String, nullable=False)
-#     certification_date = Column(Date,  nullable=False)
-#     certification_authority = Column(String,  nullable=False)
-#     users = relationship("User", back_populates="prccertifications")
-#     prc_certification = relationship("PRCCertification", back_populates="alumni_certifications")

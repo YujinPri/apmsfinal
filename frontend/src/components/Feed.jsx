@@ -33,7 +33,6 @@ function Feed() {
         flexDirection: "column",
       }}
     >
-      <User />
       <Breadcrumbs separator="-" aria-label="breadcrumb">
         <RouterLink
           to="/home"

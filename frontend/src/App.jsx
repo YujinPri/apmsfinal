@@ -17,6 +17,7 @@ import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
 import Profile from "./components/Profile";
 import PersistLogin from "./routes/persistLogin";
+import UpdateProfile from "./components/UpdateProfile";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -24,7 +25,7 @@ const App = () => {
     palette: {
       mode: mode,
       primary: {
-        main: mode === "dark" ? "#0f1731" : "#282a3e", // Set #282a3e as the main color
+        main: mode === "dark" ? "#555" : "#282a3e", // Set #282a3e as the main color
         contrastText: "#fff", // Contrast text color for primary
       },
       secondary: {
@@ -128,10 +129,10 @@ const App = () => {
                 }
               />
               <Route
-                path="profile"
+                path="profile/me"
                 element={
                   <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-                    <Profile />
+                    <UpdateProfile />
                   </MainLayout>
                 }
               />

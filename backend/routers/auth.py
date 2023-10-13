@@ -35,6 +35,24 @@ async def create_user(*, username: str = Form(...), email: str = Form(...), firs
     # Compare password and passwordConfirm
     if password != passwordConfirm:
         raise HTTPException(status_code=400, detail="Passwords do not match")
+    
+    #Set Minimum length Requirement
+    if len(password) < 8: 
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+    
+    # Check for at least one digit
+    if not any(char.isdigit() for char in password):
+        raise HTTPException(
+            status_code=400, detail=f"Password must contain at least one digit."
+        )
+    # Check for at least one special character
+    special_characters = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/"
+    if not any(char in special_characters for char in password):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Password must contain at least one special character.",
+        )
+
     try:
         payload = schemas.CreateUserSchema(
             username=username,
