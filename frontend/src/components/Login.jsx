@@ -4,6 +4,9 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../api/axios";
+import { useLinkedIn } from "react-linkedin-login-oauth2";
+import linkedin from "react-linkedin-login-oauth2/assets/linkedin.png";
+import LinkedInLogin from "./LinkedInLogin";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   Button,
@@ -15,6 +18,8 @@ import {
   TextField,
   Typography,
   FormControlLabel,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -77,7 +82,7 @@ const Login = () => {
 
       const access_token = data?.access_token;
       const role = data?.role;
-      setAuth({ username, role, access_token });
+      setAuth(username, role, access_token);
 
       setUsername("");
       setPassword("");
@@ -94,6 +99,7 @@ const Login = () => {
       setSeverity("error");
       setOpen(true);
     }
+
     setLoading(false);
   };
 
@@ -106,6 +112,7 @@ const Login = () => {
     if (reason === "clickaway") {
       return;
     }
+
     setOpen(false);
   };
 
@@ -115,10 +122,8 @@ const Login = () => {
   };
 
   useEffect(() => {
-    localStorage.setItem("persist", persist)
-  }, [persist])
-  
-
+    localStorage.setItem("persist", persist);
+  }, [persist]);
 
   return (
     <>
@@ -186,7 +191,7 @@ const Login = () => {
                     required
                   />
                 </Grid>
-                <Box p={2} sx={{width:"100%", m:"0 auto"}}>
+                <Box p={2} sx={{ width: "100%", m: "0 auto" }}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -208,9 +213,14 @@ const Login = () => {
                   />
                 </Box>
               </Grid>
+              <LinkedInLogin />
               <Link
-                to={"/register"}
-                style={{ display: "block", textAlign: "center", marginTop: 8 }}
+                to="/register"
+                style={{
+                  display: "block",
+                  textAlign: "center",
+                  marginTop: 8,
+                }}
               >
                 sign up instead
               </Link>

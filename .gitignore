@@ -21,6 +21,7 @@ frontend/*.ntvs*
 frontend/*.njsproj
 frontend/*.sln
 frontend/*.sw?
+frontend/.env.development
 __pycache__
 apmsvenv/
 .env
