@@ -3,9 +3,13 @@ import React from "react";
 const LinkedInLogin = () => {
   const handleLinkedInAuth = () => {
     // Define your LinkedIn OAuth 2.0 parameters
+    const randomString = [...Array(30)]
+      .map(() => Math.random().toString(36)[2])
+      .join("");
+
     const clientId = `${import.meta.env.VITE_LINKEDIN_CLIENT_ID}`;
-    const redirectUri = "http://localhost:5173/"; // Your callback URL
-    const state = "random_state_value"; // You can generate a random value for the state
+    const redirectUri = `${import.meta.env.VITE_LINKEDIN_REDIRECT}`; // Your callback URL
+    const state = randomString; // You can generate a random value for the state
 
     // Define the scope as needed
     const scope = "openid profile w_member_social email";

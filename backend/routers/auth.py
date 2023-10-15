@@ -1,3 +1,4 @@
+import httpx
 from datetime import datetime, timedelta
 import json
 from fastapi import APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
@@ -12,7 +13,10 @@ from backend.config import settings
 from jwt import PyJWTError 
 from jose import ExpiredSignatureError, jwt, JWTError
 import cloudinary
+import requests
+
 import cloudinary.uploader
+
 
 
 router = APIRouter()
@@ -138,6 +142,30 @@ def refresh_token(response: Response, request: Request, db: Session = Depends(ge
     response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN * 60,
                         settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
     return utils.token_return(token=access_token, role=user.role)
+
+@router.post("/linkedin-token")
+async def exchange_token(data: dict):
+    # Define the LinkedIn OAuth 2.0 token endpoint
+    token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
+    
+    access_token_params = {
+        "grant_type": "authorization_code",
+        "code": data.get("authorization_code"),
+        "redirect_uri": settings.LINKEDIN_REDIRECT,
+        "client_id": settings.LINKEDIN_CLIENT_ID,
+        "client_secret": settings.LINKEDIN_CLIENT_SECRET,  
+    }
+
+    access_token_response = requests.post(token_url, data=access_token_params)
+    access_token_data = access_token_response.json()
+    
+    if access_token_response.status_code == 200:
+        access_token = access_token_response.json()["access_token"]
+        return {"access_token": access_token}
+    else:
+        error_detail = access_token_response.text
+        print(error_detail)
+        raise HTTPException(status_code=access_token_response.status_code, detail=access_token_response.text)
 
 # Logout user
 @router.get('/logout', status_code=status.HTTP_200_OK)

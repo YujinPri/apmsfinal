@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
 
+    LINKEDIN_CLIENT_ID : str
+    LINKEDIN_CLIENT_SECRET: str
+    LINKEDIN_REDIRECT: str
+
+
+
     class Config:
         env_file = './.env'
 

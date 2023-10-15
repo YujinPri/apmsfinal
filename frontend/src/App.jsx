@@ -18,6 +18,7 @@ import Missing from "./components/Missing";
 import Profile from "./components/Profile";
 import PersistLogin from "./routes/persistLogin";
 import UpdateProfile from "./components/UpdateProfile";
+import LinkedInRedirect from "./components/LinkedInRedirect";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -76,6 +77,7 @@ const App = () => {
           <Route path="/" element={<PublicRoutes />}>
             <Route path="register" element={<Register />} />
             <Route path="login" element={<Login />} />
+            <Route path="oauth/redirect/linkedin" element={<LinkedInRedirect />} />
             <Route path="" element={<Login />} />
           </Route>
           <Route element={<PersistLogin />}>
