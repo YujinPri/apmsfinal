@@ -27,7 +27,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 const Login = () => {
-  const { setAuth, setPersist, persist } = useAuth();
+  const { auth, setAuth, setPersist, persist } = useAuth();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -118,7 +118,6 @@ const Login = () => {
 
   const handleChange = (event) => {
     setPersist(event.target.checked);
-    console.log(persist);
   };
 
   useEffect(() => {

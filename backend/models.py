@@ -16,7 +16,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String, nullable=False)
     profile_picture = Column(String, server_default="#")
     verified = Column(String, nullable=False, server_default="unapproved") #unapproved, pending, approved, deleted
@@ -44,8 +44,6 @@ class User(Base):
     post_grad_act = Column(ARRAY(String))
     honors_and_awards = Column(ARRAY(String))
     civil_service_eligibility = Column(Boolean)
-    #nasa dulo dapat to. Ung post grad act and honors and awards may desc option jan na would be catched here sa achievements story nila as another paragraph sheeesh
-    #suggestive lang like (ignore this is you've already explained it)
     achievements_story = Column(Text)
 
 

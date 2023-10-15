@@ -13,13 +13,29 @@ from backend.config import settings
 from jwt import PyJWTError 
 from jose import ExpiredSignatureError, jwt, JWTError
 import cloudinary
+import jwt
+import random
+import string
+from backend.routers.user import login_user
 import requests
-
 import cloudinary.uploader
 
 
-
 router = APIRouter()
+
+def decode_linkedin_access_token(access_token):
+    try:
+        # Decode the access token
+        decoded_token = jwt.decode(access_token, verify=False)
+        return decoded_token
+    except jwt.ExpiredSignatureError:
+        # Handle token expiration
+        print("Access token has expired")
+        return None
+    except jwt.DecodeError:
+        # Handle decoding errors
+        print("Error decoding access token")
+        return None
 
 # Register a new user
 async def create_user(*, username: str = Form(...), email: str = Form(...), first_name: str = Form(...), 
@@ -144,7 +160,7 @@ def refresh_token(response: Response, request: Request, db: Session = Depends(ge
     return utils.token_return(token=access_token, role=user.role)
 
 @router.post("/linkedin-token")
-async def exchange_token(data: dict):
+async def exchange_token(*, db: Session = Depends(get_db), data: dict, response: Response):
     # Define the LinkedIn OAuth 2.0 token endpoint
     token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
     
@@ -158,14 +174,94 @@ async def exchange_token(data: dict):
 
     access_token_response = requests.post(token_url, data=access_token_params)
     access_token_data = access_token_response.json()
-    
+
     if access_token_response.status_code == 200:
-        access_token = access_token_response.json()["access_token"]
-        return {"access_token": access_token}
+        access_token = access_token_response.json()["id_token"]
+        token = access_token_response.json()["access_token"]
+        # try:
+        #     async with httpx.AsyncClient() as client:
+        #         url = "https://api.linkedin.com/v2/userinfo"
+        #         headers = {
+        #             "Authorization": f"Bearer {token}"
+        #         }
+        #         response = await client.get(url, headers=headers)
+        #         response.raise_for_status()  # Raise an exception if the response is not successful
+        #         linkedin_data = response.json()
+        #         print(linkedin_data)
+        #         return linkedin_data
+        # except httpx.RequestError as exc:
+        #     raise HTTPException(status_code=500, detail="LinkedIn API request failed")
+
+
+        for key, value in access_token_data.items():
+            print(f"{key}: {value}")
+        print(access_token_data)
+        decoded_token = decode_linkedin_access_token(access_token)
+        for key, value in decoded_token.items():
+            print(f"{key}: {value}")
+
+        user = db.query(models.User).filter(models.User.email == decoded_token.get("email", "").lower()).first()
+        print("a")
+        if not user:
+            print("b")
+            #set email
+            linked_in_email = decoded_token.get("email", "")
+
+            #unique username
+            used_numbers = set()
+            max_attempts = 100  # Limit the number of attempts
+            for _ in range(max_attempts):
+                random_number = str(random.randint(1000, 9999))
+                candidate_username = decoded_token.get("family_name", "") + random_number
+                if candidate_username not in used_numbers:
+                    user = db.query(models.User).filter(models.User.username == candidate_username.lower()).first()
+                    if not user:
+                        linked_in_username = candidate_username
+                        break
+                    used_numbers.add(candidate_username)
+
+
+            # Generate a random password
+            linked_in_password = ''.join(random.choice(string.ascii_uppercase) + random.choice("!@#$%^&*()_+=-{}[]|:;<>,.?/~") + ''.join(random.choice(string.ascii_lowercase + string.digits + "!@#$%^&*()_+=-{}[]|:;<>,.?/~") for _ in range(8)))
+
+            linked_in_verification = "approved" if decoded_token.get("email_verified", False) else "unapproved"
+
+            try:
+                payload = schemas.CreateUserSchema(
+                    username=linked_in_username,
+                    email=linked_in_email,
+                    first_name=decoded_token.get("given_name", ""),
+                    last_name=decoded_token.get("family_name", ""),
+                    role="alumni",
+                    passwordConfirm=linked_in_password,
+                    verified=linked_in_verification,
+                    password=utils.hash_password(linked_in_password),
+                    profile_picture =decoded_token.get("picture", ""),
+                )
+                del payload.passwordConfirm
+                new_user = models.User(**payload.model_dump())
+                db.add(new_user)
+                db.commit()
+                db.refresh(new_user)
+                user = new_user
+            except Exception as e:
+                db.rollback()
+                raise HTTPException(status_code=400, detail="Account creation failed")
+        
+        user = utils.authenticate_user(username=user.username, hashedPassword=user.password, db=db)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not Authenticate User.",
+            )
+        access_token = await login_user(username=user.username, hashed_pass=user.password,response=response, db=db)
+        return utils.token_return(token=access_token, role=user.role)
     else:
         error_detail = access_token_response.text
         print(error_detail)
         raise HTTPException(status_code=access_token_response.status_code, detail=access_token_response.text)
+
+
 
 # Logout user
 @router.get('/logout', status_code=status.HTTP_200_OK)
