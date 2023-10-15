@@ -192,20 +192,17 @@ async def exchange_token(*, db: Session = Depends(get_db), data: dict, response:
         # except httpx.RequestError as exc:
         #     raise HTTPException(status_code=500, detail="LinkedIn API request failed")
 
-
-        for key, value in access_token_data.items():
-            print(f"{key}: {value}")
-        print(access_token_data)
         decoded_token = decode_linkedin_access_token(access_token)
-        for key, value in decoded_token.items():
-            print(f"{key}: {value}")
 
-        user = db.query(models.User).filter(models.User.email == decoded_token.get("email", "").lower()).first()
-        print("a")
+        sub = decoded_token.get("sub", "")
+        print(sub)
+        user = db.query(models.User).filter(models.User.sub == sub).first()
+
         if not user:
-            print("b")
             #set email
             linked_in_email = decoded_token.get("email", "")
+            uniqueEmail = db.query(models.User).filter(models.User.email == linked_in_email).first()
+            if uniqueEmail: raise HTTPException(status_code=401, detail='Email is already in use, use the login system')
 
             #unique username
             used_numbers = set()
@@ -240,6 +237,7 @@ async def exchange_token(*, db: Session = Depends(get_db), data: dict, response:
                 )
                 del payload.passwordConfirm
                 new_user = models.User(**payload.model_dump())
+                new_user.sub = decoded_token.get("sub", "")
                 db.add(new_user)
                 db.commit()
                 db.refresh(new_user)
@@ -260,8 +258,6 @@ async def exchange_token(*, db: Session = Depends(get_db), data: dict, response:
         error_detail = access_token_response.text
         print(error_detail)
         raise HTTPException(status_code=access_token_response.status_code, detail=access_token_response.text)
-
-
 
 # Logout user
 @router.get('/logout', status_code=status.HTTP_200_OK)

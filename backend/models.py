@@ -16,7 +16,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     profile_picture = Column(String, server_default="#")
     verified = Column(String, nullable=False, server_default="unapproved") #unapproved, pending, approved, deleted
@@ -24,8 +24,8 @@ class User(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     role = Column(String, server_default='alumni', nullable=False) #set it to officer if an officer
+    sub = Column(String, unique=True, index=True)
     
-    # Alumni Info
     #Socio-Demographic Profile
     student_number = Column(String, unique=True, index=True)
     headline = Column(Text)
@@ -45,7 +45,6 @@ class User(Base):
     honors_and_awards = Column(ARRAY(String))
     civil_service_eligibility = Column(Boolean)
     achievements_story = Column(Text)
-
 
     #employed
     present_employment_status = Column(String, server_default="unemployed") #self-employed or employee or Unemployed or Not in the Labor Force
