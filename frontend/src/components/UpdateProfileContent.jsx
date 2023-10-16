@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   Avatar,
   Box,
@@ -49,8 +49,31 @@ import {
   Work,
   WorkOutline,
 } from "@mui/icons-material";
+import ProfileEditModal from "./ProfileEditModal";
 
 const UpdateProfileContent = ({ profile, section }) => {
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+
+  const handleModalOpen = (type) => {
+    setModalType(type);
+    setModalOpen(true);
+    console.log("nanii");
+  };
+
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setModalType(null);
+  };
+
+  const modalComponents = {
+    // Define other modals here as well if needed
+    profile: <ProfileEditModal open={isModalOpen} onClose={handleCloseModal} />,
+  };
+
+  const modalComponent = modalComponents[modalType];
+
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
     <Tooltip
       color="secondary"
@@ -191,6 +214,7 @@ const UpdateProfileContent = ({ profile, section }) => {
                 top: "-1rem",
                 right: "1rem",
               }}
+              onClick={() => handleModalOpen("profile")} // Trigger the profile edit modal
             >
               <Edit />
             </Fab>
@@ -240,6 +264,7 @@ const UpdateProfileContent = ({ profile, section }) => {
               )}
             </Box>
           </Box>
+          {modalComponent}
         </Grid>
       );
     case 2:
@@ -296,14 +321,14 @@ const UpdateProfileContent = ({ profile, section }) => {
                 <Box sx={{ display: "flex", gap: 1 }}>
                   {profile?.year_graduated && (
                     <Chiptip
-                      icon=<School color="primary" />
+                      icon={<School color="primary" />}
                       label={profile.year_graduated}
                       additional="batch "
                     />
                   )}
                   {profile?.civil_service_eligibility && (
                     <Chiptip
-                      icon=<LocationCity color="primary" />
+                      icon={<LocationCity color="primary" />}
                       label="civil service eligible"
                     />
                   )}
@@ -330,7 +355,7 @@ const UpdateProfileContent = ({ profile, section }) => {
                     profile.honors_and_awards.map((activity, index) => (
                       <Chiptip
                         key={index}
-                        icon=<EmojiEvents color="primary" />
+                        icon={<EmojiEvents color="primary" />}
                         label={activity}
                       />
                     ))}
@@ -357,7 +382,7 @@ const UpdateProfileContent = ({ profile, section }) => {
                     profile.post_grad_act.map((activity, index) => (
                       <Chiptip
                         key={index}
-                        icon=<CheckCircleSharp color="primary" />
+                        icon={<CheckCircleSharp color="primary" />}
                         label={activity}
                       />
                     ))}
