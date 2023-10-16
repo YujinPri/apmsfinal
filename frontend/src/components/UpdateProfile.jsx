@@ -76,13 +76,12 @@ function UpdateProfile() {
     };
 
     initiateProfiles();
-    
-    
+
     return () => {
       isMounted = false;
     };
   }, []);
-  
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -186,59 +185,78 @@ function UpdateProfile() {
           <UpdateProfileContent section={1} profile={profile} />
         )}
       </Box>
-      <Box
-        sx={{
-          backgroundColor: (theme) => theme.palette.common.main,
-          padding: 2,
-          borderRadius: 3,
-        }}
-      >
-        <Typography
-          variant="h1"
-          fontWeight={800}
-          // color="secondary"
+      {!educ ||
+      educ.achievements_story ||
+      educ.civil_service_eligibility ||
+      educ.degree ||
+      educ.field ||
+      educ.honors_and_awards ||
+      educ.post_grad_act ||
+      educ.student_number ||
+      educ.year_graduated ? (
+        <Box
           sx={{
-            padding: "10px",
-            borderBottom: "2px solid",
-            marginBottom: "10px",
-            color: "primary",
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: 2,
+            borderRadius: 3,
           }}
-          id="educbg"
         >
-          pupqc educational background
-        </Typography>
-        {!educ ? (
-          <UpdateProfileSkeleton section={2} />
-        ) : (
-          <UpdateProfileContent section={2} profile={educ} />
-        )}
-      </Box>
-      <Box
-        sx={{
-          backgroundColor: (theme) => theme.palette.common.main,
-          padding: 2,
-          borderRadius: 3,
-        }}
-      >
-        <Typography
-          variant="h1"
-          fontWeight={800}
+          <Typography
+            variant="h1"
+            fontWeight={800}
+            // color="secondary"
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              marginBottom: "10px",
+              color: "primary",
+            }}
+            id="educbg"
+          >
+            pupqc educational background
+          </Typography>
+          {!educ ? (
+            <UpdateProfileSkeleton section={2} />
+          ) : (
+            <UpdateProfileContent section={2} profile={educ} />
+          )}
+        </Box>
+      ) : null}
+
+      {!employment ||
+      !(!employment?.present_employment_status &&
+        employment?.employments.length == 0) ? (
+        <Box
           sx={{
-            padding: "10px",
-            borderBottom: "2px solid",
-            marginBottom: "10px",
-            color: "primary",
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: 2,
+            borderRadius: 3,
           }}
-          id="emphis"
         >
-          employment history
-        </Typography>
-        {!employment ? (
-          <UpdateProfileSkeleton section={3} />
-        ) : (
-          <UpdateProfileContent section={3} profile={employment} />
-        )}
-      </Box>
+          <Typography
+            variant="h1"
+            fontWeight={800}
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              marginBottom: "10px",
+              color: "primary",
+            }}
+            id="emphis"
+          >
+            employment history
+          </Typography>
+          {!employment ? (
+            <UpdateProfileSkeleton section={3} />
+          ) : (
+            <UpdateProfileContent section={3} profile={employment} />
+          )}
+        </Box>
+      ) : null}
+      {console.log(
+        !employment?.present_employment_status &&
+          employment?.employments.length == 0
+      )}
     </Box>
   );
 }

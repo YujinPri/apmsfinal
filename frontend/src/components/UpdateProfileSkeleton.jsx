@@ -7,7 +7,10 @@ import {
   Divider,
   Fab,
   Skeleton,
+  Card,
+  CardContent,
 } from "@mui/material";
+
 import {
   Edit,
   Email,
@@ -114,10 +117,12 @@ function UpdateProfileSkeleton({ section }) {
                 right: "1rem",
               }}
             >
-              <Edit />
+              <Skeleton variant="circular" width={40} height={40} />
             </Fab>
             <Divider sx={{ padding: 2.5 }}>
-              <Typography variant="subtitle2">personal details</Typography>
+              <Typography variant="subtitle2">
+                <Skeleton width={200} />
+              </Typography>
             </Divider>
             <Box
               sx={{
@@ -134,170 +139,269 @@ function UpdateProfileSkeleton({ section }) {
           </Box>
         </Grid>
       );
-      case 2:
-        return (
+    case 2:
+      return (
+        <Grid
+          container
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            marginY: "2rem",
+          }}
+        >
           <Grid
             container
+            spacing={1}
+            xs={12}
+            m="0, auto"
+            gap={2}
             sx={{
               display: "flex",
-              flexDirection: "row",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              position: "relative",
-              marginY: "2rem",
             }}
           >
-            <Box>
-              <Grid
-                container
-                spacing={1}
-                xs={12}
-                m="0, auto"
-                gap={2}
+            <Box
+              sx={{
+                padding: 1,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 1,
+                flexDirection: "column",
+              }}
+            >
+              <Typography
+                variant="h6"
+                gap={1}
                 sx={{
                   display: "flex",
-                  flexDirection: "column",
+                  alignItems: "center",
+                  padding: "0 1rem",
+                  fontWeight: "bold",
+                  height: "100%",
+                }}
+              >
+                <Skeleton width={200} />
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Skeleton variant="circular" width={40} height={40} />
+                <Skeleton variant="circular" width={40} height={40} />
+              </Box>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              <Divider sx={{ padding: 2.5 }}>
+                <Typography variant="subtitle2">
+                  <Skeleton width={200} />
+                </Typography>
+              </Divider>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
                   alignItems: "center",
                   justifyContent: "center",
+                  flexWrap: "wrap",
                 }}
               >
-                <Box
-                  sx={{
-                    padding: 1,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 1,
-                    flexDirection: "column",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    gap={1}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "0 1rem",
-                      fontWeight: "bold",
-                      height: "100%",
-                    }}
-                  >
-                    <Skeleton width={200} />
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="circular" width={40} height={40} />
-                  </Box>
-                </Box>
-                <Box sx={{ width: "100%" }}>
-                  <Divider sx={{ padding: 2.5 }}>
-                    <Typography variant="subtitle2">
-                      honors and awards
-                    </Typography>
-                  </Divider>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1.5,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="circular" width={40} height={40} />
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: "100%",
-                  }}
-                >
-                  <Divider sx={{ padding: 2.5 }}>
-                    <Typography variant="subtitle2">
-                      post graduation activities
-                    </Typography>
-                  </Divider>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1.5,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="circular" width={40} height={40} />
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Divider sx={{ padding: 2.5, width: "100%" }}>
-                    <Typography variant="subtitle2">
-                      pup achievements story
-                    </Typography>
-                  </Divider>
-                  <Box sx={{ position: "relative", margin: " auto 0" }}>
-                    <Typography
-                      variant="h1"
-                      sx={{
-                        display: "block",
-                        position: "absolute",
-                        top: -25,
-                        left: -25,
-                      }}
-                    >
-                      &ldquo;
-                    </Typography>
-                    <Skeleton
-                      variant="rectangular"
-                      height={150}
-                      width="100%"
-                      sx={{
-                        height: "100%",
-                        padding: "1.5rem",
-                        maxWidth: "40ch",
-                        whiteSpace: "wrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        position: "relative",
-                      }}
-                    />
-                    <Typography
-                      variant="h1"
-                      sx={{
-                        display: "block",
-                        position: "absolute",
-                        bottom: -25,
-                        right: -25,
-                      }}
-                    >
-                      &rdquo;
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-
-              <Fab
-                size="small"
-                color="primary"
+                {[1, 2].map((index) => (
+                  <Skeleton
+                    key={index}
+                    variant="circular"
+                    width={40}
+                    height={40}
+                  />
+                ))}
+              </Box>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              <Divider sx={{ padding: 2.5 }}>
+                <Typography variant="subtitle2">
+                  <Skeleton width={200} />
+                </Typography>
+              </Divider>
+              <Box
                 sx={{
-                  position: "absolute",
-                  top: "-1rem",
-                  right: "1rem",
+                  display: "flex",
+                  gap: 1.5,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
                 }}
               >
-                <Edit />
-              </Fab>
+                {[1, 2].map((index) => (
+                  <Skeleton
+                    key={index}
+                    variant="circular"
+                    width={40}
+                    height={40}
+                  />
+                ))}
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Divider sx={{ padding: 2.5, width: "100%" }}>
+                <Typography variant="subtitle2">
+                  <Skeleton width={200} />
+                </Typography>
+              </Divider>
+              <Box sx={{ position: "relative", margin: " auto 0" }}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    display: "block",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                >
+                  &ldquo;
+                </Typography>
+                <Skeleton
+                  variant="rectangular"
+                  height={150}
+                  width="100%"
+                  sx={{
+                    height: "100%",
+                    padding: "1.5rem",
+                    maxWidth: "50ch",
+                    whiteSpace: "wrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    position: "relative",
+                  }}
+                />
+                <Typography
+                  variant="h1"
+                  sx={{
+                    display: "block",
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                  }}
+                >
+                  &rdquo;
+                </Typography>
+              </Box>
             </Box>
           </Grid>
-        );
+
+          <Fab
+            size="small"
+            color="primary"
+            sx={{
+              position: "absolute",
+              top: "-1rem",
+              right: "1rem",
+            }}
+          >
+            <Edit />
+          </Fab>
+        </Grid>
+      );
+    case 3:
+      return (
+        <Grid
+          container
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            justifyContent: "center",
+            position: "relative",
+            marginY: "2rem",
+          }}
+        >
+          <Box sx={{ alignSelf: "baseline" }}>
+            <Skeleton variant="rect" width={200} height={40} />
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "stretch",
+              gap: 2,
+              flexDirection: "column",
+              width: "80%",
+            }}
+          >
+            {[1, 2, 3].map((index) => (
+              <Card sx={{ width: "100%" }} key={index}>
+                <CardContent
+                  sx={{
+                    position: "relative",
+                  }}
+                >
+                  <Grid
+                    container
+                    alignItems="center"
+                    sx={{ display: "flex", flexWrap: "wrap" }}
+                  >
+                    <Grid
+                      item
+                      sx={{
+                        padding: "0 1rem",
+                        fontWeight: "bold",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Skeleton variant="text" width={200} />
+                    </Grid>
+                    <Grid item sx={{ whiteSpace: "nowrap" }}>
+                      <Skeleton variant="text" width={100} />
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    container
+                    alignItems="center"
+                    sx={{ display: "flex", flexWrap: "wrap" }}
+                  >
+                    <Grid
+                      item
+                      sx={{
+                        padding: "0 1.5rem",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Skeleton variant="text" width={150} />
+                    </Grid>
+                  </Grid>
+                  <Skeleton variant="text" width={250} />
+                  <Box sx={{ display: "flex", gap: 1, paddingY: 2 }}>
+                    <Skeleton variant="rect" width={50} height={20} />
+                    <Skeleton variant="rect" width={50} height={20} />
+                  </Box>
+                  <Skeleton variant="text" width={150} />
+                  <Skeleton variant="text" width={150} />
+                  <Skeleton variant="text" width={150} />
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+
+          <Fab
+            size="small"
+            color="primary"
+            sx={{
+              position: "absolute",
+              top: "-1rem",
+              right: "1rem",
+            }}
+          >
+            <Skeleton variant="circular" width={40} height={40} />
+          </Fab>
+        </Grid>
+      );
     default:
       return <>loading...</>;
   }
