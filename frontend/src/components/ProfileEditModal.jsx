@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -28,7 +28,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import axios from "../api/axios";
 import { Label } from "@mui/icons-material";
 
-const ProfileEditModal = ({ open, onClose }) => {
+const ProfileEditModal = ({ open, onClose, profilePrev }) => {
   const [profile, setProfile] = useState({
     student_number: "",
     first_name: "",
@@ -45,6 +45,7 @@ const ProfileEditModal = ({ open, onClose }) => {
     civil_status: "",
   });
 
+  const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -78,31 +79,32 @@ const ProfileEditModal = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const axiosConfig = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    };
-
     const payload = new FormData();
-    payload.append("student_number", profile.student_number);
+    payload.append("username", profile.username);
+    payload.append("email", profile.email);
     payload.append("first_name", profile.first_name);
     payload.append("last_name", profile.last_name);
-    payload.append("email", profile.email);
-    payload.append("gender", profile.gender);
     payload.append("birthdate", profile.birthdate);
+    payload.append("gender", profile.gender);
     payload.append("headline", profile.headline);
     payload.append("city", profile.city);
     payload.append("region", profile.region);
     payload.append("address", profile.address);
     payload.append("mobile_number", profile.mobile_number);
     payload.append("civil_status", profile.civil_status);
+    payload.append("student_number", profile.student_number);
     payload.append("profile_picture", profile.profile_picture);
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        "/api/profile/edit",
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+      // Make the PUT request to your FastAPI endpoint
+      const response = await axiosPrivate.put(
+        "/profiles/demographic_profiles/",
         payload,
         axiosConfig
       );

@@ -1,12 +1,16 @@
+from datetime import date, datetime
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import Query, APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
 from backend.database import get_db
 from sqlalchemy.orm import Session
 from backend.oauth2 import get_current_user
 from backend import models
-from typing import Annotated
+from typing import Annotated, Optional
 from starlette import status
 from backend.schemas import UserResponse, AllDemographicProfilesResponse, AllEducationProfilesResponse, EducationProfileModify, EmploymentCreate, DemographicProfileModify, DemographicProfile, EducationProfile, EmploymentProfilesResponseMe
+from backend import schemas, models, utils
+import cloudinary.uploader
+
 
 router = APIRouter()
 
@@ -271,43 +275,87 @@ async def get_employment_profiles(
     }
 
 
+
+
+
 @router.put("/demographic_profiles/")
 async def put_demographic_profiles(
-    *,
-    db: Session = Depends(get_db),
-    profile: DemographicProfileModify,  # Use DemographicProfilePost as request body
-    user: UserResponse = Depends(get_current_user)
-):
+        username: Optional[str] = Form(None), 
+        email: Optional[str] = Form(None), 
+        first_name: Optional[str] = Form(None), 
+        last_name: Optional[str] = Form(None),  
+        birthdate: Optional[date] = Form(None), 
+        gender: Optional[str] = Form(None), 
+        headline: Optional[str] = Form(None), 
+        city: Optional[str] = Form(None), 
+        region: Optional[str] = Form(None), 
+        address: Optional[str] = Form(None),
+        mobile_number: Optional[str] = Form(None),
+        civil_status: Optional[str] = Form(None),
+        student_number: Optional[str] = Form(None),
+        profile_picture: Optional[UploadFile] = File(None), 
+        user: UserResponse = Depends(get_current_user), 
+        db: Session = Depends(get_db)
+    ):              
 
+    if email:
+        # Check if email already exists
+        check = db.query(models.User).filter(models.User.email == email.lower()).first()
+        if check: raise HTTPException(status_code=400, detail="Email is already in use")
 
-  # Check if email already exists
-  check = db.query(models.User).filter(models.User.email == profile.email.lower()).first()
-  if check: raise HTTPException(status_code=400, detail="Email is already in use")
+    if student_number:
+        # Check if student number already exists
+        check = db.query(models.User).filter(models.User.student_number == student_number).first()
+        if check: raise HTTPException(status_code=400, detail="Student Number is already in use")
 
-  # Check if user already exists
-  check = db.query(models.User).filter(models.User.student_number == profile.student_number).first()
-  if check: raise HTTPException(status_code=400, detail="Student Number is already in use")
+    if username:
+        # Check if username already exists
+        check_username = db.query(models.User).filter(models.User.username == username.lower()).first()
+        if check_username:
+            raise HTTPException(status_code=400, detail="Username is already in use")
 
-  try:
-    # Query the database for users with pagination and filter by role
-    # Check if a profile already exists for the user, you may need to modify this based on your database schema
-    saved_profile = db.query(models.User).filter_by(id=user.id).first()
+    try:
+        # Get the instance of that user 
+        saved_profile = db.query(models.User).filter(models.User.id == user.id).first()
+        
 
-    if saved_profile is None:
-        raise HTTPException(status_code=404, detail="Account doesn't exist")
+        if saved_profile is None:
+            raise HTTPException(status_code=404, detail="Account doesn't exist")
+        
+        profile = {
+            'username': username,
+            'email': email, 
+            'first_name': first_name, 
+            'last_name': last_name, 
+            'birthdate': birthdate, 
+            'gender': gender, 
+            'headline': headline, 
+            'city': city, 
+            'region': region, 
+            'address': address, 
+            'mobile_number': mobile_number,
+            'civil_status': civil_status, 
+            'student_number': student_number, 
+            'profile_picture': profile_picture   
+        }
 
-    for key, value in profile.model_dump().items():
-        if value != "":
-            setattr(saved_profile, key, value)
+        if profile_picture:
+            contents = await profile_picture.read()
+            filename = profile_picture.filename
+            folder = "Profiles"
+            result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{saved_profile.id}'])
+            profile['profile_picture'] = result.get("url")
+            
+        # Iterate through the profile dictionary and populate saved_profile
+        for key, value in profile.items():
+            if value is not None and value != "":
+                setattr(saved_profile, key, value)
 
-    db.commit()
-    return {"message": "Profile updated successfully"}
-
-  except Exception:
-    db.rollback()
-    raise HTTPException(status_code=500, detail="Internal Server Error")
-  finally:
-    db.close()
+        db.commit()
+        return {"message": "Profile updated successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Account creation failed")
 
 
 @router.put("/educational_profiles/")
