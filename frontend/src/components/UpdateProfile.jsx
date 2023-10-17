@@ -12,55 +12,41 @@ import UpdateProfileSkeleton from "./UpdateProfileSkeleton";
 
 function UpdateProfile() {
   const [value, setValue] = React.useState(0);
-  const axiosPrivate = useAxiosPrivate();
-  const [profile, setProfile] = useState();
-  const [educ, setEduc] = useState();
-  const [employment, setEmployment] = useState();
+  const axiosPrivate = useAxiosPrivate({
+    signal: new AbortController().signal,
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
   const { setAuth } = useAuth();
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    firstname: "",
-    lastname: "",
-    profilepicture: "",
-    password: "",
-    confirmationPassword: "",
-  });
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
+  const [profile, setProfile] = useState(null);
+  const [educ, setEduc] = useState(null);
+  const [employment, setEmployment] = useState(null);
 
-    const initiateProfiles = async () => {
-      try {
-        const profile_response = await axiosPrivate.get(
-          "/profiles/demographic_profile/me",
-          {
-            signal: controller.signal,
-          }
-        );
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [educLoading, setEducLoading] = useState(false);
+  const [employmentLoading, setEmploymentLoading] = useState(false);
 
-        const educ_response = await axiosPrivate.get(
-          "/profiles/educational_profile/me",
-          {
-            signal: controller.signal,
-          }
-        );
-
-        const employment_response = await axiosPrivate.get(
-          "/profiles/employment_profiles/me?page=1&per_page=50",
-          {
-            signal: controller.signal,
-          }
-        );
-
-        isMounted &&
-          (setProfile(profile_response.data),
-          setEduc(educ_response.data),
-          setEmployment(employment_response.data));
-      } catch (err) {
+  const getProfileData = async (signal) => {
+    try {
+      const response = await axiosPrivate.get(
+        "/profiles/demographic_profile/me",
+        { signal }
+      );
+      return response.data;
+    } catch (err) {
+      if (err.response?.data?.detail === "Token has expired") {
+        setAuth(); // clears out all the token logs you out in short
+        navigate("/login", {
+          state: {
+            from: location,
+            message:
+              "You have been logged out automatically for security purposes. Please login again.",
+          },
+          replace: true,
+        });
+      } else {
         console.error(err);
         if (err.profile_response.data.detail == "Token has expired")
           setAuth({}); //clears out all the token logs you out in short
@@ -73,12 +59,113 @@ function UpdateProfile() {
           replace: true,
         });
       }
+    }
+  };
+
+  const getEducData = async (signal) => {
+    try {
+      const response = await axiosPrivate.get(
+        "/profiles/educational_profile/me",
+        { signal }
+      );
+      return response.data;
+    } catch (err) {
+      console.error(err);
+      if (err.profile_response.data.detail == "Token has expired") setAuth({}); //clears out all the token logs you out in short
+      navigate("/login", {
+        state: {
+          from: location,
+          message:
+            "you have been logout automatically for security purposes, please login again",
+        },
+        replace: true,
+      });
+    }
+  };
+
+  const getEmploymentData = async (signal) => {
+    try {
+      const response = await axiosPrivate.get(
+        "/profiles/employment_profiles/me?page=1&per_page=50",
+        { signal }
+      );
+      return response.data;
+    } catch (err) {
+      console.error(err);
+      if (err.profile_response.data.detail == "Token has expired") setAuth({}); //clears out all the token logs you out in short
+      navigate("/login", {
+        state: {
+          from: location,
+          message:
+            "you have been logout automatically for security purposes, please login again",
+        },
+        replace: true,
+      });
+    }
+  };
+
+  const reloadProfileData = async () => {
+    const controller = new AbortController();
+    setProfileLoading(true);
+    const profileData = await getProfileData(controller.signal);
+
+    if (profileData) {
+      setProfile(profileData);
+    }
+    setProfileLoading(false);
+  };
+
+  const reloadEducData = async () => {
+    const controller = new AbortController();
+    setProfileLoading(true);
+    const educData = await getEducData(controller.signal);
+
+    if (educData) {
+      setEduc(educData);
+    }
+    setProfileLoading(false);
+  };
+
+  const reloadEmploymentData = async () => {
+    const controller = new AbortController();
+    setProfileLoading(true);
+    const employmentData = await getEmploymentData(controller.signal);
+
+    if (employmentData) {
+      setEmployment(employmentData);
+    }
+    setProfileLoading(false);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const initiateProfiles = async () => {
+      const [profileData, educData, employmentData] = await Promise.allSettled([
+        getProfileData(controller.signal),
+        getEducData(controller.signal),
+        getEmploymentData(controller.signal),
+      ]);
+
+      if (isMounted) {
+        if (profileData.status === "fulfilled") {
+          setProfile(profileData.value);
+        }
+        if (educData.status === "fulfilled") {
+          setEduc(educData.value);
+        }
+        if (employmentData.status === "fulfilled") {
+          setEmployment(employmentData.value);
+        }
+      }
     };
 
     initiateProfiles();
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, []);
 
@@ -179,10 +266,14 @@ function UpdateProfile() {
         >
           profile
         </Typography>
-        {!profile ? (
+        {profileLoading ? (
           <UpdateProfileSkeleton section={1} />
         ) : (
-          <UpdateProfileContent section={1} profile={profile} />
+          <UpdateProfileContent
+            section={1}
+            profile={profile}
+            updateContent={reloadProfileData}
+          />
         )}
       </Box>
       {!educ ||
@@ -215,17 +306,19 @@ function UpdateProfile() {
           >
             pupqc educational background
           </Typography>
-          {!educ ? (
+          {educLoading ? (
             <UpdateProfileSkeleton section={2} />
           ) : (
-            <UpdateProfileContent section={2} profile={educ} />
+            <UpdateProfileContent section={2} profile={educ} updateContent />
           )}
         </Box>
       ) : null}
 
       {!employment ||
-      !(!employment?.present_employment_status &&
-        employment?.employments.length == 0) ? (
+      !(
+        !employment?.present_employment_status &&
+        employment?.employments?.length == 0
+      ) ? (
         <Box
           sx={{
             backgroundColor: (theme) => theme.palette.common.main,
@@ -246,7 +339,7 @@ function UpdateProfile() {
           >
             employment history
           </Typography>
-          {!employment ? (
+          {employmentLoading ? (
             <UpdateProfileSkeleton section={3} />
           ) : (
             <UpdateProfileContent section={3} profile={employment} />
@@ -255,7 +348,7 @@ function UpdateProfile() {
       ) : null}
       {console.log(
         !employment?.present_employment_status &&
-          employment?.employments.length == 0
+          employment?.employments?.length == 0
       )}
     </Box>
   );

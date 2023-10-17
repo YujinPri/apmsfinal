@@ -1,4 +1,6 @@
 import { useState } from "react";
+import useAuth from "../hooks/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -17,33 +19,39 @@ import {
   Alert,
   CardActionArea,
   Snackbar,
+  LinearProgress,
 } from "@mui/material";
 
+import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
-import axios from "../api/axios";
-import { Label } from "@mui/icons-material";
-
-const ProfileEditModal = ({ open, onClose, profilePrev }) => {
+const ProfileEditModal = ({ open, onClose, profilePrev, setUpdate }) => {
   const [profile, setProfile] = useState({
-    student_number: "",
-    first_name: "",
-    last_name: "",
-    email: "",
-    gender: "",
-    birthdate: null,
+    username: profilePrev?.username || "",
+    student_number: profilePrev?.student_number || "",
+    first_name: profilePrev?.first_name || "",
+    last_name: profilePrev?.last_name || "",
+    email: profilePrev?.email || "",
+    gender: profilePrev?.gender || "",
+    birthdate: profilePrev?.birthdate ? dayjs(profilePrev.birthdate) : null,
     profile_picture: null,
-    headline: "",
-    city: "",
-    region: "",
-    address: "",
-    mobile_number: "",
-    civil_status: "",
+    profile_picture_url:
+      profilePrev?.profile_picture || "../default-profile-image.jpg",
+    profile_picture_name: profilePrev?.username || "Upload profile picture",
+    headline: profilePrev?.headline || "",
+    city: profilePrev?.city || "",
+    region: profilePrev?.region || "",
+    address: profilePrev?.address || "",
+    mobile_number: profilePrev?.mobile_number || "",
+    civil_status: profilePrev?.civil_status || "",
   });
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setAuth } = useAuth();
 
   const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
@@ -73,27 +81,68 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
         ...prevProfile,
         profile_picture: file,
       }));
+      profile.profile_picture_url = URL.createObjectURL(
+        profile.profile_picture
+      );
+      profile.profile_picture_name = profile.profile_picture.name;
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const username =
+      profile?.username == profilePrev?.username ? "" : profile?.username;
+    const email = profile?.email == profilePrev?.email ? "" : profile?.email;
+    const first_name =
+      profile?.first_name == profilePrev?.first_name ? "" : profile?.first_name;
+    const last_name =
+      profile?.last_name == profilePrev?.last_name ? "" : profile?.last_name;
+    const birthdate =
+      profile?.birthdate == dayjs(profilePrev.birthdate)
+        ? null
+        : profile?.birthdate.format("YYYY-MM-DD");
+    const gender =
+      profile?.gender == profilePrev?.gender ? "" : profile?.gender;
+    const headline =
+      profile?.headline == profilePrev?.headline ? "" : profile?.headline;
+    const city = profile?.city == profilePrev?.city ? "" : profile?.city;
+    const region =
+      profile?.region == profilePrev?.region ? "" : profile?.region;
+    const address =
+      profile?.address == profilePrev?.address ? "" : profile?.address;
+    const mobile_number =
+      profile?.mobile_number == profilePrev?.mobile_number
+        ? ""
+        : profile?.mobile_number;
+    const civil_status =
+      profile?.civil_status == profilePrev?.civil_status
+        ? ""
+        : profile?.civil_status;
+    const student_number =
+      profile?.student_number == profilePrev?.student_number
+        ? ""
+        : profile?.student_number;
+
     const payload = new FormData();
-    payload.append("username", profile.username);
-    payload.append("email", profile.email);
-    payload.append("first_name", profile.first_name);
-    payload.append("last_name", profile.last_name);
-    payload.append("birthdate", profile.birthdate);
-    payload.append("gender", profile.gender);
-    payload.append("headline", profile.headline);
-    payload.append("city", profile.city);
-    payload.append("region", profile.region);
-    payload.append("address", profile.address);
-    payload.append("mobile_number", profile.mobile_number);
-    payload.append("civil_status", profile.civil_status);
-    payload.append("student_number", profile.student_number);
-    payload.append("profile_picture", profile.profile_picture);
+    payload.append("username", username);
+    payload.append("email", email);
+    payload.append("first_name", first_name);
+    payload.append("last_name", last_name);
+    payload.append("birthdate", birthdate);
+    payload.append("gender", gender);
+    payload.append("headline", headline);
+    payload.append("city", city);
+    payload.append("region", region);
+    payload.append("address", address);
+    payload.append("mobile_number", mobile_number);
+    payload.append("civil_status", civil_status);
+    payload.append("student_number", student_number);
+
+    // For the file, it's a bit different
+    if (profile?.profile_picture) {
+      payload.append("profile_picture", profile.profile_picture);
+    }
 
     try {
       setLoading(true);
@@ -117,6 +166,19 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
       } else {
         setMessage("Profile updated successfully");
         setSeverity("success");
+        setUpdate(true);
+        console.log(profile.username !== profilePrev.username);
+        if (profile.username !== profilePrev.username) {
+          setAuth(); // clears out all the token logs you out in short
+          navigate("/login", {
+            state: {
+              from: location,
+              message:
+                "please log in again but with your updated username this time.",
+            },
+            replace: true,
+          });
+        }
         onClose();
       }
     } catch (error) {
@@ -131,7 +193,6 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
         setSeverity("error");
       }
     }
-
     setOpenSnackbar(true);
     setLoading(false);
   };
@@ -168,31 +229,27 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
                   style={{ display: "none" }}
                   onChange={handleFileChange}
                 />
-                {profile.profile_picture ? (
-                  <>
-                    <Avatar
-                      alt="Profile"
-                      src={URL.createObjectURL(profile.profile_picture)}
-                      sx={{ width: "100px", height: "100px" }}
-                    />
-                    <Typography variant="body2">
-                      {profile.profile_picture.name}
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <Avatar
-                      alt="Profile"
-                      src="../default-profile-image.jpg"
-                      sx={{ width: "100px", height: "100px" }}
-                    />
-                    <Typography variant="body2">
-                      Upload profile picture
-                    </Typography>
-                  </>
-                )}
+
+                <Avatar
+                  alt="Profile"
+                  src={profile?.profile_picture_url}
+                  sx={{ width: "100px", height: "100px" }}
+                />
+                <Typography variant="body2">
+                  {profile.profile_picture_name}
+                </Typography>
               </Box>
             </CardActionArea>
+          </Grid>
+          <Grid item xs={12}>
+            {/* Username */}
+            <TextField
+              name="username"
+              label="Username"
+              value={profile.username}
+              onChange={handleChange}
+              sx={{ width: "100%" }}
+            />
           </Grid>
           <Grid item xs={6}>
             {/* First Name */}
@@ -216,10 +273,8 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
           </Grid>
           <Grid item xs={12}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DatePicker"]}>
-                <DemoItem
-                // label={<Label componentName="DatePicker" valueType="date" />}
-                >
+              <DemoContainer components={["DatePicker"]} sx={{ width: "100%" }}>
+                <DemoItem>
                   <DatePicker
                     name="birthdate"
                     label="Birthdate"
@@ -334,6 +389,11 @@ const ProfileEditModal = ({ open, onClose, profilePrev }) => {
           {message}
         </Alert>
       </Snackbar>
+      {loading ? (
+        <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
+          <LinearProgress />
+        </Box>
+      ) : null}
     </Dialog>
   );
 };

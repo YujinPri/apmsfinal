@@ -1,4 +1,6 @@
-import React, {useState} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Box,
@@ -51,25 +53,38 @@ import {
 } from "@mui/icons-material";
 import ProfileEditModal from "./ProfileEditModal";
 
-const UpdateProfileContent = ({ profile, section }) => {
+  const UpdateProfileContent = ({ profile, section, updateContent }) => {
+ 
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [updated, setUpdated] = useState(false);
 
   const handleModalOpen = (type) => {
     setModalType(type);
     setModalOpen(true);
-    console.log("nanii");
   };
 
-  // Function to close the modal
-  const handleCloseModal = () => {
+
+
+  const handleCloseModal = async () => {
     setModalOpen(false);
     setModalType(null);
+    if (updated) {
+      await updateContent();
+      setUpdated(false);
+    }
   };
 
   const modalComponents = {
     // Define other modals here as well if needed
-    profile: <ProfileEditModal open={isModalOpen} onClose={handleCloseModal} />,
+    profile: (
+      <ProfileEditModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        profilePrev={profile}
+        setUpdate={setUpdated}
+      />
+    ),
   };
 
   const modalComponent = modalComponents[modalType];
@@ -460,7 +475,7 @@ const UpdateProfileContent = ({ profile, section }) => {
         </>
       );
     case 3: {
-      profile.employments.sort((a, b) => {
+      profile?.employments?.sort((a, b) => {
         const dateA = new Date(a.date_end);
         const dateB = new Date(b.date_end);
 
