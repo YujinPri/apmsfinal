@@ -25,6 +25,15 @@ PostGradAct # In the year following graduation, my primary activity or status wa
   Career Transition: Represents changing career paths or industries.
   Family or Personal Responsibilities: Includes responsibilities related to family, marriage, or personal matters.
 
+  Employment: <WorkIcon />
+  Education: <SchoolIcon />
+  Internship or Training: <BusinessCenterIcon />
+  Freelancing or Self-Employment: <BusinessIcon />
+  Travel or Personal Time: <FlightIcon />
+  Volunteering or Social Service: <PeopleIcon />
+  Career Transition: <SwapHorizIcon />
+  Family or Personal Responsibilities: <FamilyRestroomIcon />
+
 AcademicProgram
  "Bachelor of Business Technology and Livelihood Education major in Home Economics (BBTLEDHE)"
  "Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)"
@@ -150,3 +159,24 @@ Board of Guidance and Counseling	                        Guidance Counselor
 Board of Psychology	                                      Psychologist
 Board of Psychology	                                      Psychometrician
 Board of Social Workers	                                  Social Worker
+
+Degree / Course
+Bachelor of Business Technology and Livelihood Education major in Home Economics (BBTLEDHE)
+Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)
+Bachelor of Science in Business Administration major in Marketing Management (BSBA-MM)
+Bachelor of Science in Entrepreneurship (BSENTREP)
+Bachelor of Science in Information Technology (BSIT)
+Bachelor of Public Administration major in Public Financial Management (BPAPFM)
+Diploma in Office Management Technology Medical Office Management (DOMTMOM)
+
+Honors and Awards
+Dean's List Award: <LibraryBooksIcon />
+Academic Excellence Award: <SchoolIcon />
+Leadership and Service Award: <EmojiPeopleIcon />
+Research Achievement Award: <CreateIcon />
+Best Thesis/Dissertation Award: <LocalLibraryIcon />
+Outstanding Alumnus/Alumna Award: <StarIcon />
+Sports Achievement Award: <SportsSoccerIcon />
+Community Service Recognition: <PublicIcon />
+Innovation and Entrepreneurship Award: <LightbulbIcon />
+Special Recognition for Contributions to a Field: <TrophyIcon />

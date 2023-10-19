@@ -5,7 +5,7 @@ from backend.database import get_db
 from sqlalchemy.orm import Session
 from backend.oauth2 import get_current_user
 from backend import models
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 from starlette import status
 from backend.schemas import UserResponse, AllDemographicProfilesResponse, AllEducationProfilesResponse, EducationProfileModify, EmploymentCreate, DemographicProfileModify, DemographicProfile, EducationProfile, EmploymentProfilesResponseMe
 from backend import schemas, models, utils
@@ -274,10 +274,6 @@ async def get_employment_profiles(
         "per_page": per_page,
     }
 
-
-
-
-
 @router.put("/demographic_profiles/")
 async def put_demographic_profiles(
         username: Optional[str] = Form(None), 
@@ -357,12 +353,17 @@ async def put_demographic_profiles(
         db.rollback()
         raise HTTPException(status_code=400, detail="Account creation failed")
 
-
 @router.put("/educational_profiles/")
 async def put_educational_profiles(
     *,
+    year_graduated: Optional[int] = Form(None),
+    degree: Optional[str] = Form(None),
+    field: Optional[str] = Form(None),
+    achievements_story: Optional[str] = Form(None),
+    post_grad_act: Optional[List[str]] = Form(None),
+    honors_and_awards: Optional[List[str]] = Form(None),
+    civil_service_eligibility: Optional[bool] = Form(None),
     db: Session = Depends(get_db),
-    profile: EducationProfileModify ,  # Use DemographicProfilePost as request body
     user: UserResponse = Depends(get_current_user)
 ):
 
@@ -374,12 +375,23 @@ async def put_educational_profiles(
     if saved_profile is None:
         raise HTTPException(status_code=404, detail="Account doesn't exist")
 
-    for key, value in profile.model_dump().items():
-        if value != "":
+    profile = {
+        'year_graduated': year_graduated,
+        'degree': degree,
+        'field': field,
+        'achievements_story': achievements_story,
+        'post_grad_act': post_grad_act,
+        'honors_and_awards': honors_and_awards,
+        'civil_service_eligibility': civil_service_eligibility
+    }
+
+    # Iterate through the profile dictionary and populate saved_profile
+    for key, value in profile.items():
+        if value is not None and value != "":
             setattr(saved_profile, key, value)
 
     db.commit()
-    return {"message": "Profile updated successfully"}
+    return {"message": "Educational Profile updated successfully"}
 
   except Exception:
     db.rollback()
@@ -387,6 +399,57 @@ async def put_educational_profiles(
   finally:
     db.close()
 
+@router.put("/employment_profiles/{employment_id}")
+async def put_employment(
+    employment_id: UUID,
+    company_name: Optional[str] = Form(None),
+    job_title: Optional[str] = Form(None),
+    date_hired: Optional[date] = Form(None),
+    date_end: Optional[date] = Form(None),  # You can keep it as a date, or use Optional[date] if it can be null
+    classification: Optional[str] = Form(None),
+    aligned_with_academic_program: Optional[bool] = Form(None),
+    gross_monthly_income: Optional[str] = Form(None),
+    employment_contract: Optional[str] = Form(None),
+    job_level_position: Optional[str] = Form(None),
+    type_of_employer: Optional[str] = Form(None),
+    location_of_employment: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        # Query the employment to be updated
+        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
+        
+        # Check if the employment exists and belongs to the user
+        if not employment:
+            raise HTTPException(status_code=404, detail="Employment not found")
+        
+        profile = {
+            'company_name': company_name,
+            'job_title': job_title,
+            'date_hired': date_hired,
+            'date_end': date_end,
+            'classification': classification,
+            'aligned_with_academic_program': aligned_with_academic_program,
+            'gross_monthly_income': gross_monthly_income,
+            'employment_contract': employment_contract,
+            'job_level_position': job_level_position,
+            'type_of_employer': type_of_employer,
+            'location_of_employment': location_of_employment
+        }
+
+         # Iterate through the profile dictionary and populate saved_profile
+        for key, value in profile.items():
+            if value is not None and value != "":
+                setattr(employment, key, value)
+        
+        db.commit()
+        await afterEmploymentPostRoutine(user.id, db)
+        return {"message": "Employment Profile updated successfully"}
+    except Exception as e:
+        db.rollback()
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=400, detail="Updating Employment Details failed")
 
 @router.post("/employment_profiles/")
 async def post_employment(
@@ -406,34 +469,6 @@ async def post_employment(
         db.rollback() 
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Employment Details failed")
-
-@router.put("/employment_profiles/{employment_id}")
-async def put_employment(
-    employment_id: UUID,
-    employment_data: EmploymentCreate,  # Use a Pydantic model for request body
-    db: Session = Depends(get_db),
-    user: UserResponse = Depends(get_current_user)
-):
-    try:
-        # Query the employment to be updated
-        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
-        
-        # Check if the employment exists and belongs to the user
-        if not employment:
-            raise HTTPException(status_code=404, detail="Employment not found")
-        
-        # Update the employment data based on the request body
-        for key, value in employment_data.model_dump(exclude_unset=True).items():
-            setattr(employment, key, value)
-        
-        db.commit()
-        await afterEmploymentPostRoutine(user.id, db)
-        return {"message": "Profile updated successfully"}
-    except Exception as e:
-        db.rollback()
-        print("Error:", e)  # Add this line for debugging
-        raise HTTPException(status_code=400, detail="Updating Employment Details failed")
-
 
 @router.get("/employment_profiles/{employment_id}")
 async def get_employment(

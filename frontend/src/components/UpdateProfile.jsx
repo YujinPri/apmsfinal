@@ -24,9 +24,9 @@ function UpdateProfile() {
   const [educ, setEduc] = useState(null);
   const [employment, setEmployment] = useState(null);
 
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [educLoading, setEducLoading] = useState(false);
-  const [employmentLoading, setEmploymentLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [educLoading, setEducLoading] = useState(true);
+  const [employmentLoading, setEmploymentLoading] = useState(true);
 
   const getProfileData = async (signal) => {
     try {
@@ -106,13 +106,16 @@ function UpdateProfile() {
 
   const reloadProfileData = async () => {
     const controller = new AbortController();
+    console.log(profileLoading + "nani");
     setProfileLoading(true);
+    console.log(profileLoading + "nani");
     const profileData = await getProfileData(controller.signal);
 
     if (profileData) {
       setProfile(profileData);
     }
     setProfileLoading(false);
+    console.log(profileLoading + "nani");
   };
 
   const reloadEducData = async () => {
@@ -151,12 +154,15 @@ function UpdateProfile() {
       if (isMounted) {
         if (profileData.status === "fulfilled") {
           setProfile(profileData.value);
+          setProfileLoading(false)
         }
         if (educData.status === "fulfilled") {
           setEduc(educData.value);
+          setEducLoading(false)
         }
         if (employmentData.status === "fulfilled") {
           setEmployment(employmentData.value);
+          setEmploymentLoading(false)
         }
       }
     };

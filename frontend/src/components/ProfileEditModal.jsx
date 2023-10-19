@@ -20,6 +20,7 @@ import {
   CardActionArea,
   Snackbar,
   LinearProgress,
+  Tooltip,
 } from "@mui/material";
 
 import dayjs from "dayjs";
@@ -72,6 +73,18 @@ const ProfileEditModal = ({ open, onClose, profilePrev, setUpdate }) => {
       ...prevProfile,
       birthdate: date,
     }));
+  };
+
+  const handleMobileNumberChange = (event) => {
+    const value = event.target.value;
+
+    // Check if the input is a number and does not start with 0
+    if (/^\d*$/.test(value)) {
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        mobile_number: value,
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -167,7 +180,6 @@ const ProfileEditModal = ({ open, onClose, profilePrev, setUpdate }) => {
         setMessage("Profile updated successfully");
         setSeverity("success");
         setUpdate(true);
-        console.log(profile.username !== profilePrev.username);
         if (profile.username !== profilePrev.username) {
           setAuth(); // clears out all the token logs you out in short
           navigate("/login", {
@@ -210,37 +222,39 @@ const ProfileEditModal = ({ open, onClose, profilePrev, setUpdate }) => {
       <DialogTitle>Edit Profile</DialogTitle>
       <DialogContent>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
-            {/* Profile Picture */}
-            <CardActionArea component="label" htmlFor="profile-picture">
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  padding: 2,
-                }}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="profile-picture"
-                  name="profile_picture"
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                />
+          <Tooltip title="click to update profile picture">
+            <Grid item xs={12}>
+              {/* Profile Picture */}
+              <CardActionArea component="label" htmlFor="profile-picture">
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    padding: 2,
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="profile-picture"
+                    name="profile_picture"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
 
-                <Avatar
-                  alt="Profile"
-                  src={profile?.profile_picture_url}
-                  sx={{ width: "100px", height: "100px" }}
-                />
-                <Typography variant="body2">
-                  {profile.profile_picture_name}
-                </Typography>
-              </Box>
-            </CardActionArea>
-          </Grid>
+                  <Avatar
+                    alt="Profile"
+                    src={profile?.profile_picture_url}
+                    sx={{ width: "100px", height: "100px" }}
+                  />
+                  <Typography variant="body2">
+                    {profile.profile_picture_name}
+                  </Typography>
+                </Box>
+              </CardActionArea>
+            </Grid>
+          </Tooltip>
           <Grid item xs={12}>
             {/* Username */}
             <TextField
@@ -363,7 +377,7 @@ const ProfileEditModal = ({ open, onClose, profilePrev, setUpdate }) => {
               name="mobile_number"
               label="Mobile Number"
               value={profile.mobile_number}
-              onChange={handleChange}
+              onChange={handleMobileNumberChange}
               sx={{ width: "100%" }}
             />
           </Grid>

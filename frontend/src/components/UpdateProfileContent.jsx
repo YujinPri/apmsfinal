@@ -52,9 +52,9 @@ import {
   WorkOutline,
 } from "@mui/icons-material";
 import ProfileEditModal from "./ProfileEditModal";
+import EducProfileEditModal from "./EducProfileEditModal";
 
-  const UpdateProfileContent = ({ profile, section, updateContent }) => {
- 
+const UpdateProfileContent = ({ profile, section, updateContent }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [updated, setUpdated] = useState(false);
@@ -64,20 +64,20 @@ import ProfileEditModal from "./ProfileEditModal";
     setModalOpen(true);
   };
 
-
+  useEffect(() => {
+    if (updated) {
+      updateContent();
+      setUpdated(false);
+    }
+  }, [updated]);
 
   const handleCloseModal = async () => {
     setModalOpen(false);
     setModalType(null);
-    if (updated) {
-      await updateContent();
-      setUpdated(false);
-    }
   };
 
   const modalComponents = {
-    // Define other modals here as well if needed
-    profile: (
+    1: (
       <ProfileEditModal
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -85,9 +85,17 @@ import ProfileEditModal from "./ProfileEditModal";
         setUpdate={setUpdated}
       />
     ),
+    2: (
+      <EducProfileEditModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        educProfilePrev={profile}
+        setUpdate={setUpdated}
+      />
+    ),
   };
 
-  const modalComponent = modalComponents[modalType];
+  const modalComponent = modalComponents[section] || null;
 
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
     <Tooltip
@@ -229,7 +237,7 @@ import ProfileEditModal from "./ProfileEditModal";
                 top: "-1rem",
                 right: "1rem",
               }}
-              onClick={() => handleModalOpen("profile")} // Trigger the profile edit modal
+              onClick={() => handleModalOpen(1)} // Trigger the profile edit modal
             >
               <Edit />
             </Fab>
@@ -284,195 +292,193 @@ import ProfileEditModal from "./ProfileEditModal";
       );
     case 2:
       return (
-        <>
+        <Grid
+          container
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative", // Add relative positioning to the container
+            marginY: "2rem",
+          }}
+        >
           <Grid
             container
+            spacing={1} // Set the width spacing to 2.5
+            xs={12}
+            m="0, auto"
+            gap={2}
             sx={{
               display: "flex",
-              flexDirection: "row",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              position: "relative", // Add relative positioning to the container
-              marginY: "2rem",
             }}
           >
-            <Grid
-              container
-              spacing={1} // Set the width spacing to 2.5
-              xs={12}
-              m="0, auto"
-              gap={2}
+            <Box
               sx={{
+                padding: 1,
                 display: "flex",
+                alignItems: "flex-start",
+                gap: 1,
                 flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
+              {profile?.degree && profile?.field && (
+                <Typography
+                  variant="h6"
+                  gap={1}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 1rem",
+                    fontWeight: "bold", // Make the text bold
+                    height: "100%", // Consume available vertical space
+                  }}
+                >
+                  {profile.degree} in {profile.field}
+                </Typography>
+              )}
+              <Box sx={{ display: "flex", gap: 1 }}>
+                {profile?.year_graduated && (
+                  <Chiptip
+                    icon={<School color="primary" />}
+                    label={profile.year_graduated}
+                    additional="batch "
+                  />
+                )}
+                {profile?.civil_service_eligibility && (
+                  <Chiptip
+                    icon={<LocationCity color="primary" />}
+                    label="civil service eligible"
+                  />
+                )}
+              </Box>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              {profile?.honors_and_awards && (
+                <Divider sx={{ padding: 2.5 }}>
+                  <Typography variant="subtitle2">honors and awards</Typography>
+                </Divider>
+              )}
               <Box
                 sx={{
-                  padding: 1,
                   display: "flex",
-                  alignItems: "flex-start",
-                  gap: 1,
-                  flexDirection: "column",
+                  gap: 1.5,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexWrap: "wrap", // Allow content to wrap onto the next line
                 }}
               >
-                {profile?.degree && profile?.field && (
+                {profile?.honors_and_awards &&
+                  profile.honors_and_awards.map((activity, index) => (
+                    <Chiptip
+                      key={index}
+                      icon={<EmojiEvents color="primary" />}
+                      label={activity}
+                    />
+                  ))}
+              </Box>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              {profile?.post_grad_act && (
+                <Divider sx={{ padding: 2.5 }}>
+                  <Typography variant="subtitle2">
+                    post graduation activities
+                  </Typography>
+                </Divider>
+              )}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexWrap: "wrap", // Allow content to wrap onto the next line
+                }}
+              >
+                {profile?.post_grad_act &&
+                  profile.post_grad_act.map((activity, index) => (
+                    <Chiptip
+                      key={index}
+                      icon={<CheckCircleSharp color="primary" />}
+                      label={activity}
+                    />
+                  ))}
+              </Box>
+            </Box>
+            {profile?.achievements_story && (
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <Divider sx={{ padding: 2.5, width: "100%" }}>
+                  <Typography variant="subtitle2">
+                    pup achievements story
+                  </Typography>
+                </Divider>
+                <Box sx={{ position: "relative", margin: " auto 0" }}>
                   <Typography
-                    variant="h6"
-                    gap={1}
+                    variant="h1" // You can adjust the variant to match your preferred heading style
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "0 1rem",
-                      fontWeight: "bold", // Make the text bold
-                      height: "100%", // Consume available vertical space
+                      display: "block", // Display the quotation marks as blocks
+                      position: "absolute", // Position them absolutely within the parent container
+                      top: 0, // Position at the top
+                      left: 0, // Position at the left
                     }}
                   >
-                    {profile.degree} in {profile.field}
+                    &ldquo;
                   </Typography>
-                )}
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  {profile?.year_graduated && (
-                    <Chiptip
-                      icon={<School color="primary" />}
-                      label={profile.year_graduated}
-                      additional="batch "
-                    />
-                  )}
-                  {profile?.civil_service_eligibility && (
-                    <Chiptip
-                      icon={<LocationCity color="primary" />}
-                      label="civil service eligible"
-                    />
-                  )}
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      // fontWeight: "bold", // Make the text bold
+                      height: "100%", // Consume available vertical space
+                      padding: "1.5rem",
+                      maxWidth: "50ch", // Maximum width of 40 characters
+                      whiteSpace: "wrap", // Prevent text from wrapping to the next line
+                      overflow: "hidden", // Hide overflow text
+                      textOverflow: "ellipsis", // Display ellipsis (...) when text overflows
+                      position: "relative", // Make the main content container relative for positioning
+                    }}
+                  >
+                    {profile.achievements_story}
+                  </Typography>
+                  <Typography
+                    variant="h1" // You can adjust the variant to match your preferred heading style
+                    sx={{
+                      display: "block", // Display the quotation marks as blocks
+                      position: "absolute", // Position them absolutely within the parent container
+                      bottom: 0, // Position at the bottom
+                      right: 0, // Position at the right
+                    }}
+                  >
+                    &rdquo;
+                  </Typography>
                 </Box>
               </Box>
-              <Box sx={{ width: "100%" }}>
-                {profile?.honors_and_awards && (
-                  <Divider sx={{ padding: 2.5 }}>
-                    <Typography variant="subtitle2">
-                      honors and awards
-                    </Typography>
-                  </Divider>
-                )}
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 1.5,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexWrap: "wrap", // Allow content to wrap onto the next line
-                  }}
-                >
-                  {profile?.honors_and_awards &&
-                    profile.honors_and_awards.map((activity, index) => (
-                      <Chiptip
-                        key={index}
-                        icon={<EmojiEvents color="primary" />}
-                        label={activity}
-                      />
-                    ))}
-                </Box>
-              </Box>
-              <Box sx={{ width: "100%" }}>
-                {profile?.post_grad_act && (
-                  <Divider sx={{ padding: 2.5 }}>
-                    <Typography variant="subtitle2">
-                      post graduation activities
-                    </Typography>
-                  </Divider>
-                )}
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 1.5,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexWrap: "wrap", // Allow content to wrap onto the next line
-                  }}
-                >
-                  {profile?.post_grad_act &&
-                    profile.post_grad_act.map((activity, index) => (
-                      <Chiptip
-                        key={index}
-                        icon={<CheckCircleSharp color="primary" />}
-                        label={activity}
-                      />
-                    ))}
-                </Box>
-              </Box>
-              {profile?.achievements_story && (
-                <Box
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Divider sx={{ padding: 2.5, width: "100%" }}>
-                    <Typography variant="subtitle2">
-                      pup achievements story
-                    </Typography>
-                  </Divider>
-                  <Box sx={{ position: "relative", margin: " auto 0" }}>
-                    <Typography
-                      variant="h1" // You can adjust the variant to match your preferred heading style
-                      sx={{
-                        display: "block", // Display the quotation marks as blocks
-                        position: "absolute", // Position them absolutely within the parent container
-                        top: 0, // Position at the top
-                        left: 0, // Position at the left
-                      }}
-                    >
-                      &ldquo;
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        // fontWeight: "bold", // Make the text bold
-                        height: "100%", // Consume available vertical space
-                        padding: "1.5rem",
-                        maxWidth: "50ch", // Maximum width of 40 characters
-                        whiteSpace: "wrap", // Prevent text from wrapping to the next line
-                        overflow: "hidden", // Hide overflow text
-                        textOverflow: "ellipsis", // Display ellipsis (...) when text overflows
-                        position: "relative", // Make the main content container relative for positioning
-                      }}
-                    >
-                      {profile.achievements_story}
-                    </Typography>
-                    <Typography
-                      variant="h1" // You can adjust the variant to match your preferred heading style
-                      sx={{
-                        display: "block", // Display the quotation marks as blocks
-                        position: "absolute", // Position them absolutely within the parent container
-                        bottom: 0, // Position at the bottom
-                        right: 0, // Position at the right
-                      }}
-                    >
-                      &rdquo;
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-            </Grid>
-
-            <Fab
-              size="small"
-              color="primary"
-              sx={{
-                position: "absolute", // Use absolute positioning
-                top: "-1rem", // Adjust top position as needed
-                right: "1rem", // Adjust right position as needed
-              }}
-            >
-              <Edit />
-            </Fab>
+            )}
           </Grid>
-        </>
+
+          <Fab
+            size="small"
+            color="primary"
+            sx={{
+              position: "absolute", // Use absolute positioning
+              top: "-1rem", // Adjust top position as needed
+              right: "1rem", // Adjust right position as needed
+            }}
+            onClick={() => handleModalOpen(2)} // Trigger the profile edit modal
+          >
+            <Edit />
+          </Fab>
+          {modalComponent}
+        </Grid>
       );
     case 3: {
       profile?.employments?.sort((a, b) => {
