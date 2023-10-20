@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from uuid import UUID
-from fastapi import Query, APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
+from fastapi import Body, Query, APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
 from backend.database import get_db
 from sqlalchemy.orm import Session
 from backend.oauth2 import get_current_user
@@ -356,13 +356,13 @@ async def put_demographic_profiles(
 @router.put("/educational_profiles/")
 async def put_educational_profiles(
     *,
-    year_graduated: Optional[int] = Form(None),
-    degree: Optional[str] = Form(None),
-    field: Optional[str] = Form(None),
-    achievements_story: Optional[str] = Form(None),
-    post_grad_act: Optional[List[str]] = Form(None),
-    honors_and_awards: Optional[List[str]] = Form(None),
-    civil_service_eligibility: Optional[bool] = Form(None),
+    year_graduated: Optional[int] = Body(None),
+    degree: Optional[str] = Body(None),
+    field: Optional[str] = Body(None),
+    achievements_story: Optional[str] = Body(None),
+    post_grad_act: Optional[List[str]] = Body(None),
+    honors_and_awards: Optional[List[str]] = Body(None),
+    civil_service_eligibility: Optional[bool] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -387,6 +387,8 @@ async def put_educational_profiles(
 
     # Iterate through the profile dictionary and populate saved_profile
     for key, value in profile.items():
+        print(key)
+        print(value)
         if value is not None and value != "":
             setattr(saved_profile, key, value)
 

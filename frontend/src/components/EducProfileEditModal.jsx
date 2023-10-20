@@ -96,49 +96,49 @@ const EducProfileEditModal = ({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const year_graduated =
-      educProfile?.year_graduated == educProfilePrev?.year_graduated
-        ? ""
-        : educProfile?.year_graduated;
-    const degree =
-      educProfile?.degree == educProfilePrev?.degree ? "" : educProfile?.degree;
-    const field =
-      educProfile?.field == educProfilePrev?.field ? "" : educProfile?.field;
-    const achievements_story =
-      educProfile?.achievements_story == educProfilePrev?.achievements_story
-        ? ""
-        : educProfile?.achievements_story;
+    const data = {
+      year_graduated:
+        educProfile?.year_graduated === educProfilePrev?.year_graduated
+          ? null
+          : educProfile?.year_graduated,
+      degree:
+        educProfile?.degree === educProfilePrev?.degree
+          ? null
+          : educProfile?.degree,
+      field:
+        educProfile?.field === educProfilePrev?.field
+          ? null
+          : educProfile?.field,
+      achievements_story:
+        educProfile?.achievements_story === educProfilePrev?.achievements_story
+          ? null
+          : educProfile?.achievements_story,
+      post_grad_act: educProfile?.post_grad_act,
+      honors_and_awards: educProfile?.honors_and_awards,
+    };
 
-    // Handle list-like fields differently
-    const post_grad_act =
-      JSON.stringify(educProfile?.post_grad_act) ==
-      JSON.stringify(educProfilePrev?.post_grad_act)
-        ? []
-        : educProfile?.post_grad_act;
-    const honors_and_awards =
-      JSON.stringify(educProfile?.honors_and_awards) ==
-      JSON.stringify(educProfilePrev?.honors_and_awards)
-        ? []
-        : educProfile?.honors_and_awards;
+    // Filter out null values
+    const filteredData = Object.keys(data).reduce((acc, key) => {
+      if (data[key] !== null) {
+        acc[key] = data[key];
+      }
+      return acc;
+    }, {});
 
-    const payload = new FormData();
-    payload.append("year_graduated", year_graduated);
-    payload.append("degree", degree);
-    payload.append("field", field);
-    payload.append("achievements_story", achievements_story);
-    payload.append("post_grad_act", JSON.stringify(post_grad_act));
-    payload.append("honors_and_awards", JSON.stringify(honors_and_awards));
+    // Convert the object to a JSON string
+    const jsonPayload = JSON.stringify(filteredData);
+    const axiosConfig = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
 
     try {
-      const axiosConfig = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      };
+      setLoading(true);
       // Make the PUT request to your FastAPI endpoint
       const response = await axiosPrivate.put(
         "/profiles/educational_profiles/",
-        payload,
+        jsonPayload,
         axiosConfig
       );
 
@@ -219,7 +219,7 @@ const EducProfileEditModal = ({
       icon: <PeopleIcon />,
     },
     {
-      value: "CareerTransition",
+      value: "Career Transition",
       label: "Career Transition",
       tooltip: "Represents changing career paths or industries.",
       icon: <SwapHorizIcon />,
@@ -278,52 +278,52 @@ const EducProfileEditModal = ({
 
   const honorsAwardsOptions = [
     {
-      value: "DeansListAward",
+      value: "Deans Award",
       label: "Dean's List Award",
       icon: <LibraryBooksIcon />,
     },
     {
-      value: "AcademicExcellenceAward",
+      value: "Academic Award",
       label: "Academic Excellence Award",
       icon: <SchoolIcon />,
     },
     {
-      value: "LeadershipAndServiceAward",
+      value: "Service Award",
       label: "Leadership and Service Award",
       icon: <EmojiPeopleIcon />,
     },
     {
-      value: "ResearchAchievementAward",
+      value: "Research Award",
       label: "Research Achievement Award",
       icon: <CreateIcon />,
     },
     {
-      value: "BestThesisDissertationAward",
+      value: "Thesis Award",
       label: "Best Thesis/Dissertation Award",
       icon: <LocalLibraryIcon />,
     },
     {
-      value: "OutstandingAlumnusAlumnaAward",
+      value: "Alumnus Award",
       label: "Outstanding Alumnus/Alumna Award",
       icon: <StarIcon />,
     },
     {
-      value: "SportsAchievementAward",
+      value: "Sports Award",
       label: "Sports Achievement Award",
       icon: <SportsSoccerIcon />,
     },
     {
-      value: "CommunityServiceRecognition",
+      value: "Service Recognition",
       label: "Community Service Recognition",
       icon: <PublicIcon />,
     },
     {
-      value: "InnovationEntrepreneurshipAward",
+      value: "Innovation Award",
       label: "Innovation and Entrepreneurship Award",
       icon: <LightbulbIcon />,
     },
     {
-      value: "SpecialRecognitionContributionsField",
+      value: "Contributions Award",
       label: "Special Recognition for Contributions to a Field",
       icon: <StarIcon />,
     },
@@ -333,14 +333,22 @@ const EducProfileEditModal = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Edit Profile</DialogTitle>
       <DialogContent>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} p={2}>
           <Grid item xs={12}>
             <Autocomplete
               id="degree-field"
               options={degreeOptions}
               getOptionLabel={(option) => option.title}
               renderInput={(params) => (
-                <TextField {...params} label="Degree and Field" />
+                <TextField
+                  {...params}
+                  label="Degree and Field"
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                />
               )}
               onChange={(event, newValue) => {
                 if (newValue) {
@@ -350,13 +358,16 @@ const EducProfileEditModal = ({
                   handleDegreeAndField("", "");
                 }
               }}
+              defaultValue={degreeOptions.find(
+                (option) => option.field === educProfile.field
+              )}
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Enter text"
+              label="Achievements Story"
               multiline
-              rows={4}
+              rows={10}
               variant="outlined"
               fullWidth
               value={educProfile.achievements_story}
@@ -385,7 +396,7 @@ const EducProfileEditModal = ({
             </LocalizationProvider>
           </Grid>
           <Grid item xs={12}>
-            <FormControl>
+            <FormControl sx={{ width: "100%" }}>
               <InputLabel id="honors-awards-label">
                 Honors and Awards
               </InputLabel>
@@ -400,7 +411,18 @@ const EducProfileEditModal = ({
                   });
                 }}
                 renderValue={(selected) => (
-                  <Box>
+                  <Box
+                    style={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "flex",
+                      flexDirection: "column",
+                      width: "60%",
+                      margin: "0 auto",
+                      gap: 5,
+                    }}
+                  >
                     {selected.map((value) => {
                       const selectedOption = honorsAwardsOptions.find(
                         (option) => option.value === value
@@ -414,7 +436,7 @@ const EducProfileEditModal = ({
                           />
                         );
                       }
-                      return null;
+                      return null; // Handle cases where the option with the selected value doesn't exist
                     })}
                   </Box>
                 )}
@@ -428,7 +450,7 @@ const EducProfileEditModal = ({
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <FormControl>
+            <FormControl sx={{ width: "100%" }}>
               <InputLabel id="post-grad-act-label">Post Grad Act</InputLabel>
               <Select
                 labelId="post-grad-act-label"
@@ -441,7 +463,18 @@ const EducProfileEditModal = ({
                   });
                 }}
                 renderValue={(selected) => (
-                  <Box>
+                  <Box
+                    style={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "flex",
+                      flexDirection: "column",
+                      width: "60%",
+                      margin: "0 auto",
+                      gap: 5,
+                    }}
+                  >
                     {selected.map((value) => {
                       const selectedOption = postGradActOptions.find(
                         (option) => option.value === value

@@ -106,27 +106,24 @@ function UpdateProfile() {
 
   const reloadProfileData = async () => {
     const controller = new AbortController();
-    console.log(profileLoading + "nani");
     setProfileLoading(true);
-    console.log(profileLoading + "nani");
     const profileData = await getProfileData(controller.signal);
 
     if (profileData) {
       setProfile(profileData);
     }
     setProfileLoading(false);
-    console.log(profileLoading + "nani");
   };
 
   const reloadEducData = async () => {
     const controller = new AbortController();
-    setProfileLoading(true);
+    setEducLoading(true);
     const educData = await getEducData(controller.signal);
 
     if (educData) {
       setEduc(educData);
     }
-    setProfileLoading(false);
+    setEducLoading(false);
   };
 
   const reloadEmploymentData = async () => {
@@ -137,7 +134,7 @@ function UpdateProfile() {
     if (employmentData) {
       setEmployment(employmentData);
     }
-    setProfileLoading(false);
+    setEmploymentLoading(false);
   };
 
   useEffect(() => {
@@ -162,7 +159,7 @@ function UpdateProfile() {
         }
         if (employmentData.status === "fulfilled") {
           setEmployment(employmentData.value);
-          setEmploymentLoading(false)
+          setEmploymentLoading(false);
         }
       }
     };
@@ -315,7 +312,11 @@ function UpdateProfile() {
           {educLoading ? (
             <UpdateProfileSkeleton section={2} />
           ) : (
-            <UpdateProfileContent section={2} profile={educ} updateContent />
+            <UpdateProfileContent
+              section={2}
+              profile={educ}
+              updateContent={reloadEducData}
+            />
           )}
         </Box>
       ) : null}

@@ -13,6 +13,7 @@ import Announcements from "./components/Announcements";
 import News from "./components/News";
 import Events from "./components/Events";
 import Fundraise from "./components/Fundraise";
+import { QueryClientProvider, QueryClient } from "react-query";
 import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
 import Profile from "./components/Profile";
@@ -70,90 +71,96 @@ const App = () => {
       },
     },
   });
+  const queryC lient = new QueryClient()
   return (
-    <ThemeProvider theme={theme}>
-      <Box bgcolor={"background.default"} color={"text.primary"}>
-        <Routes>
-          <Route path="/" element={<PublicRoutes />}>
-            <Route path="register" element={<Register />} />
-            <Route path="login" element={<Login />} />
-            <Route path="oauth/redirect/linkedin" element={<LinkedInRedirect />} />
-            <Route path="" element={<Login />} />
-          </Route>
-          <Route element={<PersistLogin />}>
-            <Route path="/" element={<PrivateRoutes />}>
+    <QueryClientProvider client={queryC lient}>
+      <ThemeProvider theme={theme}>
+        <Box bgcolor={"background.default"} color={"text.primary"}>
+          <Routes>
+            <Route path="/" element={<PublicRoutes />}>
+              <Route path="register" element={<Register />} />
+              <Route path="login" element={<Login />} />
               <Route
-                path="unauthorized"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                    <Unauthorized />
-                  </MainLayout>
-                }
+                path="oauth/redirect/linkedin"
+                element={<LinkedInRedirect />}
               />
-              <Route
-                path="home"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                    <Feed />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="explore"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-                    <Explore />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="announcements"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-                    <Announcements />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="news"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-                    <News />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="events"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-                    <Events />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="profile/me"
-                element={
-                  <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-                    <UpdateProfile />
-                  </MainLayout>
-                }
-              />
-              <Route element={<AlumniOfficerRoutes />}>
+              <Route path="" element={<Login />} />
+            </Route>
+            <Route element={<PersistLogin />}>
+              <Route path="/" element={<PrivateRoutes />}>
                 <Route
-                  path="fundraise"
+                  path="unauthorized"
                   element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-                      <Fundraise />
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                      <Unauthorized />
                     </MainLayout>
                   }
                 />
+                <Route
+                  path="home"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+                      <Feed />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="explore"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
+                      <Explore />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="announcements"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
+                      <Announcements />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="news"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
+                      <News />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="events"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
+                      <Events />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="profile/me"
+                  element={
+                    <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+                      <UpdateProfile />
+                    </MainLayout>
+                  }
+                />
+                <Route element={<AlumniOfficerRoutes />}>
+                  <Route
+                    path="fundraise"
+                    element={
+                      <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
+                        <Fundraise />
+                      </MainLayout>
+                    }
+                  />
+                </Route>
               </Route>
             </Route>
-          </Route>
-          <Route path="*" element={<Missing />} />
-        </Routes>
-      </Box>
-    </ThemeProvider>
+            <Route path="*" element={<Missing />} />
+          </Routes>
+        </Box>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 export default App;
