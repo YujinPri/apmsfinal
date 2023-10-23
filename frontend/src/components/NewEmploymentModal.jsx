@@ -1,5 +1,4 @@
-import { useMutation, useQueryClient } from "react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import useAuth from "../hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -31,63 +30,26 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
-const ProfileEditModal = ({ open, onClose }) => {
-  const queryClient = useQueryClient();
-  const cachedData = queryClient.getQueryData("demographic-profile");
+const ProfileEditModal = ({ open, onClose, profilePrev }) => {
   const [profile, setProfile] = useState({
-    ...cachedData.data,
-    birthdate: dayjs(cachedData?.data?.birthdate),
+    username: profilePrev?.username || "",
+    student_number: profilePrev?.student_number || "",
+    first_name: profilePrev?.first_name || "",
+    last_name: profilePrev?.last_name || "",
+    email: profilePrev?.email || "",
+    gender: profilePrev?.gender || "",
+    birthdate: profilePrev?.birthdate ? dayjs(profilePrev.birthdate) : null,
     profile_picture: null,
     profile_picture_url:
-      cachedData?.data?.profile_picture || "../default-profile-image.jpg",
-    profile_picture_name:
-      cachedData?.data?.username || "Upload profile picture",
+      profilePrev?.profile_picture || "../default-profile-image.jpg",
+    profile_picture_name: profilePrev?.username || "Upload profile picture",
+    headline: profilePrev?.headline || "",
+    city: profilePrev?.city || "",
+    region: profilePrev?.region || "",
+    address: profilePrev?.address || "",
+    mobile_number: profilePrev?.mobile_number || "",
+    civil_status: profilePrev?.civil_status || "",
   });
-
-  const mutation = useMutation(
-    async (newProfile) => {
-      const axiosConfig = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      };
-      const response = await axiosPrivate.put(
-        "/profiles/demographic_profiles/",
-        newProfile,
-        axiosConfig
-      );
-    },
-    {
-      onError: (error) => {
-        setMessage(error.response ? error.response.data.detail : error.message);
-        setSeverity("error");
-        setOpenSnackbar(true);
-      },
-      onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("demographic-profile");
-        queryClient.invalidateQueries("profile-me");
-        setMessage("Profile updated successfully");
-        setSeverity("success");
-        // console.log("Variables keys:", Object.keys(variables));
-        //may error ka pa rito baiiii
-        if (variables?.username && variables?.username !== context.username) {
-          setAuth();
-          navigate("/login", {
-            state: {
-              from: location,
-              message:
-                "please log in again but with your updated username this time.",
-            },
-            replace: true,
-          });
-          onClose();
-        }
-
-      },
-    }
-  );
-  const { isLoading, isError, error, isSuccess } = mutation;
-
   const navigate = useNavigate();
   const location = useLocation();
   const { setAuth } = useAuth();
@@ -96,6 +58,7 @@ const ProfileEditModal = ({ open, onClose }) => {
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -140,41 +103,37 @@ const ProfileEditModal = ({ open, onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     const username =
-      profile?.username == cachedData?.data?.username ? "" : profile?.username;
-    const email =
-      profile?.email == cachedData?.data?.email ? "" : profile?.email;
+      profile?.username == profilePrev?.username ? "" : profile?.username;
+    const email = profile?.email == profilePrev?.email ? "" : profile?.email;
     const first_name =
-      profile?.first_name == cachedData?.data?.first_name
-        ? ""
-        : profile?.first_name;
+      profile?.first_name == profilePrev?.first_name ? "" : profile?.first_name;
     const last_name =
-      profile?.last_name == cachedData?.data?.last_name
-        ? ""
-        : profile?.last_name;
+      profile?.last_name == profilePrev?.last_name ? "" : profile?.last_name;
     const birthdate =
-      profile?.birthdate == dayjs(cachedData?.data.birthdate)
+      profile?.birthdate == dayjs(profilePrev.birthdate)
         ? null
         : profile?.birthdate.format("YYYY-MM-DD");
     const gender =
-      profile?.gender == cachedData?.data?.gender ? "" : profile?.gender;
+      profile?.gender == profilePrev?.gender ? "" : profile?.gender;
     const headline =
-      profile?.headline == cachedData?.data?.headline ? "" : profile?.headline;
-    const city = profile?.city == cachedData?.data?.city ? "" : profile?.city;
+      profile?.headline == profilePrev?.headline ? "" : profile?.headline;
+    const city = profile?.city == profilePrev?.city ? "" : profile?.city;
     const region =
-      profile?.region == cachedData?.data?.region ? "" : profile?.region;
+      profile?.region == profilePrev?.region ? "" : profile?.region;
     const address =
-      profile?.address == cachedData?.data?.address ? "" : profile?.address;
+      profile?.address == profilePrev?.address ? "" : profile?.address;
     const mobile_number =
-      profile?.mobile_number == cachedData?.data?.mobile_number
+      profile?.mobile_number == profilePrev?.mobile_number
         ? ""
         : profile?.mobile_number;
     const civil_status =
-      profile?.civil_status == cachedData?.data?.civil_status
+      profile?.civil_status == profilePrev?.civil_status
         ? ""
         : profile?.civil_status;
     const student_number =
-      profile?.student_number == cachedData?.data?.student_number
+      profile?.student_number == profilePrev?.student_number
         ? ""
         : profile?.student_number;
 
@@ -199,7 +158,40 @@ const ProfileEditModal = ({ open, onClose }) => {
     }
 
     try {
-      await mutation.mutateAsync(payload);
+      setLoading(true);
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+      // Make the PUT request to your FastAPI endpoint
+      const response = await axiosPrivate.put(
+        "/profiles/demographic_profiles/",
+        payload,
+        axiosConfig
+      );
+
+      const data = response?.data;
+
+      if (response.status !== 200) {
+        setMessage(data.detail);
+        setSeverity("error");
+      } else {
+        setMessage("Profile updated successfully");
+        setSeverity("success");
+        if (profile.username !== profilePrev.username) {
+          setAuth(); // clears out all the token logs you out in short
+          navigate("/login", {
+            state: {
+              from: location,
+              message:
+                "please log in again but with your updated username this time.",
+            },
+            replace: true,
+          });
+        }
+        onClose();
+      }
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail);
@@ -213,6 +205,7 @@ const ProfileEditModal = ({ open, onClose }) => {
       }
     }
     setOpenSnackbar(true);
+    setLoading(false);
   };
 
   const handleCloseSnackbar = (event, reason) => {
@@ -395,7 +388,7 @@ const ProfileEditModal = ({ open, onClose }) => {
           onClick={handleSubmit}
           variant="contained"
           color="primary"
-          disabled={isLoading}
+          disabled={loading}
         >
           Save
         </Button>
@@ -409,7 +402,7 @@ const ProfileEditModal = ({ open, onClose }) => {
           {message}
         </Alert>
       </Snackbar>
-      {isLoading ? (
+      {loading ? (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>

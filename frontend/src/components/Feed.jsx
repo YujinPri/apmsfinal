@@ -14,7 +14,6 @@ import {
 import React from "react";
 import Post from "../ui/Post";
 import { Link as RouterLink } from "react-router-dom";
-import User from "./Profile";
 
 function Feed() {
   const [selectedIndex, setSelectedIndex] = React.useState(1);

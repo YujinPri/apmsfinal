@@ -9,6 +9,9 @@ import WorkIcon from "@mui/icons-material/Work";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import SchoolIcon from "@mui/icons-material/School";
 import UpdateProfileSkeleton from "./UpdateProfileSkeleton";
+import DemographicProfile from "./DemographicProfile";
+import EducationalProfile from "./EducationalProfile";
+import EmploymentProfile from "./EmploymentProfile";
 
 function UpdateProfile() {
   const [value, setValue] = React.useState(0);
@@ -151,11 +154,11 @@ function UpdateProfile() {
       if (isMounted) {
         if (profileData.status === "fulfilled") {
           setProfile(profileData.value);
-          setProfileLoading(false)
+          setProfileLoading(false);
         }
         if (educData.status === "fulfilled") {
           setEduc(educData.value);
-          setEducLoading(false)
+          setEducLoading(false);
         }
         if (employmentData.status === "fulfilled") {
           setEmployment(employmentData.value);
@@ -269,15 +272,7 @@ function UpdateProfile() {
         >
           profile
         </Typography>
-        {profileLoading ? (
-          <UpdateProfileSkeleton section={1} />
-        ) : (
-          <UpdateProfileContent
-            section={1}
-            profile={profile}
-            updateContent={reloadProfileData}
-          />
-        )}
+        <DemographicProfile />
       </Box>
       {!educ ||
       educ.achievements_story ||
@@ -309,15 +304,7 @@ function UpdateProfile() {
           >
             pupqc educational background
           </Typography>
-          {educLoading ? (
-            <UpdateProfileSkeleton section={2} />
-          ) : (
-            <UpdateProfileContent
-              section={2}
-              profile={educ}
-              updateContent={reloadEducData}
-            />
-          )}
+          <EducationalProfile />
         </Box>
       ) : null}
 
@@ -346,11 +333,7 @@ function UpdateProfile() {
           >
             employment history
           </Typography>
-          {employmentLoading ? (
-            <UpdateProfileSkeleton section={3} />
-          ) : (
-            <UpdateProfileContent section={3} profile={employment} />
-          )}
+          <EmploymentProfile />
         </Box>
       ) : null}
       {console.log(

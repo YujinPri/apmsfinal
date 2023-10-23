@@ -16,10 +16,11 @@ import Fundraise from "./components/Fundraise";
 import { QueryClientProvider, QueryClient } from "react-query";
 import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
-import Profile from "./components/Profile";
 import PersistLogin from "./routes/persistLogin";
 import UpdateProfile from "./components/UpdateProfile";
 import LinkedInRedirect from "./components/LinkedInRedirect";
+import { ReactQueryDevtools } from "react-query/devtools";
+import DemographicProfile from "./components/DemographicProfile";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -71,9 +72,9 @@ const App = () => {
       },
     },
   });
-  const queryC lient = new QueryClient()
+  const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryC lient}>
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <Box bgcolor={"background.default"} color={"text.primary"}>
           <Routes>
@@ -101,6 +102,7 @@ const App = () => {
                   element={
                     <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
                       <Feed />
+                      {/* <DemographicProfile /> */}
                     </MainLayout>
                   }
                 />
@@ -158,6 +160,7 @@ const App = () => {
             </Route>
             <Route path="*" element={<Missing />} />
           </Routes>
+          <ReactQueryDevtools position="bottom-right" initialIsOpen={false} />
         </Box>
       </ThemeProvider>
     </QueryClientProvider>

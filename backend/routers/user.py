@@ -44,9 +44,53 @@ async def login_user(*, username: str, password: str="", hashed_pass: str="", re
         db = get_db()  # Get a new database session (assuming get_db is defined)
         raise HTTPException(status_code=500, detail="Database not loaded up yet, please try again")
     
-@router.get("/user/me", response_model= UserResponse)
-async def get_user(user: UserResponse = Depends(get_current_user)):
-    return user
+# @router.get("/user/me", response_model= UserResponse)
+# async def get_user(user: UserResponse = Depends(get_current_user)):
+#     return user
+
+@router.get("/me")
+async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    profile = db.query(models.User).filter(models.User.id == user.id).first()
+    employments = (
+        db.query(models.Employment)
+        .filter(models.Employment.user_id == user.id)
+        .all()
+    )
+
+    employments_data = []
+
+    for employment in employments:
+        # Build a dictionary with selected fields and add it to the list
+        employment_dict = {
+            "id": employment.id,
+            "company_name": employment.company_name,
+            "job_title": employment.job_title,
+            "date_hired": employment.date_hired,
+            "date_end": employment.date_end,
+            "classification": employment.classification,
+            "aligned_with_academic_program": employment.aligned_with_academic_program,
+            "gross_monthly_income": employment.gross_monthly_income,
+            "employment_contract": employment.employment_contract,
+            "job_level_position": employment.job_level_position,
+            "type_of_employer": employment.type_of_employer,
+            "location_of_employment": employment.location_of_employment,
+            "first_job": employment.first_job,
+        }
+        employments_data.append(employment_dict)
+
+
+    return {
+        "last_name": profile.last_name,
+        "first_name": profile.first_name,
+        "present_employment_status": profile.present_employment_status,
+        "field": profile.field,
+        "degree": profile.degree,
+        "year_graduated": profile.year_graduated,
+        "role": profile.role,
+        "profile_picture": profile.profile_picture,
+        "present_employment_status": profile.present_employment_status,
+        "employments": employments_data,
+    }
 
 
 @router.post("/auth/token")

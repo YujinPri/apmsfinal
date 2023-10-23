@@ -54,7 +54,6 @@ const EducProfileEditModal = ({
   open,
   onClose,
   educProfilePrev,
-  setUpdate,
 }) => {
   const [educProfile, setEducProfile] = useState({
     year_graduated: educProfilePrev?.year_graduated || null,
@@ -150,7 +149,6 @@ const EducProfileEditModal = ({
       } else {
         setMessage("Profile updated successfully");
         setSeverity("success");
-        setUpdate(true);
         onClose();
       }
     } catch (error) {
