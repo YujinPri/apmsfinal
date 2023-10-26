@@ -336,10 +336,6 @@ function UpdateProfile() {
           <EmploymentProfile />
         </Box>
       ) : null}
-      {console.log(
-        !employment?.present_employment_status &&
-          employment?.employments?.length == 0
-      )}
     </Box>
   );
 }

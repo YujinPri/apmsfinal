@@ -446,7 +446,6 @@ export const EducationalProfile = () => {
         <EducProfileEditModal
           open={isModalOpen}
           onClose={handleCloseModal}
-          educProfilePrev={data?.data}
         />
       }
     </Grid>

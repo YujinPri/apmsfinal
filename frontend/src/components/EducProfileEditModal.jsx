@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMutation, useQueryClient, useQuery } from "react-query";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import {
   Alert,
@@ -50,40 +50,77 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
-const EducProfileEditModal = ({
-  open,
-  onClose,
-  educProfilePrev,
-}) => {
-  const [educProfile, setEducProfile] = useState({
-    year_graduated: educProfilePrev?.year_graduated || null,
-    degree: educProfilePrev?.degree || "",
-    field: educProfilePrev?.field || "",
-    achievements_story: educProfilePrev?.achievements_story || "",
-    post_grad_act: educProfilePrev?.post_grad_act || [],
-    honors_and_awards: educProfilePrev?.honors_and_awards || [],
-    civil_service_eligibility:
-      educProfilePrev?.civil_service_eligibility || false,
-  });
+const EducProfileEditModal = ({ open, onClose }) => {
+  const queryClient = useQueryClient();
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { setAuth } = useAuth();
+  const getData = async () => {
+    return await axiosPrivate.get("/profiles/educational_profile/me");
+  };
+  const { data: cachedData } = useQuery("educational-profile", getData);
+
+  const [educProfile, setEducProfile] = useState(null);
+
+  useEffect(() => {
+    if (cachedData) {
+      setEducProfile({
+        ...cachedData.data,
+        year_graduated: cachedData?.data?.year_graduated || null,
+        degree: cachedData?.data?.degree || "",
+        field: cachedData?.data?.field || "",
+        achievements_story: cachedData?.data?.achievements_story || "",
+        post_grad_act: cachedData?.data?.post_grad_act || [],
+        honors_and_awards: cachedData?.data?.honors_and_awards || [],
+        civil_service_eligibility:
+          cachedData?.data?.civil_service_eligibility || false,
+      });
+    }
+  }, [cachedData]);
+
+  const mutation = useMutation(
+    async (newProfile) => {
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      const response = await axiosPrivate.put(
+        "/profiles/educational_profiles/",
+        newProfile,
+        axiosConfig
+      );
+    },
+    {
+      onError: (error) => {
+        setMessage(error.response ? error.response.data.detail : error.message);
+        setSeverity("error");
+        setOpenSnackbar(true);
+      },
+      onSuccess: (data, variables, context) => {
+        queryClient.invalidateQueries("educational-profile");
+        queryClient.invalidateQueries("profile-me");
+
+        setMessage("Educational Profile updated successfully");
+        setSeverity("success");
+      },
+    }
+  );
+
+  const { isLoading, isError, error, isSuccess } = mutation;
 
   const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleDateChange = (date) => {
-    const year = date.getFullYear(); // Extract the year from the date object
-    setEducProfile((prevState) => ({
-      ...prevState,
-      year_graduated: parseInt(year), // Convert the year to an integer
+    const year = date.year();
+    setEducProfile((prevProfile) => ({
+      ...prevProfile,
+      year_graduated: year,
     }));
+    console.log(educProfile.year_graduated);
   };
-
+  
   const handleDegreeAndField = (degree, field) => {
     setEducProfile((prevState) => ({
       ...prevState,
@@ -94,22 +131,25 @@ const EducProfileEditModal = ({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    console.log(typeof educProfile?.year_graduated);
+    console.log(typeof cachedData?.data?.year_graduated);
+    console.log(educProfile?.year_graduated);
+    console.log(cachedData?.data?.year_graduated);
     const data = {
       year_graduated:
-        educProfile?.year_graduated === educProfilePrev?.year_graduated
+        educProfile?.year_graduated === cachedData?.data?.year_graduated
           ? null
           : educProfile?.year_graduated,
       degree:
-        educProfile?.degree === educProfilePrev?.degree
+        educProfile?.degree === cachedData?.data?.degree
           ? null
           : educProfile?.degree,
       field:
-        educProfile?.field === educProfilePrev?.field
+        educProfile?.field === cachedData?.data?.field
           ? null
           : educProfile?.field,
       achievements_story:
-        educProfile?.achievements_story === educProfilePrev?.achievements_story
+        educProfile?.achievements_story === cachedData?.data?.achievements_story
           ? null
           : educProfile?.achievements_story,
       post_grad_act: educProfile?.post_grad_act,
@@ -125,32 +165,10 @@ const EducProfileEditModal = ({
     }, {});
 
     // Convert the object to a JSON string
-    const jsonPayload = JSON.stringify(filteredData);
-    const axiosConfig = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+    const payload = JSON.stringify(filteredData);
 
     try {
-      setLoading(true);
-      // Make the PUT request to your FastAPI endpoint
-      const response = await axiosPrivate.put(
-        "/profiles/educational_profiles/",
-        jsonPayload,
-        axiosConfig
-      );
-
-      const data = response?.data;
-
-      if (response.status !== 200) {
-        setMessage(data.detail);
-        setSeverity("error");
-      } else {
-        setMessage("Profile updated successfully");
-        setSeverity("success");
-        onClose();
-      }
+      await mutation.mutateAsync(payload);
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail);
@@ -164,7 +182,6 @@ const EducProfileEditModal = ({
       }
     }
     setOpenSnackbar(true);
-    setLoading(false);
   };
 
   const handleCloseSnackbar = (event, reason) => {
@@ -357,7 +374,7 @@ const EducProfileEditModal = ({
                 }
               }}
               defaultValue={degreeOptions.find(
-                (option) => option.field === educProfile.field
+                (option) => option.field === educProfile?.field
               )}
             />
           </Grid>
@@ -368,7 +385,7 @@ const EducProfileEditModal = ({
               rows={10}
               variant="outlined"
               fullWidth
-              value={educProfile.achievements_story}
+              value={educProfile?.achievements_story}
               onChange={(event) => {
                 const { value } = event.target;
                 setEducProfile({
@@ -385,7 +402,11 @@ const EducProfileEditModal = ({
                   <DatePicker
                     views={["year"]}
                     label="Year graduated"
-                    value={dayjs(`${educProfile.year_graduated}-01-01`)}
+                    value={
+                      educProfile?.year_graduated
+                        ? dayjs(`${educProfile.year_graduated}-01-01`)
+                        : null
+                    }
                     onChange={handleDateChange}
                     renderInput={(params) => <TextField {...params} />}
                   />
@@ -401,7 +422,7 @@ const EducProfileEditModal = ({
               <Select
                 labelId="honors-awards-label"
                 multiple
-                value={educProfile.honors_and_awards}
+                value={educProfile?.honors_and_awards}
                 onChange={(event) => {
                   setEducProfile({
                     ...educProfile,
@@ -453,7 +474,7 @@ const EducProfileEditModal = ({
               <Select
                 labelId="post-grad-act-label"
                 multiple
-                value={educProfile.post_grad_act}
+                value={educProfile?.post_grad_act}
                 onChange={(event) => {
                   setEducProfile({
                     ...educProfile,
@@ -507,7 +528,7 @@ const EducProfileEditModal = ({
           onClick={handleSubmit}
           variant="contained"
           color="primary"
-          disabled={loading}
+          disabled={isLoading}
         >
           Save
         </Button>
@@ -521,7 +542,7 @@ const EducProfileEditModal = ({
           {message}
         </Alert>
       </Snackbar>
-      {loading ? (
+      {isLoading ? (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>

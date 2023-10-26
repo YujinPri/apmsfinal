@@ -404,17 +404,17 @@ async def put_educational_profiles(
 @router.put("/employment_profiles/{employment_id}")
 async def put_employment(
     employment_id: UUID,
-    company_name: Optional[str] = Form(None),
-    job_title: Optional[str] = Form(None),
-    date_hired: Optional[date] = Form(None),
-    date_end: Optional[date] = Form(None),  # You can keep it as a date, or use Optional[date] if it can be null
-    classification: Optional[str] = Form(None),
-    aligned_with_academic_program: Optional[bool] = Form(None),
-    gross_monthly_income: Optional[str] = Form(None),
-    employment_contract: Optional[str] = Form(None),
-    job_level_position: Optional[str] = Form(None),
-    type_of_employer: Optional[str] = Form(None),
-    location_of_employment: Optional[str] = Form(None),
+    company_name: Optional[str] = Body(None),
+    job_title: Optional[str] = Body(None),
+    date_hired: Optional[date] = Body(None),
+    date_end: Optional[date] = Body(None),  # You can keep it as a date, or use Optional[date] if it can be null
+    classification: Optional[str] = Body(None),
+    aligned_with_academic_program: Optional[bool] = Body(None),
+    gross_monthly_income: Optional[str] = Body(None),
+    employment_contract: Optional[str] = Body(None),
+    job_level_position: Optional[str] = Body(None),
+    type_of_employer: Optional[str] = Body(None),
+    location_of_employment: Optional[str] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -442,8 +442,11 @@ async def put_employment(
 
          # Iterate through the profile dictionary and populate saved_profile
         for key, value in profile.items():
-            if value is not None and value != "":
+            if value is not None and value != "" and key is not "date_end":
                 setattr(employment, key, value)
+            if key is "date_end" and value == "" or value is None:
+               setattr(employment, key, value)
+               
         
         db.commit()
         await afterEmploymentPostRoutine(user.id, db)

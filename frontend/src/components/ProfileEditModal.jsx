@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from "react-query";
-import { useState, useEffect } from "react";
-import useAuth from "../hooks/useAuth";
+import { useMutation, useQueryClient, useQuery } from "react-query";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import useLogout from "../hooks/useLogout";
+
 import {
   Box,
   Button,
@@ -32,17 +33,39 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 const ProfileEditModal = ({ open, onClose }) => {
+  const logout = useLogout();
   const queryClient = useQueryClient();
-  const cachedData = queryClient.getQueryData("demographic-profile");
-  const [profile, setProfile] = useState({
-    ...cachedData.data,
-    birthdate: dayjs(cachedData?.data?.birthdate),
-    profile_picture: null,
-    profile_picture_url:
-      cachedData?.data?.profile_picture || "../default-profile-image.jpg",
-    profile_picture_name:
-      cachedData?.data?.username || "Upload profile picture",
-  });
+  const localForceLogoutRef = useRef(false);
+
+  const getData = async () => {
+    return await axiosPrivate.get("/profiles/demographic_profile/me");
+  };
+  const { data: cachedData } = useQuery("demographic-profile", getData);
+
+  const [profile, setProfile] = useState(null);
+
+useEffect(() => {
+  if (cachedData) {
+    setProfile((prevProfile) => ({
+      ...cachedData.data,
+      birthdate: cachedData?.data.birthdate
+        ? dayjs(cachedData?.data.birthdate)
+        : null,
+      profile_picture: prevProfile?.profile_picture || null,
+      profile_picture_url: prevProfile?.profile_picture
+        ? prevProfile.profile_picture_url
+        : cachedData?.data.profile_picture || "../default-profile-image.jpg",
+      profile_picture_name: prevProfile?.profile_picture
+        ? prevProfile.profile_picture_name
+        : cachedData?.data.username || "Upload profile picture",
+    }));
+  }
+}, [cachedData]);
+
+  const signOut = async () => {
+    logout();
+    navigate("/login");
+  };
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -66,12 +89,13 @@ const ProfileEditModal = ({ open, onClose }) => {
       onSuccess: (data, variables, context) => {
         queryClient.invalidateQueries("demographic-profile");
         queryClient.invalidateQueries("profile-me");
+
         setMessage("Profile updated successfully");
         setSeverity("success");
-        // console.log("Variables keys:", Object.keys(variables));
-        //may error ka pa rito baiiii
-        if (variables?.username && variables?.username !== context.username) {
-          setAuth();
+        console.log(localForceLogoutRef.current);
+        if (localForceLogoutRef.current) {
+          localForceLogoutRef.current = false;
+          signOut();
           navigate("/login", {
             state: {
               from: location,
@@ -82,7 +106,6 @@ const ProfileEditModal = ({ open, onClose }) => {
           });
           onClose();
         }
-
       },
     }
   );
@@ -90,8 +113,6 @@ const ProfileEditModal = ({ open, onClose }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { setAuth } = useAuth();
-
   const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
@@ -115,7 +136,6 @@ const ProfileEditModal = ({ open, onClose }) => {
   const handleMobileNumberChange = (event) => {
     const value = event.target.value;
 
-    // Check if the input is a number and does not start with 0
     if (/^\d*$/.test(value)) {
       setProfile((prevProfile) => ({
         ...prevProfile,
@@ -124,22 +144,22 @@ const ProfileEditModal = ({ open, onClose }) => {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]; // Get the selected file
-    if (file) {
-      setProfile((prevProfile) => ({
-        ...prevProfile,
-        profile_picture: file,
-      }));
-      profile.profile_picture_url = URL.createObjectURL(
-        profile.profile_picture
-      );
-      profile.profile_picture_name = profile.profile_picture.name;
-    }
-  };
+const handleFileChange = (e) => {
+  const file = e.target.files[0]; // Get the selected file
+  if (file) {
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      profile_picture: file,
+      profile_picture_url: URL.createObjectURL(file),
+      profile_picture_name: file.name,
+    }));
+  }
+};
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    localForceLogoutRef.current =
+      profile?.username !== cachedData?.data?.username;
     const username =
       profile?.username == cachedData?.data?.username ? "" : profile?.username;
     const email =
@@ -255,7 +275,7 @@ const ProfileEditModal = ({ open, onClose }) => {
                     sx={{ width: "100px", height: "100px" }}
                   />
                   <Typography variant="body2">
-                    {profile.profile_picture_name}
+                    {profile?.profile_picture_name}
                   </Typography>
                 </Box>
               </CardActionArea>
@@ -266,7 +286,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="username"
               label="Username"
-              value={profile.username}
+              value={profile?.username}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -276,7 +296,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="first_name"
               label="First Name"
-              value={profile.first_name}
+              value={profile?.first_name}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -286,7 +306,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="last_name"
               label="Last Name"
-              value={profile.last_name}
+              value={profile?.last_name}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -298,7 +318,7 @@ const ProfileEditModal = ({ open, onClose }) => {
                   <DatePicker
                     name="birthdate"
                     label="Birthdate"
-                    value={profile.birthdate}
+                    value={profile?.birthdate}
                     onChange={handleDateChange}
                     renderInput={(params) => <TextField {...params} />}
                   />
@@ -311,7 +331,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="email"
               label="Email"
-              value={profile.email}
+              value={profile?.email}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -321,7 +341,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="region"
               label="Region"
-              value={profile.region}
+              value={profile?.region}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -331,7 +351,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="city"
               label="City"
-              value={profile.city}
+              value={profile?.city}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -341,7 +361,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="address"
               label="Address"
-              value={profile.address}
+              value={profile?.address}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
@@ -352,7 +372,7 @@ const ProfileEditModal = ({ open, onClose }) => {
               <InputLabel>Civil Status</InputLabel>
               <Select
                 name="civil_status"
-                value={profile.civil_status}
+                value={profile?.civil_status}
                 onChange={handleChange}
               >
                 <MenuItem value="single">Single</MenuItem>
@@ -368,7 +388,7 @@ const ProfileEditModal = ({ open, onClose }) => {
               <InputLabel>Gender</InputLabel>
               <Select
                 name="gender"
-                value={profile.gender}
+                value={profile?.gender}
                 onChange={handleChange}
               >
                 <MenuItem value="male">Male</MenuItem>
@@ -382,7 +402,7 @@ const ProfileEditModal = ({ open, onClose }) => {
             <TextField
               name="mobile_number"
               label="Mobile Number"
-              value={profile.mobile_number}
+              value={profile?.mobile_number}
               onChange={handleMobileNumberChange}
               sx={{ width: "100%" }}
             />

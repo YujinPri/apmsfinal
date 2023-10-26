@@ -34,8 +34,6 @@ export const Profile = () => {
     }
   );
 
-  console.log("Loading: " + isLoading + "\nFetching:" + isFetching);
-
   if (isError) {
     if (error.response.data.detail === "Token has expired") {
       setAuth({}); // Clears out all the token, logs you out
