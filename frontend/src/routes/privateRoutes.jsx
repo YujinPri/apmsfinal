@@ -1,11 +1,11 @@
 import { useLocation, Navigate, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
-const PrivateRoutes = ({ isOfficer = false }) => {
+const PrivateRoutes = () => {
   const { auth } = useAuth();
   const location = useLocation();
-  const active_role = isOfficer ? "officer" : "alumni";
-  return auth?.role == active_role ? (
+  const roles = ["public", "officer", "alumni", "admin"];
+  return roles.includes(auth?.role) ? (
     <Outlet />
   ) : auth?.access_token ? (
     <Navigate to="/missing" state={{ from: location }} replace />

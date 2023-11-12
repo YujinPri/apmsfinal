@@ -5,8 +5,6 @@ from typing import List, Optional, Text
 from fastapi import File, Form, HTTPException, UploadFile
 from pydantic_sqlalchemy import sqlalchemy_to_pydantic
 
-
-
 class UserBaseSchema(BaseModel):
     username: str
     email: str
@@ -15,14 +13,13 @@ class UserBaseSchema(BaseModel):
     role: str
 
     class Config:
-        from_attributes = True
+        from_attributes = True  
 
 class CreateUserSchema(UserBaseSchema):
     profile_picture: str #Optional[UploadFile] = File(None)
-    passwordConfirm: str
     role: str
-    verified: str
     password: str
+
 
 class LoginUserSchema(BaseModel):
     username: str

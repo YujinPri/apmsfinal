@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import Post from "../ui/Post";
+import Post from "./ui/Post";
 import { Link as RouterLink } from "react-router-dom";
 
 function Feed() {

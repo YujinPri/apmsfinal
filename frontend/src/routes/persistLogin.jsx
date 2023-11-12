@@ -20,20 +20,13 @@ const PersistLogin = () => {
         isMounted && setIsLoading(false);
       }
     };
-    console.log(auth.access_token);
     !auth?.access_token ? verifyRefreshToken() : setIsLoading(false);
 
     return () => (isMounted = false);
   }, []);
 
-  useEffect(() => {
-    console.log(`isLoading: ${isLoading}`);
-    console.log(`aT: ${JSON.stringify(auth?.access_token)}`);
-  }, [isLoading]);
-
   return (  
     <>
-    {console.log(auth.access_token)}
     {!persist ? <Outlet/> : isLoading ?  <p>Loading...</p> : <Outlet />}</>
   );
 };

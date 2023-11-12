@@ -1,7 +1,6 @@
 import React from "react";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
-import Rightbar from "../components/Rightbar";
+import Sidebar from "../components/navigator/Sidebar";
+import Navbar from "../components/navigator/Navbar";
 import { Box, Stack } from "@mui/material";
 function MainLayout({ children, mode, setMode, activeIndex }) {
   return (
@@ -10,7 +9,6 @@ function MainLayout({ children, mode, setMode, activeIndex }) {
       <Stack direction="row">
         <Sidebar mode={mode} setMode={setMode} activeIndex={activeIndex} />
         <>{children}</>
-        <Rightbar />
       </Stack>
     </Box>
   );

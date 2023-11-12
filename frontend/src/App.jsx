@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import { useContext } from "react";
+import AuthContext from "./context/AuthProvider";
 import { Routes, Route } from "react-router-dom";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
-import MainLayout from "./layout/MainLayout";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 import PrivateRoutes from "./routes/privateRoutes";
 import PublicRoutes from "./routes/publicRoutes";
-import AlumniOfficerRoutes from "./routes/alumniOfficerRoutes";
 import Feed from "./components/Feed";
 import Explore from "./components/Explore";
 import Announcements from "./components/Announcements";
@@ -14,14 +14,11 @@ import News from "./components/News";
 import Events from "./components/Events";
 import Fundraise from "./components/Fundraise";
 import { QueryClientProvider, QueryClient } from "react-query";
-import Unauthorized from "./components/Unauthorized";
 import Missing from "./components/Missing";
 import PersistLogin from "./routes/persistLogin";
-import UpdateProfile from "./components/UpdateProfile";
 import LinkedInRedirect from "./components/LinkedInRedirect";
 import { ReactQueryDevtools } from "react-query/devtools";
-import DemographicProfile from "./components/DemographicProfile";
-
+import RoleBasedRoutes from "./routes/RoleBasedRoutes";
 const App = () => {
   const [mode, setMode] = useState("light");
   const theme = createTheme({
@@ -90,72 +87,9 @@ const App = () => {
             <Route element={<PersistLogin />}>
               <Route path="/" element={<PrivateRoutes />}>
                 <Route
-                  path="unauthorized"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                      <Unauthorized />
-                    </MainLayout>
-                  }
+                  path="*"
+                  element={<RoleBasedRoutes mode={mode} setMode={setMode} />}
                 />
-                <Route
-                  path="home"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-                      <Feed />
-                      {/* <DemographicProfile /> */}
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="explore"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-                      <Explore />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="announcements"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-                      <Announcements />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="news"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-                      <News />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="events"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-                      <Events />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="profile/me"
-                  element={
-                    <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-                      <UpdateProfile />
-                    </MainLayout>
-                  }
-                />
-                <Route element={<AlumniOfficerRoutes />}>
-                  <Route
-                    path="fundraise"
-                    element={
-                      <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-                        <Fundraise />
-                      </MainLayout>
-                    }
-                  />
-                </Route>
               </Route>
             </Route>
             <Route path="*" element={<Missing />} />

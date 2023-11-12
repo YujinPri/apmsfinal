@@ -38,86 +38,90 @@ def decode_linkedin_access_token(access_token):
         return None
 
 # Register a new user
-async def create_user(*, username: str = Form(...), email: str = Form(...), first_name: str = Form(...), 
-                      last_name: str = Form(...), role: str = Form(...), passwordConfirm: str = Form(...), 
-                      verified: str = Form(...), password: str = Form(...), 
+async def create_user(*, username: str = Form(...), email: str = Form(...), password: str = Form(...), 
                       profile_picture: Optional[UploadFile] = File(None), db: Session, is_officer=False):
-    # Check if email already exists
-    user = db.query(models.User).filter(models.User.email == email.lower()).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Email is already in use")
-
-    # Check if username already exists
-    user = db.query(models.User).filter(models.User.username == username.lower()).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Username is already in use")
-
-    # Compare password and passwordConfirm
-    if password != passwordConfirm:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
-    
-    #Set Minimum length Requirement
-    if len(password) < 8: 
-        raise HTTPException(status_code=400, detail="Passwords do not match")
-    
-    # Check for at least one digit
-    if not any(char.isdigit() for char in password):
-        raise HTTPException(
-            status_code=400, detail=f"Password must contain at least one digit."
-        )
-    # Check for at least one special character
-    special_characters = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/"
-    if not any(char in special_characters for char in password):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Password must contain at least one special character.",
-        )
-
     try:
-        payload = schemas.CreateUserSchema(
+        # Check if email already exists
+        user = db.query(models.User).filter(models.User.email == email.lower()).first()
+        if user:
+            raise HTTPException(status_code=400, detail="Email is already in use")
+        
+        # Check if username already exists
+        user = db.query(models.User).filter(models.User.username == username.lower()).first()
+        if user:
+            raise HTTPException(status_code=400, detail="Username is already in use")
+
+        new_user = models.User(
             username=username,
             email=email,
-            first_name=first_name,
-            last_name=last_name,
-            role="officer" if is_officer else "alumni" , # Use ternary expression
-            passwordConfirm=passwordConfirm,
-            verified="unapproved",
+            role="officer" if is_officer else "publicuser",
             password=utils.hash_password(password),
-            profile_picture = '',
+            profile_picture=''  # You can set this to the actual profile picture if available.
         )
 
-
-        del payload.passwordConfirm
-        new_user = models.User(**payload.model_dump())
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Account creation failed")
-    
-    try:
+        
         if profile_picture:
             contents = await profile_picture.read()
             filename = profile_picture.filename
             folder = "Profiles"
             result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{new_user.id}'])
-            # save the url of the image
+            # Save the URL of the image
             new_user.profile_picture = result.get("url")
             db.commit()
             db.refresh(new_user)
 
-    except:
-        return HTTPException(status_code=500, detail="Error while uploading profile to Cloudinary")
-    return new_user
+        return new_user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Account creation failed")
 
+@router.post('/register/alumni', status_code=status.HTTP_201_CREATED)
+async def create_alumni(username: str = Form(...), email: str = Form(...), password: str = Form(...), first_name: str = Form(...), 
+                        last_name: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
+        
+    # Check if email already exists
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Email is already in use")
+    
+    # Check if username already exists
+    user = db.query(models.User).filter(models.User.username == username).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Username is already in use")
 
-@router.post('/register/alumni', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
-async def create_alumni(username: str = Form(...), email: str = Form(...), first_name: str = Form(...), 
-                        last_name: str = Form(...), role: str = Form(...), passwordConfirm: str = Form(...), 
-                        verified: str = Form(...), password: str = Form(...), 
-                        profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
-    return await create_user(username=username, email=email, first_name=first_name, last_name=last_name, role=role, passwordConfirm=passwordConfirm, verified=verified, password=password, profile_picture=profile_picture, db=db)
+    try:
+        new_user = models.User(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            role="public",
+            password=utils.hash_password(password),
+            profile_picture=''  
+        )
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        if profile_picture:
+            contents = await profile_picture.read()
+            filename = profile_picture.filename
+            folder = "Profiles"
+            result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{new_user.id}'])
+            # Save the URL of the image
+            new_user.profile_picture = result.get("url")
+            db.commit()
+            db.refresh(new_user)
+
+        return new_user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Account creation failed")
+
 
 
 # Register a new officer user
@@ -178,33 +182,19 @@ async def exchange_token(*, db: Session = Depends(get_db), data: dict, response:
     if access_token_response.status_code == 200:
         access_token = access_token_response.json()["id_token"]
         token = access_token_response.json()["access_token"]
-        # try:
-        #     async with httpx.AsyncClient() as client:
-        #         url = "https://api.linkedin.com/v2/userinfo"
-        #         headers = {
-        #             "Authorization": f"Bearer {token}"
-        #         }
-        #         response = await client.get(url, headers=headers)
-        #         response.raise_for_status()  # Raise an exception if the response is not successful
-        #         linkedin_data = response.json()
-        #         print(linkedin_data)
-        #         return linkedin_data
-        # except httpx.RequestError as exc:
-        #     raise HTTPException(status_code=500, detail="LinkedIn API request failed")
-
         decoded_token = decode_linkedin_access_token(access_token)
 
         sub = decoded_token.get("sub", "")
         print(sub)
         user = db.query(models.User).filter(models.User.sub == sub).first()
 
+        #
         if not user:
-            #set email
             linked_in_email = decoded_token.get("email", "")
             uniqueEmail = db.query(models.User).filter(models.User.email == linked_in_email).first()
             if uniqueEmail: raise HTTPException(status_code=401, detail='Email is already in use, use the login system')
 
-            #unique username
+            #Generate a unique username
             used_numbers = set()
             max_attempts = 100  # Limit the number of attempts
             for _ in range(max_attempts):
@@ -217,43 +207,33 @@ async def exchange_token(*, db: Session = Depends(get_db), data: dict, response:
                         break
                     used_numbers.add(candidate_username)
 
-
             # Generate a random password
             linked_in_password = ''.join(random.choice(string.ascii_uppercase) + random.choice("!@#$%^&*()_+=-{}[]|:;<>,.?/~") + ''.join(random.choice(string.ascii_lowercase + string.digits + "!@#$%^&*()_+=-{}[]|:;<>,.?/~") for _ in range(8)))
 
-            linked_in_verification = "approved" if decoded_token.get("email_verified", False) else "unapproved"
 
             try:
-                payload = schemas.CreateUserSchema(
+                new_user = models.User(
                     username=linked_in_username,
                     email=linked_in_email,
                     first_name=decoded_token.get("given_name", ""),
                     last_name=decoded_token.get("family_name", ""),
-                    role="alumni",
-                    passwordConfirm=linked_in_password,
-                    verified=linked_in_verification,
+                    role="public",
                     password=utils.hash_password(linked_in_password),
                     profile_picture =decoded_token.get("picture", ""),
+                    sub = decoded_token.get("sub", "")
                 )
-                del payload.passwordConfirm
-                new_user = models.User(**payload.model_dump())
-                new_user.sub = decoded_token.get("sub", "")
                 db.add(new_user)
                 db.commit()
                 db.refresh(new_user)
+
                 user = new_user
             except Exception as e:
                 db.rollback()
                 raise HTTPException(status_code=400, detail="Account creation failed")
         
-        user = utils.authenticate_user(username=user.username, hashedPassword=user.password, db=db)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not Authenticate User.",
-            )
         access_token = await login_user(username=user.username, hashed_pass=user.password,response=response, db=db)
         return utils.token_return(token=access_token, role=user.role)
+    
     else:
         error_detail = access_token_response.text
         print(error_detail)

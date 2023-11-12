@@ -37,16 +37,12 @@ async def login_user(*, username: str, password: str="", hashed_pass: str="", re
         response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN * 60,
                             settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
 
-        print("nanii")
         return access_token
     except OperationalError as e:
         db.close()  # Close the current session
         db = get_db()  # Get a new database session (assuming get_db is defined)
         raise HTTPException(status_code=500, detail="Database not loaded up yet, please try again")
     
-# @router.get("/user/me", response_model= UserResponse)
-# async def get_user(user: UserResponse = Depends(get_current_user)):
-#     return user
 
 @router.get("/me")
 async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
@@ -59,36 +55,36 @@ async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depen
 
     employments_data = []
 
+    # Access the user's course classifications from their profile
+    user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+
     for employment in employments:
+        job_classification_ids = {classification.id for classification in employment.job.classifications}
+        aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+
         # Build a dictionary with selected fields and add it to the list
         employment_dict = {
             "id": employment.id,
             "company_name": employment.company_name,
-            "job_title": employment.job_title,
+            "job_title": employment.job.name,
             "date_hired": employment.date_hired,
             "date_end": employment.date_end,
-            "classification": employment.classification,
-            "aligned_with_academic_program": employment.aligned_with_academic_program,
+            "classification": employment.job.classifications[0].name if employment.job.classifications else None,
+            "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,
-            "job_level_position": employment.job_level_position,
-            "type_of_employer": employment.type_of_employer,
-            "location_of_employment": employment.location_of_employment,
-            "first_job": employment.first_job,
+            "location_of_employment": employment.city,
         }
         employments_data.append(employment_dict)
-
 
     return {
         "last_name": profile.last_name,
         "first_name": profile.first_name,
         "present_employment_status": profile.present_employment_status,
-        "field": profile.field,
-        "degree": profile.degree,
+        "course": profile.course.name,
         "year_graduated": profile.year_graduated,
         "role": profile.role,
         "profile_picture": profile.profile_picture,
-        "present_employment_status": profile.present_employment_status,
         "employments": employments_data,
     }
 
