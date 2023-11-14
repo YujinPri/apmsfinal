@@ -441,7 +441,7 @@ export const EmploymentProfile = () => {
                       <Chiptip
                         icon={<PublicRounded color="primary" />}
                         label={
-                          <Typography sx={{ textTransform: "lowercase" }}>
+                          <Typography sx={{ textTransfworm: "lowercase" }}>
                             {employment.location_of_employment}
                           </Typography>
                         }

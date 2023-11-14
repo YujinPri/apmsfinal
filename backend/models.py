@@ -54,7 +54,7 @@ class Achievement(Base):
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE"))
     type_of_achievement = Column(String) # Bar Passing, Board Passing, Civil Service Passing, Certifications, Owned Business
-    year_of_attainment = Column(Date)
+    year_of_attainment = Column(Integer)
     description = Column(String)
     story = Column(Text)
     link_reference = Column(String)

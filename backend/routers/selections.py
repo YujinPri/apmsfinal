@@ -18,7 +18,6 @@ router = APIRouter()
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
-
 @router.post("/jobs/")
 async def create_jobs(
     jobs: List[Dict[str, Union[str, List[UUID]]]],
@@ -29,8 +28,6 @@ async def create_jobs(
     for job_data in jobs:
         # Make sure that every input is in lowercase
         name = job_data["name"].lower()
-
-        print(user.role)
 
         # Check if the specified name is not yet saved in the db
         existing_job = db.query(models.Job).filter(models.Job.name == name).first()
@@ -69,11 +66,57 @@ async def create_jobs(
 
     return ({"message": "Job created successfully"})
 
+@router.put("/jobs/{job_id}")
+async def create_course(
+    *,
+    job_id: UUID,
+    name: str = Body(None),
+    classification_ids: List[UUID] = Body(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    #make sure that every input is in lowercase
+    name=name.lower()
+
+    # Check if the specified name is not yet saved in the db
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    job.name = name
+    db.commit()
+
+    
+    # Check if the specified classification_ids exist
+    existing_classifications = db.query(models.JobClassification).filter(models.JobClassification.job_id == job_id).all()
+
+    for classification in existing_classifications:
+        db.delete(classification)
+    
+    job_classifications = [
+        models.JobClassification(job_id=job_id, classification_id=classification_id)
+        for classification_id in classification_ids
+    ]
+
+    # Add all jobClassifications in a bulk operation
+    db.add_all(job_classifications)
+
+    # Commit the session to persist the new job and jobClassifications
+    db.commit()
+
+    return {"message": "Job edited successfully"}
 
 @router.get("/jobs/")
 async def get_jobs(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
     jobs = db.query(models.Job).filter(models.Job.deleted_at.is_(None)).all()
     return jobs
+
+@router.get("/jobs/{job_id}")
+async def get_jobs(job_id: UUID, db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    classifications = db.query(models.JobClassification.classification_id).filter(models.JobClassification.job_id == job_id).all()
+
+    return {
+        "job": job,
+        "classifications": classifications
+    }
 
 @router.post("/courses/")
 async def create_course(
@@ -85,8 +128,6 @@ async def create_course(
 ):
     #make sure that every input is in lowercase
     name=name.lower()
-
-    print(user.role)
 
     # Check if the specified name is not yet saved in the db
     existing_course = db.query(models.Course).filter(models.Course.name == name).first()
@@ -102,7 +143,7 @@ async def create_course(
     
     # Verify that the number of existing classifications matches the number of specified classification_ids
     if len(existing_classifications) != len(classification_ids):
-        raise HTTPException(status_code=400, detail="Some classification_ids do not exist.")
+        raise HTTPException(status_code=400, detail="Some classification ID do not exist.")
 
     # Create new course instance
     new_course = models.Course(
@@ -128,11 +169,57 @@ async def create_course(
 
     return {"message": "Course created successfully"}
 
+@router.put("/courses/{course_id}")
+async def create_course(
+    *,
+    course_id: UUID,
+    name: str = Body(None),
+    classification_ids: List[UUID] = Body(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    #make sure that every input is in lowercase
+    name=name.lower()
+
+    # Check if the specified name is not yet saved in the db
+    course = db.query(models.Course).filter(models.Course.id == course_id).first()
+    course.name = name
+    db.commit()
+
+    
+    # Check if the specified classification_ids exist
+    existing_classifications = db.query(models.CourseClassification).filter(models.CourseClassification.course_id == course_id).all()
+
+    for classification in existing_classifications:
+        db.delete(classification)
+    
+    course_classifications = [
+        models.CourseClassification(course_id=course_id, classification_id=classification_id)
+        for classification_id in classification_ids
+    ]
+
+    # Add all CourseClassifications in a bulk operation
+    db.add_all(course_classifications)
+
+    # Commit the session to persist the new Course and CourseClassifications
+    db.commit()
+
+    return {"message": "Course created successfully"}
+
 @router.get("/courses/")
 async def get_courses(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
     courses = db.query(models.Course).filter(models.Course.deleted_at.is_(None)).all()
     return courses
 
+@router.get("/courses/{course_id}")
+async def get_courses(course_id: UUID, db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    course = db.query(models.Course).filter(models.Course.id == course_id).first()
+    classifications = db.query(models.CourseClassification.classification_id).filter(models.CourseClassification.course_id == course_id).all()
+
+    return {
+        "course": course,
+        "classifications": classifications
+    }
 
 @router.post("/classifications/")
 async def create_classifications(
@@ -141,7 +228,6 @@ async def create_classifications(
     user: UserResponse = Depends(get_current_user)
 ):
     
-    print(user.role)
     created_classifications = []
 
     #check for existing classification instances
@@ -185,7 +271,6 @@ async def create_classifications(
     # Refresh the instances
     return {"message": "Classifications created successfully"}
 
-
 @router.get("/classifications/")
 async def get_classifications(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
     """
@@ -199,8 +284,9 @@ async def get_classifications(db: Session = Depends(get_db), user: UserResponse 
 async def update_classification(
     *,
     classification_id: UUID,
-    name: str,
-    db: Session = Depends(get_db)
+    name: str = Body(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
 ):
     # Fetch the classification from the database
     classification = db.query(models.Classification).filter_by(id=classification_id).first()
@@ -225,7 +311,8 @@ async def update_classification(
 async def delete_classification(
     *,
     classification_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
 ):
     # Fetch the classification from the database
     classification = db.query(models.Classification).filter_by(id=classification_id).first()

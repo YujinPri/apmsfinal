@@ -13,6 +13,7 @@ import cloudinary.uploader
 import pandas as pd
 import os
 
+
 from fastapi.responses import JSONResponse, FileResponse
 
 from reportlab.lib.pagesizes import letter
@@ -200,27 +201,26 @@ async def get_career_profiles(
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-
-    achievements = (db.query(models.Achievement).filter(models.Achievement.user_id == user.id).all())
-
     achievements_data = []
+    
+    achievements = db.query(models.Achievement).filter(models.Achievement.user_id == user.id).all()
 
-    for achievement in achievements:
-        # Do not include those that are deleted
-        if achievement.deleted_at: continue
+    if achievements:
+        for achievement in achievements:
+            # Do not include those that are deleted
+            if achievement.deleted_at: continue
 
-        # Build a dictionary with selected fields and add it to the list
-        achievement_dict = {
-            "id": achievement.id,
-            "company_name": achievement.company_name,
-            "type_of_achievement": achievement.type_of_achievement,
-            "year_of_attainment": achievement.year_of_attainment,
-            "description": achievement.description,
-            "story": achievement.story,
-            "link_reference": achievement.link_reference,
-        }
+            # Build a dictionary with selected fields and add it to the list
+            achievement_dict = {
+                "id": achievement.id,
+                "type_of_achievement": achievement.type_of_achievement,
+                "year_of_attainment": achievement.year_of_attainment,
+                "description": achievement.description,
+                "story": achievement.story,
+                "link_reference": achievement.link_reference,
+            }
 
-        achievements_data.append(achievement_dict)
+            achievements_data.append(achievement_dict)
 
     if user_data.course is not None:
         course_name = user_data.course.name
@@ -299,7 +299,7 @@ async def get_career_profiles(
 
     profile = []
     for user in users:
-        achievements = (db.query(models.Achievements).filter(models.Achievements.user_id == user.id).all())
+        achievements = (db.query(models.Achievement).filter(models.Achievement.user_id == user.id).all())
         achievements_data = []
 
         for achievement in achievements:
@@ -309,7 +309,6 @@ async def get_career_profiles(
             # Build a dictionary with selected fields and add it to the list
             achievement_dict = {
                 "id": achievement.id,
-                "company_name": achievement.company_name,
                 "type_of_achievement": achievement.type_of_achievement,
                 "year_of_attainment": achievement.year_of_attainment,
                 "description": achievement.description,
@@ -449,7 +448,6 @@ async def get_employment_profiles(
         "per_page": per_page,
     }
 
-
 @router.put("/employment_profiles/{employment_id}")
 async def put_employment(
     employment_id: UUID,
@@ -544,6 +542,126 @@ async def post_employment(
         db.rollback() 
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Employment Details failed")
+
+@router.post("/achievements/")
+async def post_achievement(
+    *,
+    type_of_achievement: str = Body(...),
+    description: str = Body(...),
+    story: str = Body(...),
+    link_reference: str = Body(...),
+    year_of_attainment: int = Body(...),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    user_instance = db.query(models.User).filter_by(id=user.id).first()
+    if user_instance is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+      achievement = models.Achievement(
+          type_of_achievement=type_of_achievement,
+          year_of_attainment=year_of_attainment,
+          description=description,
+          story=story,
+          link_reference=link_reference,
+          user=user_instance,
+      )
+
+      db.add(achievement)
+      db.commit()
+      return {"message": "Profile updated successfully"}
+    except Exception as e:
+        db.rollback() 
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=400, detail="Posting Achievement Details failed")
+    
+@router.get("/achievements/me")
+async def get_achievement(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.id == user.id).first()
+    achievements = (
+        db.query(models.Achievement)
+        .filter(models.Achievement.user_id == user.id)
+        .all()
+    )
+
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"achievements": achievements}
+
+@router.delete("/achievement/{achievement_id}")
+async def delete_achievement(
+    achievement_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        # Query the achievement record by ID and user ID
+        achievement = db.query(models.Achievement).filter_by(id=achievement_id, user_id=user.id).first()
+
+        # Check if the achievement exists and belongs to the user
+        if not achievement:
+            raise HTTPException(status_code=404, detail="achievement not found")
+
+        # Delete the achievement record
+        db.delete(achievement)
+        db.commit()
+
+        return {"message": "achievement record deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.put("/achievement/{achievement_id}")
+async def put_achievement(
+    achievement_id: UUID,
+    type_of_achievement: str = Body(None),
+    description: str = Body(None),
+    story: str = Body(None),
+    link_reference: str = Body(None),
+    year_of_attainment: int = Body(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        # Query the achievement to be updated
+        achievement = db.query(models.Achievement).filter_by(id=achievement_id, user_id=user.id).first()        
+        if not achievement:
+            raise HTTPException(status_code=404, detail="achievement not found")
+        
+        user_instance = db.query(models.User).filter_by(id=user.id).first()
+        if user_instance is None:
+            raise HTTPException(status_code=404, detail="User not found")
+    
+      
+        profile = {
+            'type_of_achievement': type_of_achievement,
+            'description': description,
+            'story': story,
+            'link_reference': link_reference,
+            'year_of_attainment': year_of_attainment,
+            "user": user_instance,
+        }
+
+         # Iterate through the profile dictionary and populate saved_profile
+        for key, value in profile.items():
+            if value != None and value != "":
+                setattr(achievement, key, value)
+        
+        db.commit()
+        return {"message": "Achievement Updated Successfully"}
+    except Exception as e:
+        db.rollback()
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=400, detail="Updating Achievement Details failed")
 
 @router.get("/employment_profiles/{employment_id}")
 async def get_employment(

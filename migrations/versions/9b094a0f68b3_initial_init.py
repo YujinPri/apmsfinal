@@ -1,8 +1,8 @@
-"""added tables
+"""initial init
 
-Revision ID: 155c5bcdb2ce
+Revision ID: 9b094a0f68b3
 Revises: 
-Create Date: 2023-11-07 21:38:08.381260
+Create Date: 2023-11-13 15:45:12.340860
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '155c5bcdb2ce'
+revision: str = '9b094a0f68b3'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,9 +26,43 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
     sa.Column('name', sa.String(), nullable=False),
+    sa.Column('code', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_classification_code'), 'classification', ['code'], unique=True)
     op.create_index(op.f('ix_classification_name'), 'classification', ['name'], unique=False)
+    op.create_table('course',
+    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_course_name'), 'course', ['name'], unique=False)
+    op.create_table('job',
+    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_job_name'), 'job', ['name'], unique=False)
+    op.create_table('course_classification',
+    sa.Column('course_id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('classification_id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.ForeignKeyConstraint(['classification_id'], ['classification.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['course_id'], ['course.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('course_id', 'classification_id')
+    )
+    op.create_table('job_classification',
+    sa.Column('job_id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('classification_id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.ForeignKeyConstraint(['classification_id'], ['classification.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['job_id'], ['job.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('job_id', 'classification_id')
+    )
     op.create_table('user',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('username', sa.String(), nullable=True),
@@ -51,9 +85,9 @@ def upgrade() -> None:
     sa.Column('gender', sa.String(), nullable=True),
     sa.Column('year_graduated', sa.Integer(), nullable=True),
     sa.Column('post_grad_act', postgresql.ARRAY(sa.String()), nullable=True),
-    sa.Column('achievements', postgresql.ARRAY(sa.String()), nullable=True),
-    sa.Column('achievements_story', sa.Text(), nullable=True),
     sa.Column('present_employment_status', sa.String(), server_default='unemployed', nullable=True),
+    sa.Column('course_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.ForeignKeyConstraint(['course_id'], ['course.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
@@ -61,23 +95,26 @@ def upgrade() -> None:
     op.create_index(op.f('ix_user_student_number'), 'user', ['student_number'], unique=True)
     op.create_index(op.f('ix_user_sub'), 'user', ['sub'], unique=True)
     op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
-    op.create_table('course',
+    op.create_table('achievement',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
     sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
-    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('type_of_achievement', sa.String(), nullable=True),
+    sa.Column('year_of_attainment', sa.Integer(), nullable=True),
+    sa.Column('description', sa.String(), nullable=True),
+    sa.Column('story', sa.Text(), nullable=True),
+    sa.Column('link_reference', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_course_name'), 'course', ['name'], unique=False)
     op.create_table('employment',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
+    sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('company_name', sa.String(), nullable=False),
     sa.Column('date_hired', sa.Date(), nullable=False),
     sa.Column('date_end', sa.Date(), nullable=True),
@@ -85,56 +122,35 @@ def upgrade() -> None:
     sa.Column('employment_contract', sa.String(), nullable=False),
     sa.Column('city', sa.String(), nullable=True),
     sa.Column('is_international', sa.Boolean(), server_default='False', nullable=False),
+    sa.Column('job_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.ForeignKeyConstraint(['job_id'], ['job.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_employment_city'), 'employment', ['city'], unique=False)
     op.create_index(op.f('ix_employment_date_hired'), 'employment', ['date_hired'], unique=False)
-    op.create_table('course_classification',
-    sa.Column('course_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('classification_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.ForeignKeyConstraint(['classification_id'], ['classification.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['course_id'], ['course.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('course_id', 'classification_id')
-    )
-    op.create_table('job',
-    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted_at', sa.TIMESTAMP(timezone=True), nullable=True),
-    sa.Column('employment_id', postgresql.UUID(as_uuid=True), nullable=True),
-    sa.Column('name', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['employment_id'], ['employment.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_job_name'), 'job', ['name'], unique=False)
-    op.create_table('job_classification',
-    sa.Column('job_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('classification_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.ForeignKeyConstraint(['classification_id'], ['classification.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['job_id'], ['job.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('job_id', 'classification_id')
-    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('job_classification')
-    op.drop_index(op.f('ix_job_name'), table_name='job')
-    op.drop_table('job')
-    op.drop_table('course_classification')
     op.drop_index(op.f('ix_employment_date_hired'), table_name='employment')
     op.drop_index(op.f('ix_employment_city'), table_name='employment')
     op.drop_table('employment')
-    op.drop_index(op.f('ix_course_name'), table_name='course')
-    op.drop_table('course')
+    op.drop_table('achievement')
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_sub'), table_name='user')
     op.drop_index(op.f('ix_user_student_number'), table_name='user')
     op.drop_index(op.f('ix_user_role'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
+    op.drop_table('job_classification')
+    op.drop_table('course_classification')
+    op.drop_index(op.f('ix_job_name'), table_name='job')
+    op.drop_table('job')
+    op.drop_index(op.f('ix_course_name'), table_name='course')
+    op.drop_table('course')
     op.drop_index(op.f('ix_classification_name'), table_name='classification')
+    op.drop_index(op.f('ix_classification_code'), table_name='classification')
     op.drop_table('classification')
     # ### end Alembic commands ###
