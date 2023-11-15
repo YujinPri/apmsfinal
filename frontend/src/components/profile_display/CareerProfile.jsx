@@ -29,8 +29,9 @@ import {
   Phone,
   School,
 } from "@mui/icons-material";
+import EditableAchievementModal from "../profile_edit/EditableAchievementModal";
 
-export const EducationalProfile = () => {
+export const CareerProfile = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -234,7 +235,6 @@ export const EducationalProfile = () => {
       </Grid>
     );
   }
-
   return (
     <Grid
       container
@@ -294,31 +294,6 @@ export const EducationalProfile = () => {
             )}
           </Box>
         </Box>
-        {/* <Box sx={{ width: "100%" }}>
-          {data?.data?.honors_and_awards && (
-            <Divider sx={{ padding: 2.5 }}>
-              <Typography variant="subtitle2">honors and awards</Typography>
-            </Divider>
-          )}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 1.5,
-              alignItems: "center",
-              justifyContent: "center",
-              flexWrap: "wrap", // Allow content to wrap onto the next line
-            }}
-          >
-            {data?.data?.honors_and_awards &&
-              data?.data?.honors_and_awards.map((activity, index) => (
-                <Chiptip
-                  key={index}
-                  icon={<EmojiEvents color="primary" />}
-                  label={activity}
-                />
-              ))}
-          </Box>
-        </Box> */}
         <Box sx={{ width: "100%" }}>
           {data?.data?.post_grad_act && (
             <Divider sx={{ padding: 2.5 }}>
@@ -346,64 +321,18 @@ export const EducationalProfile = () => {
               ))}
           </Box>
         </Box>
-        {/* {data?.data?.achievements_story && (
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Divider sx={{ padding: 2.5, width: "100%" }}>
-              <Typography variant="subtitle2">
-                pup achievements story
-              </Typography>
+
+        {data?.data?.achievement?.length != 0 && (
+          <Box sx={{ width: "100%" }}>
+            <Divider sx={{ padding: 2.5 }}>
+              <Typography variant="subtitle2">alumni achievements</Typography>
             </Divider>
-            <Box sx={{ position: "relative", margin: " auto 0" }}>
-              <Typography
-                variant="h1" // You can adjust the variant to match your preferred heading style
-                sx={{
-                  display: "block", // Display the quotation marks as blocks
-                  position: "absolute", // Position them absolutely within the parent container
-                  top: 0, // Position at the top
-                  left: 0, // Position at the left
-                }}
-              >
-                &ldquo;
-              </Typography>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  // fontWeight: "bold", // Make the text bold
-                  height: "100%", // Consume available vertical space
-                  padding: "1.5rem",
-                  maxWidth: "50ch", // Maximum width of 40 characters
-                  whiteSpace: "wrap", // Prevent text from wrapping to the next line
-                  overflow: "hidden", // Hide overflow text
-                  textOverflow: "ellipsis", // Display ellipsis (...) when text overflows
-                  position: "relative", // Make the main content container relative for positioning
-                }}
-              >
-                {data?.data?.achievements_story}
-              </Typography>
-              <Typography
-                variant="h1" // You can adjust the variant to match your preferred heading style
-                sx={{
-                  display: "block", // Display the quotation marks as blocks
-                  position: "absolute", // Position them absolutely within the parent container
-                  bottom: 0, // Position at the bottom
-                  right: 0, // Position at the right
-                }}
-              >
-                &rdquo;
-              </Typography>
-            </Box>
+            <EditableAchievementModal />
           </Box>
-        )} */}
+        )}
       </Grid>
     </Grid>
   );
 };
 
-export default EducationalProfile;
+export default CareerProfile;

@@ -301,10 +301,8 @@ export const DemographicProfile = () => {
                     height: "100%", // Consume available vertical space
                     padding: "1.5rem",
                     width: "40ch",
-                    whiteSpace: "wrap", // Prevent text from wrapping to the next line
-                    overflow: "hidden", // Hide overflow text
-                    textOverflow: "ellipsis", // Display ellipsis (...) when text overflows
                     position: "relative", // Make the main content container relative for positioning
+                    textAlign: "center",
                   }}
                 >
                   {data?.data.headline}

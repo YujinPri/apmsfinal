@@ -7,18 +7,20 @@ import {
   Link,
   Tab,
   Tabs,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import WorkIcon from "@mui/icons-material/Work";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import SchoolIcon from "@mui/icons-material/School";
 import DemographicProfile from "../profile_display/DemographicProfile";
-import EducationalProfile from "../profile_display/CareerProfile";
+import CareerProfile from "../profile_display/CareerProfile";
 import EditableEmploymentProfile from "../profile_edit/EditableEmploymentProfile";
-import { AddCircleRounded, Edit } from "@mui/icons-material";
+import { Add, AddCircleRounded, Edit } from "@mui/icons-material";
 import ProfileEditModal from "./ProfileEditModal";
 import EducProfileEditModal from "./CareerEditModal";
 import AddEmploymentModal from "./AddEmploymentModal";
+import AddAchievementModal from "./AddAchievementModal";
 import axios from "axios";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
@@ -43,6 +45,16 @@ function UpdateProfile() {
     return await axiosPrivate.get("/selections/jobs/");
   };
 
+  const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
+    <Tooltip
+      color="secondary"
+      title={actual !== "" ? actual : additional + label}
+      sx={{ padding: "0.5rem" }}
+    >
+      <Chip icon={icon} label={label} />
+    </Tooltip>
+  );
+
   useQuery("jobs", getJobs);
   useQuery("cities", getCities);
 
@@ -51,6 +63,7 @@ function UpdateProfile() {
     profile: false,
     career: false,
     employment: false,
+    add_achievement: false,
   });
 
   const handleModalOpen = (type) => {
@@ -66,6 +79,7 @@ function UpdateProfile() {
       profile: false,
       career: false,
       employment: false,
+      add_achievement: false,
     }));
   };
 
@@ -146,18 +160,20 @@ function UpdateProfile() {
         >
           profile
         </Typography>
-        <Fab
-          size="small"
-          color="primary"
-          sx={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-          }}
-          onClick={() => handleModalOpen("profile")}
-        >
-          <Edit />
-        </Fab>
+        <Tooltip title="update demographic profile">
+          <Fab
+            size="small"
+            color="primary"
+            sx={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+            }}
+            onClick={() => handleModalOpen("profile")}
+          >
+            <Edit />
+          </Fab>
+        </Tooltip>
         <DemographicProfile />
       </Box>
 
@@ -183,19 +199,35 @@ function UpdateProfile() {
         >
           pupqc career background
         </Typography>
-        <Fab
-          size="small"
-          color="primary"
+        <Box
           sx={{
             position: "absolute",
             top: "1rem",
             right: "1rem",
+            display: "flex",
+            gap: "0.5rem",
           }}
-          onClick={() => handleModalOpen("career")}
         >
-          <Edit />
-        </Fab>
-        <EducationalProfile />
+          <Tooltip title="add achievement">
+            <Fab
+              size="small"
+              onClick={() => handleModalOpen("add_achievement")}
+              color="primary"
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
+          <Tooltip title="edit career profile">
+            <Fab
+              size="small"
+              color="primary"
+              onClick={() => handleModalOpen("career")}
+            >
+              <Edit />
+            </Fab>
+          </Tooltip>
+        </Box>
+        <CareerProfile />
       </Box>
 
       <Box
@@ -219,19 +251,20 @@ function UpdateProfile() {
         >
           employment history
         </Typography>
-
-        <Fab
-          size="small"
-          color="primary"
-          sx={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-          }}
-          onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
-        >
-          <AddCircleRounded />
-        </Fab>
+        <Tooltip title="add employment">
+          <Fab
+            size="small"
+            color="primary"
+            sx={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+            }}
+            onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
+          >
+            <Add />
+          </Fab>
+        </Tooltip>
         <EditableEmploymentProfile />
       </Box>
       {modalOpen.profile && (
@@ -246,6 +279,12 @@ function UpdateProfile() {
       {modalOpen.employment && (
         <AddEmploymentModal
           open={modalOpen.employment}
+          onClose={handleCloseModal}
+        />
+      )}
+      {modalOpen.add_achievement && (
+        <AddAchievementModal
+          open={modalOpen.add_achievement}
           onClose={handleCloseModal}
         />
       )}

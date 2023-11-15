@@ -61,10 +61,7 @@ export const EmploymentProfile = () => {
     deleteModal: false,
   });
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
   const [employmentID, setEmploymentID] = useState(null);
-
 
   const handleModalOpen = (type, id) => {
     setEmploymentID(id);
@@ -374,9 +371,7 @@ export const EmploymentProfile = () => {
                       )}
                     </Box>
                     <Divider sx={{ paddingBottom: 1 }}>
-                      <Typography variant="subtitle2">
-                        job snapshot
-                      </Typography>
+                      <Typography variant="subtitle2">job snapshot</Typography>
                     </Divider>
                     <Typography
                       variant="h6"
@@ -429,7 +424,6 @@ export const EmploymentProfile = () => {
         </Box>
         {
           <>
-
             {employmentID && (
               <>
                 <EditEmploymentModal

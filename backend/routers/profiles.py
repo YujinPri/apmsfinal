@@ -543,7 +543,7 @@ async def post_employment(
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Employment Details failed")
 
-@router.post("/achievements/")
+@router.post("/achievement/")
 async def post_achievement(
     *,
     type_of_achievement: str = Body(...),
@@ -577,7 +577,7 @@ async def post_achievement(
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Achievement Details failed")
     
-@router.get("/achievements/me")
+@router.get("/achievement/me")
 async def get_achievement(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
@@ -594,6 +594,25 @@ async def get_achievement(
         raise HTTPException(status_code=404, detail="User not found")
 
     return {"achievements": achievements}
+    
+@router.get("/achievement/{achievement_id}")
+async def get_achievement(
+    achievement_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.id == user.id).first()
+    achievement = (
+        db.query(models.Achievement)
+        .filter(models.Achievement.id == achievement_id, models.Achievement.user_id == user.id)
+        .first()
+    )
+
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"achievement": achievement}
 
 @router.delete("/achievement/{achievement_id}")
 async def delete_achievement(
@@ -618,7 +637,6 @@ async def delete_achievement(
         db.rollback()
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=500, detail="Internal Server Error")
-
 
 @router.put("/achievement/{achievement_id}")
 async def put_achievement(

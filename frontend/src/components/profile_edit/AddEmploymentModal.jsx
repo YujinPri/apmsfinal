@@ -1,7 +1,5 @@
-import cloneDeep from "lodash/cloneDeep";
 import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 import {
@@ -28,10 +26,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers";
+
 
 const AddEmploymentModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
