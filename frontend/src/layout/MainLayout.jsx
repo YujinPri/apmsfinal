@@ -8,7 +8,9 @@ function MainLayout({ children, mode, setMode, activeIndex }) {
       <Navbar />
       <Stack direction="row">
         <Sidebar mode={mode} setMode={setMode} activeIndex={activeIndex} />
-        <>{children}</>
+        <Box sx={{ width: { md: "70vw", sm: "100vw" } }} marginX={"auto"}>
+          <Box sx={{ width: { md: "70%", sm: "100%" } }}>{children}</Box>
+        </Box>
       </Stack>
     </Box>
   );

@@ -100,7 +100,7 @@ function UpdateProfile() {
   return (
     <Box
       flex={4}
-      p={{ xs: 0, md: 2 }}
+      p={{ sm: 4, md: 2 }}
       sx={{
         backgroundColor: (theme) => theme.palette.secondary.main,
         display: "flex",

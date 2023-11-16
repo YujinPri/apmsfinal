@@ -88,9 +88,7 @@ export const Profile = () => {
   }
 
   return (
-    <Box
-      sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-    >
+    <Box    >
       <Card
         variant="outlined"
         sx={{

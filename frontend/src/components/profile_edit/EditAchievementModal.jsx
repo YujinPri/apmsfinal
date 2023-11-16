@@ -281,6 +281,31 @@ const EditAchievementModal = ({ open, onClose, achievementID }) => {
       <DialogContent sx={{ width: "40vw" }}>
         <Grid container spacing={2} p={2}>
           <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>achievement type</InputLabel>
+              <Select
+                name="achievement_type"
+                value={achievementProfile?.type_of_achievement || ""}
+                onChange={handleAchievementTypeChange}
+              >
+                {achievement_type.map((option) => (
+                  <MenuItem key={option.type} value={option.type}>
+                    {option.type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="description"
+              label="description of the achievements"
+              value={achievementProfile?.description || ""}
+              onChange={handleChange}
+              sx={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid item xs={12}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DatePicker"]} sx={{ width: "100%" }}>
                 <DemoItem>
@@ -320,32 +345,6 @@ const EditAchievementModal = ({ open, onClose, achievementID }) => {
               sx={{ width: "100%" }}
               multiline
               rows={2}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>achievement type</InputLabel>
-              <Select
-                name="achievement_type"
-                value={achievementProfile?.type_of_achievement || ""}
-                onChange={handleAchievementTypeChange}
-              >
-                {achievement_type.map((option) => (
-                  <MenuItem key={option.type} value={option.type}>
-                    {option.type}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              name="description"
-              label="description of the achievements"
-              value={achievementProfile?.description || ""}
-              onChange={handleChange}
-              sx={{ width: "100%" }}
             />
           </Grid>
         </Grid>

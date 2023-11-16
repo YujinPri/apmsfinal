@@ -47,6 +47,20 @@ async def afterEmploymentPostRoutine(user_id, db: Session):
 
   db.commit()
 
+@router.put("/change_role/")
+async def update_role(
+    role: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    user_data = db.query(models.User).filter(models.User.id == user.id).first()
+    setattr(user_data, 'role', role)
+
+    db.commit()
+    
+    return user_data
+    
+
 @router.get("/demographic_profiles/")
 async def get_demographic_profiles(
     page: int = Query(default=1, description="Page number"),

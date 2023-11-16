@@ -46,17 +46,15 @@ function Sidebar({ mode, setMode, activeIndex }) {
   return (
     <Box
       flex={2}
-      p={2}
+      p={4}
       sx={{
-        overflow: "auto",
-        // height: "100vh",
-        display: { xs: "none", sm: "flex" },
+        display: { sm: "none", md: "flex" },
         boxShadow: 1,
         justifyContent: "center",
         backgroundColor: (theme) => theme.palette.common.main,
       }}
     >
-      <Box position="fixed" sx={{ maxWidth: "30%", boxSizing: "border-box" }}>
+      <Box position="fixed" width={"20%"}>
         <Profile />
         <List sx={{ display: "flex", gap: 1, flexDirection: "column" }}>
           <RouterLink
