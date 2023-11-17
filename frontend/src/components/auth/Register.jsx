@@ -5,7 +5,7 @@ import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../../api/axios";
-import { useLocation, Navigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import {
   Avatar,
@@ -48,7 +48,7 @@ const validatePassword = (password) => {
 };
 
 const Register = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -114,18 +114,16 @@ const Register = () => {
           last_name: "",
           first_name: "",
           password: "",
-          confirm_password: "",
+          confirmation_password: "",
         });
 
-        <Navigate
-          to="/login"
-          state={{
-            from: location,
+        navigate("/login", {
+          state: {
             message:
               "successfully registered now please login your credentials",
-          }}
-          replace
-        />;
+          },
+          replace: true,
+        });
       },
     }
   );
@@ -157,7 +155,6 @@ const Register = () => {
     payload.append("password", formData.password);
     payload.append("profile_picture", formData.profile_picture);
 
-    console.log(formData.profile_picture);
     await mutation.mutateAsync(payload);
   };
 

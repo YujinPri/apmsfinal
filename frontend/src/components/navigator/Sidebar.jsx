@@ -1,11 +1,16 @@
 import {
+  AccountCircle,
   Campaign,
+  CheckBoxOutlineBlank,
+  CheckBoxOutlineBlankRounded,
   Event,
   Explore,
   Home,
   ModeNight,
   MonetizationOn,
   Newspaper,
+  People,
+  Settings,
   Stars,
 } from "@mui/icons-material";
 import {
@@ -32,12 +37,7 @@ import Profile from "./ProfileCard";
 
 function Sidebar({ mode, setMode, activeIndex }) {
   const [selectedIndex, setSelectedIndex] = React.useState(activeIndex);
-  const axiosPrivate = useAxiosPrivate();
-  const [profile, setProfile] = useState();
-  const [educ, setEduc] = useState();
   const { auth, setAuth } = useAuth();
-
-  const [employment, setEmployment] = useState();
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
@@ -46,7 +46,7 @@ function Sidebar({ mode, setMode, activeIndex }) {
   return (
     <Box
       flex={2}
-      p={4}
+      p={2}
       sx={{
         display: { sm: "none", md: "flex" },
         boxShadow: 1,
@@ -119,6 +119,68 @@ function Sidebar({ mode, setMode, activeIndex }) {
               </ListItemButton>
             </ListItem>
           </RouterLink>
+          {auth?.role == "admin" ? (
+            <>
+              <RouterLink
+                to="/selections"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <ListItem
+                  disablePadding
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.secondary.main,
+                    borderRadius: 3,
+                  }}
+                >
+                  <ListItemButton
+                    selected={selectedIndex === 8}
+                    onClick={(event) => handleListItemClick(event, 8)}
+                    sx={{ paddingY: 0.5 }}
+                  >
+                    <ListItemIcon>
+                      <Settings />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight={800}>
+                          manage selections
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </RouterLink>
+              <RouterLink
+                to="/accounts"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <ListItem
+                  disablePadding
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.secondary.main,
+                    borderRadius: 3,
+                  }}
+                >
+                  <ListItemButton
+                    selected={selectedIndex === 9}
+                    onClick={(event) => handleListItemClick(event, 9)}
+                    sx={{ paddingY: 0.5 }}
+                  >
+                    <ListItemIcon>
+                      <People />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight={800}>
+                          manage accounts
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </RouterLink>
+            </>
+          ) : null}
 
           <Divider variant="middle" sx={{ marginY: 0.5 }} />
 

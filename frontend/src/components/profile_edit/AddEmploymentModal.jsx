@@ -26,7 +26,11 @@ import {
   Skeleton,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-
+import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
 
 const AddEmploymentModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
@@ -132,7 +136,6 @@ const AddEmploymentModal = ({ open, onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(employmentProfile);
     if (
       employmentProfile.job == "" ||
       employmentProfile.company_name == "" ||

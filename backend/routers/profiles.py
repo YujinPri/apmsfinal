@@ -369,10 +369,14 @@ async def get_user_employments(
     )
 
     # Access the user's course classifications from their profile
-    user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+    user_course_classification_ids = None
+    if profile.course and profile.course.classifications:
+        user_course_classification_ids = {classification.id for classification in profile.course.classifications}
 
     for employment in employments:
-        job_classification_ids = {classification.id for classification in employment.job.classifications}
+        job_classification_ids = None
+        if employment.job and employment.job.classifications:
+            job_classification_ids = {classification.id for classification in employment.job.classifications}  
         aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
 
         # Build a dictionary with selected fields and add it to the list
@@ -383,7 +387,7 @@ async def get_user_employments(
             "job_title": employment.job.name,
             "date_hired": employment.date_hired,
             "date_end": employment.date_end,
-            "classification": employment.job.classifications[0].name if employment.job.classifications else None,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
             "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,
@@ -428,14 +432,20 @@ async def get_employment_profiles(
     user_data = {}
     for user, employment in employments:
         if user.id not in user_data:
-            user_course_classification_ids = {classification.id for classification in user.course.classifications}
+            user_course_classification_ids = None
+            if user.course and user.course.classifications:
+                user_course_classification_ids = {classification.id for classification in user.course.classifications}
+
             user_data[user.id] = {
                 "user_id": user.id,
                 "username": user.username,
                 "employments": [],
             }
+            
         if employment:  # Check if employment is not None
-            job_classification_ids = {classification.id for classification in employment.job.classifications}
+            job_classification_ids = None
+            if employment.job and employment.job.classifications:
+                job_classification_ids = {classification.id for classification in employment.job.classifications}
             aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
             user_data[user.id]["employments"].append(
                 {
@@ -444,7 +454,7 @@ async def get_employment_profiles(
                     "job_title": employment.job.name,
                     "date_hired": employment.date_hired,
                     "date_end": employment.date_end,
-                    "classification": employment.job.classifications[0].name if employment.job.classifications else None,
+                    "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
                     "aligned_with_academic_program": aligned_with_academic_program,
                     "gross_monthly_income": employment.gross_monthly_income,
                     "employment_contract": employment.employment_contract,
@@ -710,8 +720,14 @@ async def get_employment(
         
         profile = db.query(models.User).filter(models.User.id == employment.user.id).first()
 
-        user_course_classification_ids = {classification.id for classification in profile.course.classifications}
-        job_classification_ids = {classification.id for classification in employment.job.classifications}
+        user_course_classification_ids = None
+        if profile.course and profile.course.classifications:
+            user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+
+        job_classification_ids = None
+        if employment.job and employment.job.classifications:
+            job_classification_ids = {classification.id for classification in employment.job.classifications}
+
         aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
 
         # Convert the employment object to a dictionary or use a Pydantic model for serialization

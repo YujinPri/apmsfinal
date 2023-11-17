@@ -143,7 +143,6 @@ export const EditableAchievementModal = () => {
     }
   }
 
-
   return (
     data?.data?.achievements && (
       <Grid
@@ -246,7 +245,7 @@ export const EditableAchievementModal = () => {
                             display: "flex",
                             gap: "0.5rem",
                             alignItems: "center",
-                            width: "80%"
+                            width: "80%",
                           }}
                         >
                           <Star />
@@ -312,24 +311,20 @@ export const EditableAchievementModal = () => {
             );
           })}
         </Box>
-        {
+        {achievementID && (
           <>
-            {achievementID && (
-              <>
-                <EditAchievementModal
-                  open={isModalOpen.editModal}
-                  onClose={() => handleCloseModal("editModal")}
-                  achievementID={achievementID}
-                />
-                <DeleteAchievementModal
-                  open={isModalOpen.deleteModal}
-                  onClose={() => handleCloseModal("deleteModal")}
-                  achievementID={achievementID}
-                />
-              </>
-            )}
+            <EditAchievementModal
+              open={isModalOpen.editModal}
+              onClose={() => handleCloseModal("editModal")}
+              achievementID={achievementID}
+            />
+            <DeleteAchievementModal
+              open={isModalOpen.deleteModal}
+              onClose={() => handleCloseModal("deleteModal")}
+              achievementID={achievementID}
+            />
           </>
-        }
+        )}
       </Grid>
     )
   );

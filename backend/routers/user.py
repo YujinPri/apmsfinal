@@ -56,10 +56,14 @@ async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depen
     employments_data = []
 
     # Access the user's course classifications from their profile
-    user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+    user_course_classification_ids = None
+    if profile.course and profile.course.classifications:
+        user_course_classification_ids = {classification.id for classification in profile.course.classifications}
 
     for employment in employments:
-        job_classification_ids = {classification.id for classification in employment.job.classifications}
+        job_classification_ids = None
+        if employment.job and employment.job.classifications:
+            job_classification_ids = {classification.id for classification in employment.job.classifications}  
         aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
 
         # Build a dictionary with selected fields and add it to the list
@@ -81,7 +85,7 @@ async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depen
         "last_name": profile.last_name,
         "first_name": profile.first_name,
         "present_employment_status": profile.present_employment_status,
-        "course": profile.course.name,
+        "course": profile.course.name if profile.course else "",
         "year_graduated": profile.year_graduated,
         "role": profile.role,
         "profile_picture": profile.profile_picture,

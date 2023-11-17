@@ -273,11 +273,12 @@ async def create_classifications(
 
 @router.get("/classifications/")
 async def get_classifications(db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
-    """
-    Get all classifications with id, name, and code.
-    Only fetch those with a null 'deleted_at' value.
-    """
-    classifications = db.query(models.Classification).filter(models.Classification.deleted_at.is_(None)).all()
+    classifications = db.query(models.Classification).all()
+    return classifications
+
+@router.get("/classifications/{classification_id}")
+async def get_classifications(classification_id: UUID, db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    classifications = db.query(models.Classification).filter(models.Classification.id == classification_id).first()
     return classifications
 
 @router.put("/classifications/{classification_id}")
@@ -285,6 +286,7 @@ async def update_classification(
     *,
     classification_id: UUID,
     name: str = Body(None),
+    code: str = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -297,6 +299,7 @@ async def update_classification(
 
     # Update the classification's name and updated_at timestamp
     classification.name = name
+    classification.code = code
     classification.updated_at = datetime.now()
 
     # Commit the session
@@ -305,7 +308,7 @@ async def update_classification(
     # Refresh the instance
     db.refresh(classification)
 
-    return {"message": "Classification updated successfully", "classification": classification}
+    return {"message": "Classification updated successfully"}
 
 @router.delete("/classifications/{classification_id}")
 async def delete_classification(
@@ -321,11 +324,14 @@ async def delete_classification(
     if classification is None:
         raise HTTPException(status_code=404, detail="Classification not found")
 
-    # Set the classification's deleted_at timestamp to now
-    classification.deleted_at = datetime.now()
+    # Delete JobClassification and CourseClassification records that reference the classification
+    db.query(models.JobClassification).filter_by(classification_id=classification_id).delete()
+    db.query(models.CourseClassification).filter_by(classification_id=classification_id).delete()
+
+    # Delete the classification
+    db.delete(classification)
 
     # Commit the session
     db.commit()
 
     return {"message": "Classification deleted successfully"}
-

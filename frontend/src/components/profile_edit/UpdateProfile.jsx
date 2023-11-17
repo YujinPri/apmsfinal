@@ -45,15 +45,6 @@ function UpdateProfile() {
     return await axiosPrivate.get("/selections/jobs/");
   };
 
-  const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
-    <Tooltip
-      color="secondary"
-      title={actual !== "" ? actual : additional + label}
-      sx={{ padding: "0.5rem" }}
-    >
-      <Chip icon={icon} label={label} />
-    </Tooltip>
-  );
 
   useQuery("jobs", getJobs);
   useQuery("cities", getCities);

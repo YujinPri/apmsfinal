@@ -156,13 +156,13 @@ const ProfileEditModal = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-      const pattern = /^\d{4}-\d{5}-[A-Z]{2}-\d$/;
-      if (!pattern.test(profile?.student_number)) {
-        setMessage("invalid student input");
-        setSeverity("error");
-        setOpenSnackbar(true);
-        return;
-      }
+    const pattern = /^\d{4}-\d{5}-[A-Z]{2}-\d$/;
+    if (!pattern.test(profile?.student_number)) {
+      setMessage("invalid student input");
+      setSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
 
     localForceLogoutRef.current =
       profile?.username !== cachedData?.data?.username;
@@ -298,6 +298,19 @@ const ProfileEditModal = ({ open, onClose }) => {
   const citiesOptions = cities;
   return (
     <Dialog open={open} onClose={onClose}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={severity}>
+          {message}
+        </Alert>
+      </Snackbar>
+      <Box sx={{ width: "100%", position: "relative", top: 0 }}>
+        {isLoading && <LinearProgress />}
+        {!isLoading && <Box sx={{ height: 4 }} />}
+      </Box>
       <DialogTitle>Edit Profile</DialogTitle>
       <DialogContent>
         {!isLoadingDisplay && (
@@ -493,20 +506,6 @@ const ProfileEditModal = ({ open, onClose }) => {
           Save
         </Button>
       </DialogActions>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={severity}>
-          {message}
-        </Alert>
-      </Snackbar>
-      {isLoading ? (
-        <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
-          <LinearProgress />
-        </Box>
-      ) : null}
     </Dialog>
   );
 };
