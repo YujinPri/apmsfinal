@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import {
+  Add,
   Business,
   Edit,
   FilterList,
@@ -29,6 +30,8 @@ import {
   Work,
 } from "@mui/icons-material";
 import ClassificationsRow from "./ClassificationsRow";
+import CoursesRow from "./CoursesRow";
+import JobsRow from "./JobsRow";
 import AddClassification from "./AddClassificationModal";
 
 export const ManageSelections = () => {
@@ -73,7 +76,7 @@ export const ManageSelections = () => {
     <Box>
       <Box
         flex={4}
-        p={{ xs: 0, md: 2 }}
+        p={{ sm: 4, md: 2 }}
         sx={{
           backgroundColor: (theme) => theme.palette.secondary.main,
           display: "flex",
@@ -101,12 +104,7 @@ export const ManageSelections = () => {
             </Typography>
           </Link>
         </Breadcrumbs>
-        <Box
-          sx={{
-            backgroundColor: (theme) => theme.palette.common.main,
-            borderRadius: 3,
-          }}
-        >
+
           <Box
             position="sticky"
             top={63}
@@ -138,45 +136,125 @@ export const ManageSelections = () => {
               />
             </Tabs>
           </Box>
-          <Box
+
+        <Box
+          sx={{
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: 2,
+            borderRadius: 3,
+            position: "relative",
+          }}
+          id="manage_classifications"
+        >
+          <Typography
+            variant="h1"
+            fontWeight={800}
             sx={{
-              backgroundColor: (theme) => theme.palette.common.main,
-              padding: 2,
-              borderRadius: 3,
-              position: "relative",
+              padding: "10px",
+              borderBottom: "2px solid",
+              color: "primary",
             }}
-            id="manage_classifications"
           >
-            <Typography
-              variant="h1"
-              fontWeight={800}
+            manage classifications
+          </Typography>
+          <Tooltip title="add classifications">
+            <Fab
+              size="small"
+              color="primary"
               sx={{
-                padding: "10px",
-                borderBottom: "2px solid",
-                color: "primary",
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
               }}
+              onClick={() => handleModalOpen("classification")}
             >
-              manage classifications
-            </Typography>
-            <Tooltip title="add classifications">
-              <Fab
-                size="small"
-                color="primary"
-                sx={{
-                  position: "absolute",
-                  top: "1rem",
-                  right: "1rem",
-                }}
-                onClick={() => handleModalOpen("classification")}
-              >
-                <Edit />
-              </Fab>
-            </Tooltip>
-            <Box p={4}>
-              <Paper>
-                <ClassificationsRow />
-              </Paper>
-            </Box>
+              <Add />
+            </Fab>
+          </Tooltip>
+          <Box p={4}>
+            <Paper>
+              <ClassificationsRow />
+            </Paper>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: 2,
+            borderRadius: 3,
+            position: "relative",
+          }}
+          id="manage_courses"
+        >
+          <Typography
+            variant="h1"
+            fontWeight={800}
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              color: "primary",
+            }}
+          >
+            manage courses
+          </Typography>
+          <Tooltip title="add courses">
+            <Fab
+              size="small"
+              color="primary"
+              sx={{
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
+              }}
+              onClick={() => handleModalOpen("course")}
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
+          <Box p={4}>
+            <Paper>
+              <CoursesRow />
+            </Paper>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: 2,
+            borderRadius: 3,
+            position: "relative",
+          }}
+          id="manage_jobs"
+        >
+          <Typography
+            variant="h1"
+            fontWeight={800}
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              color: "primary",
+            }}
+          >
+            manage jobs
+          </Typography>
+          <Tooltip title="add jobs">
+            <Fab
+              size="small"
+              color="primary"
+              sx={{
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
+              }}
+              onClick={() => handleModalOpen("classification")}
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
+          <Box p={4}>
+            <Paper>
+              <JobsRow />
+            </Paper>
           </Box>
         </Box>
       </Box>

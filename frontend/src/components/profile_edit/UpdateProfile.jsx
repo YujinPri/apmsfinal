@@ -100,7 +100,6 @@ function UpdateProfile() {
       }}
     >
       <Box
-        position="sticky"
         top={63}
         zIndex={1000}
         bgcolor="inherit"

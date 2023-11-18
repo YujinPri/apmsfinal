@@ -168,7 +168,7 @@ const AddClassification = ({ open, onClose }) => {
         {isLoading && <LinearProgress />}
         {!isLoading && <Box sx={{ height: 4 }} />}
       </Box>
-      <DialogTitle>Edit Classification</DialogTitle>
+      <DialogTitle>Add Classification</DialogTitle>
       <DialogContent sx={{ width: "40vw" }}>
         <Grid container spacing={2} p={2}>
           <Grid item xs={12}>

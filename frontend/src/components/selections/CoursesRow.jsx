@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import EditClassificationModal from "./EditClassificationModal";
+import EditCourseModal from "./EditCourseModal";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -67,31 +67,26 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function ClassficationsRow() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [classificationID, setClassificationID] = useState(null);
+  const [courseID, setCourseID] = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [filteredData, setFilteredData] = useState([]);
 
   const handleModalOpen = (id) => {
     setModalOpen(true);
-    setClassificationID(id || "");
+    setCourseID(id || "");
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setClassificationID("");
+    setCourseID("");
   };
 
   const axiosPrivate = useAxiosPrivate();
 
   const columns = [
     {
-      label: "classification name",
+      label: "course name",
       dataKey: "name",
-    },
-    {
-      label: "classification code",
-      dataKey: "code",
-      numeric: true,
     },
   ];
 
@@ -107,7 +102,7 @@ export default function ClassficationsRow() {
     ),
     TableHead,
     TableRow: ({ item: _item, ...props }) => (
-      <Tooltip title={"click to delete or modify the classification"}>
+      <Tooltip title={"click to delete or modify the course"}>
         <TableRow {...props} onClick={() => handleModalOpen(_item.id)} />
       </Tooltip>
     ),
@@ -153,18 +148,18 @@ export default function ClassficationsRow() {
     );
   }
 
-  const getCLassification = async () => {
-    return await axiosPrivate.get("/selections/classifications/");
+  const getCourses = async () => {
+    return await axiosPrivate.get("/selections/courses/");
   };
 
-  const { data: classification, isLoading: isLoading } = useQuery(
-    "classifications-all",
-    getCLassification
+  const { data: course, isLoading: isLoading } = useQuery(
+    "courses-all",
+    getCourses
   );
 
   useEffect(() => {
-    if (Array.isArray(classification?.data)) {
-      const newFilteredData = classification.data.filter((item) => {
+    if (Array.isArray(course?.data)) {
+      const newFilteredData = course.data.filter((item) => {
         return item.name.toLowerCase().includes(searchInput.toLowerCase());
       });
 
@@ -172,7 +167,7 @@ export default function ClassficationsRow() {
 
       setFilteredData(newFilteredData);
     }
-  }, [searchInput, classification?.data]);
+  }, [searchInput, course?.data]);
 
   if (isLoading) {
     return (
@@ -208,11 +203,11 @@ export default function ClassficationsRow() {
       </Card>
       {
         <>
-          {classificationID && (
-            <EditClassificationModal
+          {courseID && (
+            <EditCourseModal
               open={isModalOpen}
               onClose={() => handleCloseModal()}
-              classificationID={classificationID}
+              courseID={courseID}
             />
           )}
         </>

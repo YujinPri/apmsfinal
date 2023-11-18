@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import EditClassificationModal from "./EditClassificationModal";
+import EditJobModal from "./EditJobModal";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -65,33 +65,28 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function ClassficationsRow() {
+export default function JobsRow() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [classificationID, setClassificationID] = useState(null);
+  const [jobsID, setJobsID] = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [filteredData, setFilteredData] = useState([]);
 
   const handleModalOpen = (id) => {
     setModalOpen(true);
-    setClassificationID(id || "");
+    setJobsID(id || "");
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setClassificationID("");
+    setJobsID("");
   };
 
   const axiosPrivate = useAxiosPrivate();
 
   const columns = [
     {
-      label: "classification name",
+      label: "job name",
       dataKey: "name",
-    },
-    {
-      label: "classification code",
-      dataKey: "code",
-      numeric: true,
     },
   ];
 
@@ -107,7 +102,7 @@ export default function ClassficationsRow() {
     ),
     TableHead,
     TableRow: ({ item: _item, ...props }) => (
-      <Tooltip title={"click to delete or modify the classification"}>
+      <Tooltip title={"click to delete or modify the job"}>
         <TableRow {...props} onClick={() => handleModalOpen(_item.id)} />
       </Tooltip>
     ),
@@ -153,18 +148,18 @@ export default function ClassficationsRow() {
     );
   }
 
-  const getCLassification = async () => {
-    return await axiosPrivate.get("/selections/classifications/");
+  const getJobs = async () => {
+    return await axiosPrivate.get("/selections/jobs/");
   };
 
-  const { data: classification, isLoading: isLoading } = useQuery(
-    "classifications-all",
-    getCLassification
+  const { data: job, isLoading: isLoading } = useQuery(
+    "jobs-all",
+    getJobs
   );
 
   useEffect(() => {
-    if (Array.isArray(classification?.data)) {
-      const newFilteredData = classification.data.filter((item) => {
+    if (Array.isArray(job?.data)) {
+      const newFilteredData = job.data.filter((item) => {
         return item.name.toLowerCase().includes(searchInput.toLowerCase());
       });
 
@@ -172,7 +167,7 @@ export default function ClassficationsRow() {
 
       setFilteredData(newFilteredData);
     }
-  }, [searchInput, classification?.data]);
+  }, [searchInput, job?.data]);
 
   if (isLoading) {
     return (
@@ -208,11 +203,11 @@ export default function ClassficationsRow() {
       </Card>
       {
         <>
-          {classificationID && (
-            <EditClassificationModal
+          {jobsID && (
+            <EditJobModal
               open={isModalOpen}
               onClose={() => handleCloseModal()}
-              classificationID={classificationID}
+              jobsID={jobsID}
             />
           )}
         </>
