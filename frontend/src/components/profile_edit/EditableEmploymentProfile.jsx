@@ -351,13 +351,17 @@ export const EmploymentProfile = () => {
                           variant="body1"
                           sx={{ textTransform: "lowercase" }}
                         >
-                          {employment?.job_title}
+                          {employment?.job_title
+                            ? employment?.job_title
+                            : "unknown job title"}
                         </Typography>
                         <Typography
                           variant="body2"
                           sx={{ textTransform: "lowercase" }}
                         >
-                          {employment?.classification}
+                          {employment?.classification
+                            ? employment?.classification
+                            : "unknown job classification"}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -369,6 +373,7 @@ export const EmploymentProfile = () => {
                           actual="this job is aligned with their graduated academic program"
                         />
                       )}
+                      
                     </Box>
                     <Divider sx={{ paddingBottom: 1 }}>
                       <Typography variant="subtitle2">job snapshot</Typography>

@@ -2,6 +2,8 @@ import { useMutation, useQueryClient, useQuery } from "react-query";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useTheme } from "@mui/material/styles";
+
 import {
   Alert,
   Box,
@@ -24,11 +26,50 @@ import {
   FormControlLabel,
   Switch,
   Skeleton,
+  OutlinedInput,
+  Chip,
 } from "@mui/material";
 
-const AddClassification = ({ open, onClose }) => {
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+const AddJob = ({ open, onClose }) => {
   const queryClient = useQueryClient();
-  const [classificationProfile, setClassificationProfile] = useState(null);
+  const cachedData = queryClient.getQueryData("classifications-all");
+  const isLoadingClassification = queryClient.isFetching("classifications-all");
+  const [job, setJob] = useState(null);
+  const [classificationIds, setClassificationIds] = useState([]);
+
+  const handleChangeSelect = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setClassificationIds(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+
+    setJob((prevProfile) => ({
+      ...prevProfile,
+      classification_ids: typeof value === "string" ? value.split(",") : value,
+    }));
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setJob((prevProfile) => ({
+      ...prevProfile,
+      [name]: value,
+    }));
+  };
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -38,7 +79,7 @@ const AddClassification = ({ open, onClose }) => {
         },
       };
       const response = await axiosPrivate.post(
-        `/selections/classifications/`,
+        `/selections/jobs/`,
         newProfile,
         axiosConfig
       );
@@ -50,11 +91,11 @@ const AddClassification = ({ open, onClose }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("classifications-all");
-        queryClient.invalidateQueries("classifications-specific");
+        queryClient.invalidateQueries("jobs-all");
+        queryClient.invalidateQueries("jobs-specific");
         queryClient.invalidateQueries("profile-me");
 
-        setMessage("Classification Added Successfully");
+        setMessage("Job Added Successfully");
         setSeverity("success");
       },
     }
@@ -67,31 +108,26 @@ const AddClassification = ({ open, onClose }) => {
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setClassificationProfile((prevProfile) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (classificationProfile.name == "" || classificationProfile.code == "") {
+    if (job.name == "") {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
       return; // Prevent form submission
     }
 
-    const data = [{
-      name: classificationProfile?.name,
-      code: classificationProfile?.code,
-    }];
-
+    const data = [
+      {
+        name: job?.name,
+        classification_ids: job?.classification_ids,
+      },
+    ];
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
+
+    console.log(payload);
 
     try {
       await mutation.mutateAsync(payload);
@@ -118,6 +154,26 @@ const AddClassification = ({ open, onClose }) => {
     setOpenSnackbar(false);
   };
 
+  if (isLoadingClassification) {
+    return (
+      <Dialog open={true}>
+        <DialogTitle>
+          <Skeleton variant="text" />
+        </DialogTitle>
+        <DialogContent sx={{ width: "40vw" }}>
+          <Box>
+            <Skeleton variant="rectangular" width="100%" height={50} />
+          </Box>
+          <Box>
+            <Skeleton variant="rectangular" width="100%" height={50} />
+          </Box>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const classifications = cachedData?.data;
+
   return (
     <Dialog open={open} onClose={onClose}>
       <Snackbar
@@ -133,26 +189,49 @@ const AddClassification = ({ open, onClose }) => {
         {isLoading && <LinearProgress />}
         {!isLoading && <Box sx={{ height: 4 }} />}
       </Box>
-      <DialogTitle>Add Classification</DialogTitle>
+      <DialogTitle>Add Job</DialogTitle>
       <DialogContent sx={{ width: "40vw" }}>
         <Grid container spacing={2} p={2}>
           <Grid item xs={12}>
             <TextField
               name="name"
               label="name"
-              value={classificationProfile?.name}
+              value={job?.name}
               onChange={handleChange}
               sx={{ width: "100%" }}
             />
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              name="code"
-              label="code"
-              value={classificationProfile?.code}
-              onChange={handleChange}
-              sx={{ width: "100%" }}
-            />
+            <FormControl sx={{ width: "100%" }}>
+              <InputLabel>related classifications</InputLabel>
+              <Select
+                multiple
+                value={classificationIds}
+                onChange={handleChangeSelect}
+                input={<OutlinedInput label="Chip" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip
+                        key={value}
+                        label={
+                          classifications.find(
+                            (classification) => classification.id === value
+                          ).name
+                        }
+                      />
+                    ))}
+                  </Box>
+                )}
+                MenuProps={MenuProps}
+              >
+                {classifications.map((classification) => (
+                  <MenuItem key={classification.id} value={classification.id}>
+                    {classification.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
         </Grid>
       </DialogContent>
@@ -171,4 +250,4 @@ const AddClassification = ({ open, onClose }) => {
   );
 };
 
-export default AddClassification;
+export default AddJob;

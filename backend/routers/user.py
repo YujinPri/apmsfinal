@@ -64,16 +64,20 @@ async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depen
         job_classification_ids = None
         if employment.job and employment.job.classifications:
             job_classification_ids = {classification.id for classification in employment.job.classifications}  
-        aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        if user_course_classification_ids is not None and job_classification_ids is not None:
+            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        else:
+            aligned_with_academic_program = False
+        
 
         # Build a dictionary with selected fields and add it to the list
         employment_dict = {
             "id": employment.id,
             "company_name": employment.company_name,
-            "job_title": employment.job.name,
+            "job_title": employment.job.name if employment.job else '',
             "date_hired": employment.date_hired,
             "date_end": employment.date_end,
-            "classification": employment.job.classifications[0].name if employment.job.classifications else None,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else '',
             "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,

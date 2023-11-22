@@ -375,25 +375,31 @@ async def get_user_employments(
 
     for employment in employments:
         job_classification_ids = None
+
+        # Check if employment.job is not None and it has classifications
         if employment.job and employment.job.classifications:
-            job_classification_ids = {classification.id for classification in employment.job.classifications}  
-        aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+            job_classification_ids = {classification.id for classification in employment.job.classifications}
+
+        # Check if user_course_classification_ids and job_classification_ids are not None before performing the bitwise AND operation
+        if user_course_classification_ids is not None and job_classification_ids is not None:
+            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        else:
+            aligned_with_academic_program = False
 
         # Build a dictionary with selected fields and add it to the list
         employment_dict = {
             "id": employment.id,
-            "job": employment.job.id,
+            "job": employment.job.id if employment.job else '',  # Set to an empty string if employment.job is None
             "company_name": employment.company_name,
-            "job_title": employment.job.name,
+            "job_title": employment.job.name if employment.job else '',  # Set to an empty string if employment.job is None
             "date_hired": employment.date_hired,
             "date_end": employment.date_end,
-            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else '',
             "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,
             "city": employment.city,
             "is_international": employment.is_international,
-
         }
         employments_data.append(employment_dict)
 
@@ -446,7 +452,10 @@ async def get_employment_profiles(
             job_classification_ids = None
             if employment.job and employment.job.classifications:
                 job_classification_ids = {classification.id for classification in employment.job.classifications}
-            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+            if user_course_classification_ids is not None and job_classification_ids is not None:
+                aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+            else:
+                aligned_with_academic_program = False
             user_data[user.id]["employments"].append(
                 {
                     "id": employment.id,
@@ -728,17 +737,20 @@ async def get_employment(
         if employment.job and employment.job.classifications:
             job_classification_ids = {classification.id for classification in employment.job.classifications}
 
-        aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        if user_course_classification_ids is not None and job_classification_ids is not None:
+            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        else:
+            aligned_with_academic_program = False
 
         # Convert the employment object to a dictionary or use a Pydantic model for serialization
         employment_dict = {
             "id": employment.id,
-            "job": employment.job.id,
+            "job": employment.job.id if employment.job else '',
             "company_name": employment.company_name,
-            "job_title": employment.job.name,
+            "job_title": employment.job.name if employment.job else '',
             "date_hired": employment.date_hired,
             "date_end": employment.date_end,
-            "classification": employment.job.classifications[0].name if employment.job.classifications else None,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
             "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,

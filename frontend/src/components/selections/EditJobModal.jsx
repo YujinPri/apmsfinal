@@ -20,38 +20,90 @@ import {
   Grid,
   Snackbar,
   LinearProgress,
-  Tooltip,
-  FormControlLabel,
-  Switch,
   Skeleton,
+  OutlinedInput,
+  Chip,
   DialogContentText,
 } from "@mui/material";
 
-const EditCourseModal = ({ open, onClose, courseID }) => {
-  const queryClient = useQueryClient();
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 
-  const getData = async () => {
-    return await axiosPrivate.get(`/selections/courses/${courseID}`);
-  };
-  const { data: cachedData, isLoading: isLoadingCourse } = useQuery(
-    "course-specific",
-    getData
-  );
-  const [courseProfile, setCourseProfile] = useState(null);
-  const axiosPrivate = useAxiosPrivate();
+const EditJobModal = ({ open, onClose, jobID }) => {
+  const queryClient = useQueryClient();
+  const classificationsData = queryClient.getQueryData("classifications-all");
+  const isLoadingClassification = queryClient.isFetching("classifications-all");
+  const [jobProfile, setJobProfile] = useState(null);
   const [message, setMessage] = useState("");
+  const [classificationIds, setClassificationIds] = useState([]);
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [deletePrompt, setDeletePrompt] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
+  const axiosPrivate = useAxiosPrivate();
+
+  const getData = async () => {
+    return await axiosPrivate.get(`/selections/jobs/${jobID}`);
+  };
+  const {
+    data: cachedData,
+    isLoading: isLoadingJob,
+    isFetching: isFetchingJob,
+  } = useQuery("job-specific", getData);
+
   useEffect(() => {
+    const classifications =
+      cachedData?.data?.classifications?.map(
+        (item) => item.classification_id
+      ) || [];
     if (cachedData) {
-      setCourseProfile({
-        name: cachedData?.data?.name || "",
+      setClassificationIds(
+        // On autofill we get a stringified classifications.
+        typeof classifications === "string"
+          ? classifications.split(",")
+          : classifications
+      );
+      setJobProfile({
+        name: cachedData?.data?.job?.name || "",
+        classification_ids:
+          cachedData?.data?.classifications?.map(
+            (item) => item.classification_id
+          ) || [],
       });
     }
   }, [cachedData]);
+
+  const handleChangeSelect = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setClassificationIds(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+
+    setJobProfile((prevProfile) => ({
+      ...prevProfile,
+      classification_ids: typeof value === "string" ? value.split(",") : value,
+    }));
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setJobProfile((prevProfile) => ({
+      ...prevProfile,
+      [name]: value,
+    }));
+  };
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -61,7 +113,7 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
         },
       };
       const response = await axiosPrivate.put(
-        `/selections/courses/${courseID}`,
+        `/selections/jobs/${jobID}`,
         newProfile,
         axiosConfig
       );
@@ -73,11 +125,13 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("courses-all");
-        queryClient.invalidateQueries("courses-specific");
+        queryClient.invalidateQueries("jobs-all");
+        queryClient.invalidateQueries("jobs-specific");
         queryClient.invalidateQueries("profile-me");
+        queryClient.invalidateQueries("career-profile");
+        queryClient.invalidateQueries("employment-profile");
 
-        setMessage("classification updated successfully");
+        setMessage("job updated successfully");
         setSeverity("success");
       },
     }
@@ -91,7 +145,7 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
         },
       };
       const response = await axiosPrivate.delete(
-        `/selections/courses/${courseID}`,
+        `/selections/jobs/${jobID}`,
         axiosConfig
       );
     },
@@ -103,11 +157,13 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
         setIsLoadingDelete(false);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("courses-all");
-        queryClient.invalidateQueries("courses-specific");
+        queryClient.invalidateQueries("jobs-all");
+        queryClient.invalidateQueries("jobs-specific");
         queryClient.invalidateQueries("profile-me");
+        queryClient.invalidateQueries("career-profile");
+        queryClient.invalidateQueries("employment-profile");
 
-        setMessage("classification deleted successfully");
+        setMessage("job deleted successfully");
         setSeverity("success");
         setOpenSnackbar(true);
         setIsLoadingDelete(false);
@@ -118,28 +174,20 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
 
   const { isLoading } = mutation;
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setCourseProfile((prevProfile) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (courseProfile.name == "" || courseProfile.code == "") {
+    if (jobProfile.name == "") {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
+      setOpenSnackbar(true);
       return; // Prevent form submission
     }
 
     const data = {
-      name: courseProfile?.name,
-      code: courseProfile?.code,
+      name: jobProfile?.name,
+      classification_ids: jobProfile?.classification_ids,
     };
-
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
 
@@ -157,6 +205,7 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
         setSeverity("error");
       }
     }
+    setOpenSnackbar(true);
   };
 
   const handleDelete = async () => {
@@ -178,7 +227,7 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
     setOpenSnackbar(false);
   };
 
-  if (isLoadingCourse) {
+  if (isLoadingJob || isFetchingJob) {
     return (
       <Dialog open={true}>
         <DialogTitle>
@@ -195,7 +244,8 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
       </Dialog>
     );
   }
-  console.log(isLoadingDelete);
+
+  const classifications = classificationsData?.data;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -214,26 +264,52 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
       </Box>
       {!deletePrompt ? (
         <Box>
-          <DialogTitle>Modify Classification</DialogTitle>
+          <DialogTitle>Add job</DialogTitle>
           <DialogContent sx={{ width: "40vw" }}>
             <Grid container spacing={2} p={2}>
               <Grid item xs={12}>
                 <TextField
                   name="name"
                   label="name"
-                  value={courseProfile?.name}
+                  value={jobProfile?.name}
                   onChange={handleChange}
                   sx={{ width: "100%" }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  name="code"
-                  label="code"
-                  value={courseProfile?.code}
-                  onChange={handleChange}
-                  sx={{ width: "100%" }}
-                />
+                <FormControl sx={{ width: "100%" }}>
+                  <InputLabel>related classifications</InputLabel>
+                  <Select
+                    multiple
+                    value={classificationIds}
+                    onChange={handleChangeSelect}
+                    input={<OutlinedInput label="Chip" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip
+                            key={value}
+                            label={
+                              classifications.find(
+                                (classification) => classification.id === value
+                              ).name
+                            }
+                          />
+                        ))}
+                      </Box>
+                    )}
+                    MenuProps={MenuProps}
+                  >
+                    {classifications.map((classification) => (
+                      <MenuItem
+                        key={classification.id}
+                        value={classification.id}
+                      >
+                        {classification.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
           </DialogContent>
@@ -285,4 +361,4 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
   );
 };
 
-export default EditCourseModal;
+export default EditJobModal;

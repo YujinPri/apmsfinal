@@ -335,3 +335,46 @@ async def delete_classification(
     db.commit()
 
     return {"message": "Classification deleted successfully"}
+
+@router.delete("/courses/{course_id}")
+async def delete_course(
+    *,
+    course_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    # Fetch the course from the database
+    course = db.query(models.Course).filter_by(id=course_id).first()
+
+    # Delete CourseClassification records that reference their classification
+    db.query(models.CourseClassification).filter_by(course_id=course_id).delete()
+
+    # Delete the classification
+    db.delete(course)
+
+    # Commit the session
+    db.commit()
+
+    return {"message": "Course deleted successfully"}
+
+@router.delete("/jobs/{job_id}")
+async def delete_job(
+    *,
+    job_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    # Fetch the job from the database
+    job = db.query(models.Job).filter_by(id=job_id).first()
+
+    # Delete JobClassification records that reference their classification
+    db.query(models.JobClassification).filter_by(job_id=job_id).delete()
+
+    # Delete the classification
+    db.delete(job)
+
+    # Commit the session
+    db.commit()
+
+    return {"message": "Job deleted successfully"}

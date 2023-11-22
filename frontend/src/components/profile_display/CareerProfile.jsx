@@ -269,21 +269,20 @@ export const CareerProfile = () => {
             flexDirection: "column",
           }}
         >
-          {data?.data?.course && (
-            <Typography
-              variant="h6"
-              gap={1}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                padding: "0 1rem",
-                fontWeight: "bold", // Make the text bold
-                height: "100%", // Consume available vertical space
-              }}
-            >
-              {data?.data?.course}
-            </Typography>
-          )}
+          <Typography
+            variant="h6"
+            gap={1}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              padding: "0 1rem",
+              fontWeight: "bold", // Make the text bold
+              height: "100%", // Consume available vertical space
+              width: "100%"
+            }}
+          >
+            {data?.data?.course ? data?.data?.course : "no course selected"}
+          </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             {data?.data?.year_graduated && (
               <Chiptip

@@ -33,6 +33,8 @@ import ClassificationsRow from "./ClassificationsRow";
 import CoursesRow from "./CoursesRow";
 import JobsRow from "./JobsRow";
 import AddClassification from "./AddClassificationModal";
+import AddCourse from "./AddCourseModal";
+import AddJob from "./AddJobModal";
 
 export const ManageSelections = () => {
   const [value, setValue] = useState(0);
@@ -105,37 +107,37 @@ export const ManageSelections = () => {
           </Link>
         </Breadcrumbs>
 
-          <Box
-            position="sticky"
-            top={63}
-            zIndex={1000}
-            bgcolor="inherit"
-            borderBottom="1px solid rgba(0, 0, 0, 0.12)"
-            sx={{ backgroundColor: (theme) => theme.palette.common.main }}
+        <Box
+          position="sticky"
+          top={63}
+          zIndex={1000}
+          bgcolor="inherit"
+          borderBottom="1px solid rgba(0, 0, 0, 0.12)"
+          sx={{ backgroundColor: (theme) => theme.palette.common.main }}
+        >
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            variant="fullWidth"
+            aria-label="icon tabs example"
           >
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              variant="fullWidth"
-              aria-label="icon tabs example"
-            >
-              <Tab
-                icon={<Label />}
-                label="classifications"
-                onClick={() => scrollToSection("manage_classifications")}
-              />
-              <Tab
-                icon={<MenuBook />}
-                label="courses"
-                onClick={() => scrollToSection("manage_courses")}
-              />
-              <Tab
-                icon={<Business />}
-                label="jobs"
-                onClick={() => scrollToSection("manage_jobs")}
-              />
-            </Tabs>
-          </Box>
+            <Tab
+              icon={<Label />}
+              label="classifications"
+              onClick={() => scrollToSection("manage_classifications")}
+            />
+            <Tab
+              icon={<MenuBook />}
+              label="courses"
+              onClick={() => scrollToSection("manage_courses")}
+            />
+            <Tab
+              icon={<Business />}
+              label="jobs"
+              onClick={() => scrollToSection("manage_jobs")}
+            />
+          </Tabs>
+        </Box>
 
         <Box
           sx={{
@@ -246,7 +248,7 @@ export const ManageSelections = () => {
                 top: "1rem",
                 right: "1rem",
               }}
-              onClick={() => handleModalOpen("classification")}
+              onClick={() => handleModalOpen("job")}
             >
               <Add />
             </Fab>
@@ -264,24 +266,12 @@ export const ManageSelections = () => {
           onClose={handleCloseModal}
         />
       )}
-      {/* {modalOpen.career && (
-        <EducProfileEditModal
-          open={modalOpen.career}
-          onClose={handleCloseModal}
-        />
+      {modalOpen.course && (
+        <AddCourse open={modalOpen.course} onClose={handleCloseModal} />
       )}
-      {modalOpen.employment && (
-        <AddEmploymentModal
-          open={modalOpen.employment}
-          onClose={handleCloseModal}
-        />
+      {modalOpen.job && (
+        <AddJob open={modalOpen.job} onClose={handleCloseModal} />
       )}
-      {modalOpen.add_achievement && (
-        <AddAchievementModal
-          open={modalOpen.add_achievement}
-          onClose={handleCloseModal}
-        />
-      )} */}
     </Box>
   );
 };

@@ -67,18 +67,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function JobsRow() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [jobsID, setJobsID] = useState(null);
+  const [jobID, setjobID] = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [filteredData, setFilteredData] = useState([]);
 
   const handleModalOpen = (id) => {
     setModalOpen(true);
-    setJobsID(id || "");
+    setjobID(id || "");
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setJobsID("");
+    setjobID("");
   };
 
   const axiosPrivate = useAxiosPrivate();
@@ -203,11 +203,11 @@ export default function JobsRow() {
       </Card>
       {
         <>
-          {jobsID && (
+          {jobID && (
             <EditJobModal
               open={isModalOpen}
               onClose={() => handleCloseModal()}
-              jobsID={jobsID}
+              jobID={jobID}
             />
           )}
         </>
