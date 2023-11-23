@@ -88,14 +88,25 @@ async def get_demographic_profiles(
           "first_name": user.first_name,
           "last_name": user.last_name,
           "email": user.email,
+          "mobile_number": user.mobile_number,
+          "telephone_number": user.telephone_number,
           "role": user.role,
           "student_number": user.student_number,
           "birthdate": user.birthdate,
           "profile_picture": user.profile_picture,
+          "is_international": user.is_international,
+          "country": user.country,
+          "region": user.region,
           "city": user.city,
+          "barangay": user.barangay,
+          "address": user.address,
+          "provincial_region": user.provincial_region,
+          "provincial_city": user.provincial_city,
+          "provincial_barangay": user.provincial_barangay,
+          "provincial_address": user.provincial_address,
           "civil_status": user.civil_status,          
           "year_graduated": user.year_graduated,          
-          "course": user.course.name,          
+          "course": user.course.name if user.course else '',          
       }
       profile.append(profile_dict)
 
@@ -108,27 +119,42 @@ async def get_demographic_profile(
 ):
 
     user_data = db.query(models.User).filter(models.User.id == user.id).first()
-    db.close() 
-    # Close the database session
 
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     profile_dict = {
         "id": user_data.id,
-        "role": user_data.role,
+        "gender": user_data.gender,
         "username": user_data.username,
-        "email": user_data.email,
         "first_name": user_data.first_name,
         "last_name": user_data.last_name,
-        "birthdate": user_data.birthdate,
-        "gender": user_data.gender,
-        "headline": user_data.headline,
-        "city": user_data.city,
-        "civil_status": user_data.civil_status,          
+        "email": user_data.email,
+        "mobile_number": user_data.mobile_number,
+        "telephone_number": user_data.telephone_number,
+        "role": user_data.role,
         "student_number": user_data.student_number,
+        "birthdate": user_data.birthdate,
         "profile_picture": user_data.profile_picture,
+        "is_international": user_data.is_international,
+        "country": user_data.country,
+        "region": user_data.region,
+        "province": user_data.province,
+        "city": user_data.city,
+        "barangay": user_data.barangay,
+        "address": user_data.address,
+        "provincial_region": user_data.provincial_region,
+        "provincial_province": user_data.provincial_province,
+        "provincial_city": user_data.provincial_city,
+        "provincial_barangay": user_data.provincial_barangay,
+        "provincial_address": user_data.provincial_address,
+        "civil_status": user_data.civil_status,          
+        "year_graduated": user_data.year_graduated,          
+        "course": user_data.course.name if user_data.course else '',          
     }
+
+    db.close() 
+    # Close the database session
 
     return profile_dict
 
@@ -141,8 +167,19 @@ async def put_demographic_profiles(
         birthdate: Optional[date] = Form(None), 
         gender: Optional[str] = Form(None), 
         headline: Optional[str] = Form(None), 
+        is_international: Optional[str] = Form(None), 
+        country: Optional[str] = Form(None), 
+        region: Optional[str] = Form(None), 
+        province: Optional[str] = Form(None), 
         city: Optional[str] = Form(None), 
+        barangay: Optional[str] = Form(None), 
+        address: Optional[str] = Form(None), 
         civil_status: Optional[str] = Form(None),
+        provincial_region: Optional[str] = Form(None), 
+        provincial_province: Optional[str] = Form(None), 
+        provincial_city: Optional[str] = Form(None), 
+        provincial_barangay: Optional[str] = Form(None), 
+        provincial_address: Optional[str] = Form(None), 
         student_number: Optional[str] = Form(None),
         profile_picture: Optional[UploadFile] = File(None), 
         user: UserResponse = Depends(get_current_user), 
@@ -180,7 +217,18 @@ async def put_demographic_profiles(
             'birthdate': birthdate, 
             'gender': gender, 
             'headline': headline, 
+            'is_international': is_international, 
+            'country': country, 
+            'region': region, 
+            'province': province, 
             'city': city, 
+            'barangay': barangay, 
+            'address': address, 
+            'provincial_region': provincial_region, 
+            'provincial_province': provincial_province, 
+            'provincial_city': provincial_city, 
+            'provincial_barangay': provincial_barangay, 
+            'provincial_address': provincial_address, 
             'civil_status': civil_status, 
             'student_number': student_number, 
             'profile_picture': profile_picture   
@@ -214,40 +262,19 @@ async def get_career_profiles(
 
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    achievements_data = []
-    
+        
     achievements = db.query(models.Achievement).filter(models.Achievement.user_id == user.id).all()
 
-    if achievements:
-        for achievement in achievements:
-            # Do not include those that are deleted
-            if achievement.deleted_at: continue
-
-            # Build a dictionary with selected fields and add it to the list
-            achievement_dict = {
-                "id": achievement.id,
-                "type_of_achievement": achievement.type_of_achievement,
-                "year_of_attainment": achievement.year_of_attainment,
-                "description": achievement.description,
-                "story": achievement.story,
-                "link_reference": achievement.link_reference,
-            }
-
-            achievements_data.append(achievement_dict)
-
-    if user_data.course is not None:
-        course_name = user_data.course.name
-    else:
-        course_name = None  # or any default value you prefer
+    educations = db.query(models.Education).filter(models.Education.user_id == user.id).all()
 
     profile_dict = {
         "id": user_data.id,
         "role": user_data.role,
         "year_graduated": user_data.year_graduated,          
-        "course": course_name,          
+        "course": user_data.course.name if user_data.course else '',          
         "post_grad_act": user_data.post_grad_act,          
-        "achievement": achievements_data,          
+        "achievement": achievements if achievements else None,          
+        "education": educations if educations else None,          
     }
 
     return profile_dict
@@ -256,44 +283,49 @@ async def get_career_profiles(
 async def put_career_profiles(
     *,
     year_graduated: Optional[int] = Body(None),
+    year_start: Optional[int] = Body(None),
+    month_graduated: Optional[int] = Body(None),
+    month_start: Optional[int] = Body(None),
     course: Optional[UUID] = Body(None),
     post_grad_act: Optional[List[str]] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
 
-  # Query the database for users with pagination and filter by role
-  try:
+    # Query the database for users with pagination and filter by role
     saved_profile = db.query(models.User).filter_by(id=user.id).first()
 
     if saved_profile is None:
         raise HTTPException(status_code=404, detail="Account doesn't exist")
-    
+
     course_instance = None
     if course:
         course_instance = db.query(models.Course).filter_by(id=course).first()
         if course_instance is None:
             raise HTTPException(status_code=404, detail="Course not found")
 
-    profile = {
-        'year_graduated': year_graduated,
-        'course': course_instance,
-        'post_grad_act': post_grad_act,
-    }
+    try:
+        profile = {
+            'year_graduated': year_graduated,
+            'year_start': year_start,
+            'month_graduated': month_graduated,
+            'month_start': month_start,
+            'course': course_instance,
+            'post_grad_act': post_grad_act,
+        }
 
-    # Iterate through the profile dictionary and populate saved_profile
-    for key, value in profile.items():
-        if value is not None and value != "":
-            setattr(saved_profile, key, value)
+        # Iterate through the profile dictionary and populate saved_profile
+        for key, value in profile.items():
+            if value is not None and value != "":
+                setattr(saved_profile, key, value)
 
-    db.commit()
-    return {"message": "Career Profile updated successfully"}
-
-  except Exception:
-    db.rollback()
-    # raise HTTPException(status_code=500, detail="Internal Server Error")
-  finally:
-    db.close()
+        db.commit()
+        return {"message": "Career Profile updated successfully"}
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        db.close()
 
 @router.get("/career_profiles/")
 async def get_career_profiles(
@@ -314,31 +346,16 @@ async def get_career_profiles(
     profile = []
     for user in users:
         achievements = (db.query(models.Achievement).filter(models.Achievement.user_id == user.id).all())
-        achievements_data = []
-
-        for achievement in achievements:
-            # Do not include those that are deleted
-            if achievement.deleted_at: continue
-
-            # Build a dictionary with selected fields and add it to the list
-            achievement_dict = {
-                "id": achievement.id,
-                "type_of_achievement": achievement.type_of_achievement,
-                "year_of_attainment": achievement.year_of_attainment,
-                "description": achievement.description,
-                "story": achievement.story,
-                "link_reference": achievement.link_reference,
-            }
-
-            achievements_data.append(achievement_dict)
+        educations = (db.query(models.Education).filter(models.Education.user_id == user.id).all())
 
         profile_dict = {
             "id": user.id,
             "role": user.role,
             "year_graduated": user.year_graduated,          
-            "course": user.course.name,          
+            "course": user.course.name if user.course else '',          
             "post_grad_act": user.post_grad_act,          
-            "achievement": achievements_data,          
+            "achievement": achievements if achievements else None,          
+            "education": educations if educations else None,          
         }
 
         profile.append(profile_dict)
@@ -398,8 +415,14 @@ async def get_user_employments(
             "aligned_with_academic_program": aligned_with_academic_program,
             "gross_monthly_income": employment.gross_monthly_income,
             "employment_contract": employment.employment_contract,
-            "city": employment.city,
+            "job_position": employment.job_position,
+            "employer_type": employment.employer_type,
             "is_international": employment.is_international,
+            "country": employment.country,
+            "region": employment.region,
+            "province": employment.province,
+            "city": employment.city,
+            "address": employment.address,
         }
         employments_data.append(employment_dict)
 
@@ -459,15 +482,23 @@ async def get_employment_profiles(
             user_data[user.id]["employments"].append(
                 {
                     "id": employment.id,
+                    "job": employment.job.id if employment.job else '',  # Set to an empty string if employment.job is None
                     "company_name": employment.company_name,
-                    "job_title": employment.job.name,
+                    "job_title": employment.job.name if employment.job else '',  # Set to an empty string if employment.job is None
                     "date_hired": employment.date_hired,
                     "date_end": employment.date_end,
-                    "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
+                    "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else '',
                     "aligned_with_academic_program": aligned_with_academic_program,
                     "gross_monthly_income": employment.gross_monthly_income,
                     "employment_contract": employment.employment_contract,
-                    "location_of_employment": employment.city,
+                    "job_position": employment.job_position,
+                    "employer_type": employment.employer_type,
+                    "is_international": employment.is_international,
+                    "country": employment.country,
+                    "region": employment.region,
+                    "province": employment.province,
+                    "city": employment.city,
+                    "address": employment.address,
                 }
           )
 
@@ -490,8 +521,14 @@ async def put_employment(
     date_end: Optional[date] = Body(None), 
     gross_monthly_income: Optional[str] = Body(None),
     employment_contract: Optional[str] = Body(None),
-    city: Optional[str] = Body(None),
+    job_position: Optional[str] = Body(None),
+    employer_type: Optional[str] = Body(None),
     is_international: Optional[bool] = Body(None),
+    country: Optional[str] = Body(None),
+    region: Optional[str] = Body(None),
+    province: Optional[str] = Body(None),
+    city: Optional[str] = Body(None),
+    address: Optional[str] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -510,14 +547,20 @@ async def put_employment(
                 raise HTTPException(status_code=404, detail="Course not found")
         
         profile = {
-            'company_name': company_name,
-            'city': city,
-            'is_international': is_international,
             'job': job_instance,
+            'company_name': company_name,
             'date_hired': date_hired,
             'date_end': date_end,
             'gross_monthly_income': gross_monthly_income,
             'employment_contract': employment_contract,
+            'job_position': job_position,
+            'employer_type': employer_type,
+            'is_international': is_international,
+            'country': country,
+            'region': region,
+            'province': province,
+            'city': city,
+            'address': address,
         }
 
          # Iterate through the profile dictionary and populate saved_profile
@@ -544,8 +587,14 @@ async def post_employment(
     date_end: Optional[date] = Body(None),  # You can keep it as a date, or use date if it can be null
     gross_monthly_income: str = Body(...),
     employment_contract: str = Body(...),
-    city: str = Body(...),
+    job_position: str = Body(...),
+    employer_type: str = Body(...),
     is_international: bool = Body(...),
+    country: str = Body(...),
+    region: str = Body(...),
+    province: str = Body(...),
+    city: str = Body(...),
+    address: str = Body(...),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -562,9 +611,15 @@ async def post_employment(
           date_end=date_end,
           gross_monthly_income=gross_monthly_income,
           employment_contract=employment_contract,
-          city=city,
-          is_international=is_international,
           job=job_instance,
+          job_position=job_position,
+          employer_type=employer_type,
+          is_international=is_international,
+          country=country,
+          region=region,
+          province=province,
+          city=city,
+          address=address,
       )
 
       db.add(employment)
@@ -575,6 +630,85 @@ async def post_employment(
         db.rollback() 
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Employment Details failed")
+    
+
+@router.get("/employment_profiles/{employment_id}")
+async def get_employment(
+    employment_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        # Query the employment record by ID and user ID
+        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
+        
+        if not employment:
+            raise HTTPException(status_code=404, detail="Employment not found")
+        
+        profile = db.query(models.User).filter(models.User.id == employment.user.id).first()
+
+        user_course_classification_ids = None
+        if profile.course and profile.course.classifications:
+            user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+
+        job_classification_ids = None
+        if employment.job and employment.job.classifications:
+            job_classification_ids = {classification.id for classification in employment.job.classifications}
+
+        if user_course_classification_ids is not None and job_classification_ids is not None:
+            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        else:
+            aligned_with_academic_program = False
+
+        # Convert the employment object to a dictionary or use a Pydantic model for serialization
+        employment_dict = {
+            "id": employment.id,
+            "job": employment.job.id if employment.job else '',
+            "company_name": employment.company_name,
+            "job_title": employment.job.name if employment.job else '',
+            "date_hired": employment.date_hired,
+            "date_end": employment.date_end,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
+            "aligned_with_academic_program": aligned_with_academic_program,
+            "gross_monthly_income": employment.gross_monthly_income,
+            "employment_contract": employment.employment_contract,
+            "job_position": employment.job_position,
+            "employer_type": employment.employer_type,
+            "is_international": employment.is_international,
+            "country": employment.country,
+            "region": employment.region,
+            "city": employment.city,
+            "address": employment.address,
+        }
+
+        return employment_dict
+    except Exception as e:
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.delete("/employment_profiles/{employment_id}")
+async def delete_employment(
+    employment_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        # Query the employment record by ID and user ID
+        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
+
+        # Check if the employment exists and belongs to the user
+        if not employment:
+            raise HTTPException(status_code=404, detail="Employment not found")
+
+        # Delete the employment record
+        db.delete(employment)
+        db.commit()
+
+        return {"message": "Employment record deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/achievement/")
 async def post_achievement(
@@ -714,78 +848,192 @@ async def put_achievement(
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Updating Achievement Details failed")
 
-@router.get("/employment_profiles/{employment_id}")
-async def get_employment(
-    employment_id: UUID,
+
+
+@router.post("/education/")
+async def post_education(
+    *,
+    level: str = Body(...),
+    course: UUID = Body(...),
+    school_name: str = Body(...),
+    is_international: bool = Body(...),
+    country: str = Body(...),
+    region: str = Body(...),
+    city: str = Body(...),
+    barangay: str = Body(...),
+    address: str = Body(...),
+    story: str = Body(...),
+    month_start: int = Body(...),
+    month_graduated: int = Body(...),
+    year_start: int = Body(...),
+    year_graduated: int = Body(...),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
+    
+    user_instance = db.query(models.User).filter_by(id=user.id).first()
+    if user_instance is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    course_instance = db.query(models.Course).filter_by(id=course).first()
+    if course_instance is None:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
     try:
-        # Query the employment record by ID and user ID
-        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
-        
-        if not employment:
-            raise HTTPException(status_code=404, detail="Employment not found")
-        
-        profile = db.query(models.User).filter(models.User.id == employment.user.id).first()
+      education = models.Education(
+        level=level,
+        school_name=school_name,
+        is_international=is_international,
+        country=country,
+        region=region,
+        city=city,
+        barangay=barangay,
+        address=address,
+        story=story,
+        month_start=month_start,
+        month_graduated=month_graduated,
+        year_start=year_start,
+        year_graduated=year_graduated,
+        user=user_instance,
+        course=course_instance,
+      )
 
-        user_course_classification_ids = None
-        if profile.course and profile.course.classifications:
-            user_course_classification_ids = {classification.id for classification in profile.course.classifications}
-
-        job_classification_ids = None
-        if employment.job and employment.job.classifications:
-            job_classification_ids = {classification.id for classification in employment.job.classifications}
-
-        if user_course_classification_ids is not None and job_classification_ids is not None:
-            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
-        else:
-            aligned_with_academic_program = False
-
-        # Convert the employment object to a dictionary or use a Pydantic model for serialization
-        employment_dict = {
-            "id": employment.id,
-            "job": employment.job.id if employment.job else '',
-            "company_name": employment.company_name,
-            "job_title": employment.job.name if employment.job else '',
-            "date_hired": employment.date_hired,
-            "date_end": employment.date_end,
-            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else None,
-            "aligned_with_academic_program": aligned_with_academic_program,
-            "gross_monthly_income": employment.gross_monthly_income,
-            "employment_contract": employment.employment_contract,
-            "city": employment.city,
-            "is_international": employment.is_international,
-        }
-
-        return employment_dict
+      db.add(education)
+      db.commit()
+      return {"message": "Profile updated successfully"}
     except Exception as e:
+        db.rollback() 
         print("Error:", e)  # Add this line for debugging
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=400, detail="Posting Achievement Details failed")
+    
+@router.get("/education/me")
+async def get_education(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.id == user.id).first()
+    
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    educations = (
+        db.query(models.Education)
+        .filter(models.Education.user_id == user.id)
+        .all()
+    )
 
-@router.delete("/employment_profiles/{employment_id}")
-async def delete_employment(
-    employment_id: UUID,
+
+    return {"educations": educations}
+    
+@router.get("/education/{education_id}")
+async def get_education(
+    education_id: UUID,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.id == user.id).first()
+    education = (
+        db.query(models.Education)
+        .filter(models.Education.id == education_id, models.Education.user_id == user.id)
+        .first()
+    )
+
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"education": education}
+
+@router.delete("/education/{education_id}")
+async def delete_education(
+    education_id: UUID,
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
     try:
-        # Query the employment record by ID and user ID
-        employment = db.query(models.Employment).filter_by(id=employment_id, user_id=user.id).first()
+        # Query the education record by ID and user ID
+        education = db.query(models.Education).filter_by(id=education_id, user_id=user.id).first()
 
-        # Check if the employment exists and belongs to the user
-        if not employment:
-            raise HTTPException(status_code=404, detail="Employment not found")
+        # Check if the education exists and belongs to the user
+        if not education:
+            raise HTTPException(status_code=404, detail="education not found")
 
-        # Delete the employment record
-        db.delete(employment)
+        # Delete the education record
+        db.delete(education)
         db.commit()
 
-        return {"message": "Employment record deleted successfully"}
+        return {"message": "education record deleted successfully"}
     except Exception as e:
         db.rollback()
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.put("/education/{education_id}")
+async def put_achievement(
+    education_id: UUID,
+    level: str = Body(None),
+    course: UUID = Body(None),
+    school_name: str = Body(None),
+    is_international: bool = Body(None),
+    country: str = Body(None),
+    region: str = Body(None),
+    city: str = Body(None),
+    barangay: str = Body(None),
+    address: str = Body(None),
+    story: str = Body(None),
+    month_start: int = Body(None),
+    month_graduated: int = Body(None),
+    year_start: int = Body(None),
+    year_graduated: int = Body(None),
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    try:
+        education = db.query(models.Education).filter_by(id=education_id, user_id=user.id).first()        
+        if not education:
+            raise HTTPException(status_code=404, detail="Education not found")
+        
+        user_instance = db.query(models.User).filter_by(id=user.id).first()
+        if user_instance is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        course_instance = db.query(models.Course).filter_by(id=course).first()
+        if course_instance is None:
+            raise HTTPException(status_code=404, detail="Course not found")
+      
+        profile = {
+            'level': level,
+            'course': course,
+            'school_name': school_name,
+            'is_international': is_international,
+            'country': country,
+            'region': region,
+            'city': city,
+            'barangay': barangay,
+            'address': address,
+            'story': story,
+            'month_start': month_start,
+            'month_graduated': month_graduated,
+            'year_start': year_start,
+            'year_graduated': year_graduated,
+            'user': user_instance,
+            'course': course_instance,
+        }
+
+         # Iterate through the profile dictionary and populate saved_profile
+        for key, value in profile.items():
+            if value != None and value != "":
+                setattr(education, key, value)
+        
+        db.commit()
+        return {"message": "Education Updated Successfully"}
+    except Exception as e:
+        db.rollback()
+        print("Error:", e)  # Add this line for debugging
+        raise HTTPException(status_code=400, detail="Updating Education Details failed")
+
+
 
 def validate_columns(df, expected_columns):
     if not set(expected_columns).issubset(df.columns):
