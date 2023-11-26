@@ -11,51 +11,61 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username = Column(String, unique=True, index=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    mobile_number = Column(String)
-    telephone_number = Column(String)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
-    profile_picture = Column(String, server_default="#")
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     role = Column(String, server_default='public', nullable=False, index=True)
     sub = Column(String, unique=True, index=True)
-    
-    #Socio-Demographic Profile
+    password = Column(String, nullable=False)
+
+    #alumni information
+    profile_picture = Column(String, server_default="#")
+    username = Column(String, unique=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
     student_number = Column(String, unique=True, index=True)
-    headline = Column(Text)
     birthdate = Column(Date)
-    is_international = Column(Boolean, nullable=False, server_default='False') 
-    country = Column(String, server_default='philippines') 
-    region = Column(String)
-    province = Column(String)
-    city = Column(String)
-    barangay = Column(String)
-    address = Column(String)
-    provincial_region = Column(String)
-    provincial_province = Column(String)
-    provincial_city = Column(String)
-    provincial_barangay = Column(String)
-    provincial_address = Column(String)
     civil_status = Column(String)
     gender = Column(String)
+    headline = Column(Text)
 
-    #PUPQC Education Profile / Career Profiles
-    year_start = Column(Integer)
-    year_graduated = Column(Integer)
-    month_start = Column(Integer)
-    month_graduated = Column(Integer)
+    #contact details
+    mobile_number = Column(String)
+    telephone_number = Column(String)
+    email = Column(String, unique=True, index=True, nullable=False)
+
+    #current residence
+    is_international = Column(Boolean, nullable=False, server_default='False') 
+    address = Column(String)
+    country = Column(String, server_default='philippines') 
+    region = Column(String)
+    region_code = Column(String)
+    city = Column(String)
+    city_code = Column(String)
+    barangay = Column(String)
+    barangay_code = Column(String)
+
+    #place of birth
+    origin_is_international = Column(Boolean, nullable=False, server_default='False')
+    origin_address = Column(String)
+    origin_country = Column(String, server_default='philippines') 
+    origin_region = Column(String)
+    origin_city = Column(String)
+    origin_barangay = Column(String)
+    origin_region_code = Column(String)
+    origin_city_code = Column(String)
+    origin_barangay_code = Column(String)
+
+    #PUPQC Education Profile
+    date_start =  Column(Date)
+    date_graduated = Column(Date)
     post_grad_act = Column(ARRAY(String))
     present_employment_status = Column(String, server_default="unemployed")
     course_id = Column(UUID(as_uuid=True), ForeignKey('course.id', ondelete="CASCADE"))
-
     course = relationship("Course", back_populates="user", uselist=False)
-    achievement = relationship("Achievement", back_populates="user")
+
     education = relationship("Education", back_populates="user")
+    achievement = relationship("Achievement", back_populates="user")
     employment = relationship("Employment", back_populates="user")
 
 
@@ -68,8 +78,7 @@ class Achievement(Base):
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE"))
     type_of_achievement = Column(String) # Bar Passing, Board Passing, Civil Service Passing, Certifications, Owned Business, 
-    year_of_attainment = Column(Integer)
-    month_of_attainment = Column(Integer)
+    date_of_attainment =  Column(Date)
     description = Column(String)
     story = Column(Text)
     link_reference = Column(String)
@@ -83,25 +92,28 @@ class Education(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE"))
-    level = Column(String)
+    
+    #School Info
     course_id = Column(UUID(as_uuid=True), ForeignKey('course.id', ondelete="CASCADE"))
+    level = Column(String)
     school_name = Column(String)
+    story = Column(Text)
+
+    #School Address
     is_international = Column(Boolean, nullable=False, server_default='False') 
+    address = Column(String)
     country = Column(String, server_default='philippines') 
     region = Column(String)
-    province = Column(String)
     city = Column(String)
-    barangay = Column(String)
-    address = Column(String)
-    story = Column(Text)
-    month_start = Column(Integer)
-    month_graduated = Column(Integer)
-    year_start = Column(Integer)
-    year_graduated = Column(Integer)
+    region_code = Column(String)
+    city_code = Column(String)
+
+    #Date
+    date_start =  Column(Date)
+    date_graduated = Column(Date)
+
     user = relationship("User", back_populates="education")
     course = relationship("Course", back_populates="education", uselist=False)
-
-
 
 class Employment(Base):
     __tablename__ = 'employment'
@@ -111,20 +123,30 @@ class Employment(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE"))
+
+    #Job Informations
+    job_id = Column(UUID(as_uuid=True), ForeignKey('job.id', ondelete="CASCADE"))
     company_name = Column(String)
+    
+    
+    #Job Length
     date_hired = Column(Date, index=True)
     date_end = Column(Date) #null if an active job
+
+    #Job Details
     gross_monthly_income = Column(String)  
     employment_contract = Column(String) 
     job_position = Column(String) 
     employer_type = Column(String)
+
+    #Job Address
     is_international = Column(Boolean, nullable=False, server_default='False') 
+    address = Column(String, index=True)
     country = Column(String, server_default='philippines') 
     region = Column(String) 
-    province = Column(String) 
+    region_code = Column(String) 
     city = Column(String, index=True)
-    address = Column(String, index=True)
-    job_id = Column(UUID(as_uuid=True), ForeignKey('job.id', ondelete="CASCADE"))
+    city_code = Column(String)
 
     job = relationship("Job", uselist=False, back_populates="employment")
     user = relationship("User", back_populates="employment")

@@ -1,8 +1,6 @@
-import { useQuery } from "react-query";
 import useLogout from "../../hooks/useLogout";
+import dayjs from 'dayjs';
 import { useNavigate, useLocation } from "react-router-dom";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import useAuth from "../../hooks/useAuth";
 import {
   Avatar,
   Box,
@@ -31,11 +29,9 @@ import {
 } from "@mui/icons-material";
 import EditableAchievementModal from "../profile_edit/EditableAchievementModal";
 
-export const CareerProfile = () => {
-  const axiosPrivate = useAxiosPrivate();
+export const CareerProfile = ({ isLoading, data }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { auth, setAuth } = useAuth();
   const logout = useLogout();
 
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
@@ -47,34 +43,6 @@ export const CareerProfile = () => {
       <Chip icon={icon} label={label} />
     </Tooltip>
   );
-
-  const getData = async () => {
-    return await axiosPrivate.get("/profiles/career_profile/me");
-  };
-
-  const { isLoading, data, isError, error, isFetching } = useQuery(
-    "career-profile",
-    getData,
-    {
-      staleTime: 300000,
-      // refetchOnWindowFocus: true,
-    }
-  );
-
-  if (isError) {
-    if (error.response.data.detail === "Token has expired") {
-      setAuth({}); // Clears out all the token, logs you out
-      logout();
-      navigate("/login", {
-        state: {
-          from: location,
-          message:
-            "You have been logged out for security purposes, please login again",
-        },
-        replace: true,
-      });
-    }
-  }
 
   if (isLoading) {
     return (
@@ -278,16 +246,16 @@ export const CareerProfile = () => {
               padding: "0 1rem",
               fontWeight: "bold", // Make the text bold
               height: "100%", // Consume available vertical space
-              width: "100%"
+              width: "100%",
             }}
           >
             {data?.data?.course ? data?.data?.course : "no course selected"}
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
-            {data?.data?.year_graduated && (
+            {data?.data?.date_graduated && (
               <Chiptip
                 icon={<School color="primary" />}
-                label={data?.data.year_graduated}
+                label={dayjs(data?.data?.date_graduated).format("YYYY")}
                 additional="batch "
               />
             )}

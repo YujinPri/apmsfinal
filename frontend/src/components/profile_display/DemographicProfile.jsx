@@ -1,8 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "react-query";
-import { useNavigate, useLocation } from "react-router-dom";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import useAuth from "../../hooks/useAuth";
 import {
   Avatar,
   Box,
@@ -17,9 +12,9 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import ProfileEditModal from "../profile_edit/ProfileEditModal";
 import {
   Cake,
+  Contacts,
   Edit,
   Email,
   Female,
@@ -27,15 +22,11 @@ import {
   LocationOn,
   Male,
   Phone,
+  PhoneAndroid,
   Transgender,
 } from "@mui/icons-material";
 
-export const DemographicProfile = () => {
-  const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { auth, setAuth } = useAuth();
-
+export const DemographicProfile = ({data, isLoading}) => {
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
     <Tooltip
       color="secondary"
@@ -60,33 +51,6 @@ export const DemographicProfile = () => {
         return null;
     }
   };
-
-  const getData = async () => {
-    return await axiosPrivate.get("/profiles/demographic_profile/me");
-  };
-
-  const { isLoading, data, isError, error, isFetching } = useQuery(
-    "demographic-profile",
-    getData,
-    {
-      staleTime: 300000,
-      // refetchOnWindowFocus: true,
-    }
-  );
-
-  if (isError) {
-    if (error.response.data.detail === "Token has expired") {
-      setAuth({}); // Clears out all the token, logs you out
-      navigate("/login", {
-        state: {
-          from: location,
-          message:
-            "You have been logged out for security purposes, please login again",
-        },
-        replace: true,
-      });
-    }
-  }
 
   if (isLoading) {
     return (
@@ -174,7 +138,7 @@ export const DemographicProfile = () => {
               <Skeleton variant="circular" width={40} height={40} />
             </Box>
           </Grid>
-          <Divider sx={{ padding: 2.5 }}>
+          <Divider sx={{ padding: 2 }}>
             <Typography variant="subtitle2">
               <Skeleton width={200} />
             </Typography>
@@ -222,7 +186,7 @@ export const DemographicProfile = () => {
             src={data?.data?.profile_picture || undefined}
             sx={{ width: "100px", height: "100px" }}
           />
-          <Typography variant="h6">@{data?.data?.username}</Typography>
+          <Typography variant="subtitle1">@{data?.data?.username}</Typography>
         </Box>
         <Grid
           container
@@ -260,28 +224,34 @@ export const DemographicProfile = () => {
                 {data?.data?.first_name} {data?.data?.last_name}
                 {data?.data?.student_number && (
                   <Typography variant="subtitle2">
-                    ({data?.data?.student_number})
+                    {data?.data?.student_number}
                   </Typography>
                 )}
               </Typography>
             )}
 
-            {data?.data?.city && (
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  height: "100%",
-                  padding: "0 1rem",
-                  marginX: "auto",
-                }}
-              >
-                {data?.data?.city}
-              </Typography>
+            {data?.data?.address && (
+              <Tooltip title="current residence address">
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    height: "100%",
+                    padding: "0 1rem",
+                    marginX: "auto",
+                  }}
+                >
+                  {data?.data?.address}
+                </Typography>
+              </Tooltip>
             )}
 
             {data?.data?.headline && (
               <Box
-                sx={{ position: "relative", margin: " auto 0", marginY: "3vh" }}
+                sx={{
+                  position: "relative",
+                  margin: " auto 0",
+                  marginY: "1rem",
+                }}
               >
                 <Typography
                   variant="h1" // You can adjust the variant to match your preferred heading style
@@ -299,7 +269,7 @@ export const DemographicProfile = () => {
                   sx={{
                     // fontWeight: "bold", // Make the text bold
                     height: "100%", // Consume available vertical space
-                    padding: "1.5rem",
+                    padding: "1rem",
                     width: "40ch",
                     position: "relative", // Make the main content container relative for positioning
                     textAlign: "center",
@@ -321,18 +291,66 @@ export const DemographicProfile = () => {
               </Box>
             )}
           </Box>
-          <Box sx={{ display: "flex", gap: 1, paddingY: 2 }}>
-            {data?.data?.email && (
-              <Chiptip
-                icon={<Email color="primary" />}
-                label={data?.data?.email}
-              />
-            )}
-          </Box>
         </Grid>
+        {data?.data?.origin_address && (
+          <Divider sx={{ padding: 2 }}>
+            <Typography variant="subtitle2">home town</Typography>
+          </Divider>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            paddingY: 2,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {data?.data?.origin_address && (
+            <Chiptip
+              icon={<LocationOn color="primary" />}
+              label={data?.data?.origin_address}
+            />
+          )}
+        </Box>
+        {(data?.data?.contact_number ||
+          data?.data?.telephone_number ||
+          data?.data?.email) && (
+          <Divider sx={{ padding: 2 }}>
+            <Typography variant="subtitle2">contact details</Typography>
+          </Divider>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            paddingY: 2,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {data?.data?.email && (
+            <Chiptip
+              icon={<Email color="primary" />}
+              label={data?.data?.email}
+            />
+          )}
+          {data?.data?.mobile_number && (
+            <Chiptip
+              icon={<PhoneAndroid color="primary" />}
+              label={data?.data?.mobile_number}
+            />
+          )}
+          {data?.data?.telephone_number && (
+            <Chiptip
+              icon={<Phone color="primary" />}
+              label={data?.data?.telephone_number}
+            />
+          )}
+        </Box>
 
         {(data?.data?.birthdate || data?.data?.civil_status) && (
-          <Divider sx={{ padding: 2.5 }}>
+          <Divider sx={{ padding: 2 }}>
             <Typography variant="subtitle2">personal details</Typography>
           </Divider>
         )}

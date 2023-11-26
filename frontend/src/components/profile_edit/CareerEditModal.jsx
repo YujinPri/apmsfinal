@@ -52,22 +52,15 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import useGetCareerProfile from "../../hooks/useGetCareerProfile";
+import useCourses from "../../hooks/useCourses";
 
 const careerProfileEditModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
 
-  const getCourses = async () => {
-    return await axiosPrivate.get("/selections/courses/");
-  };
-  const { data: courses, isLoading: isLoadingCourses } = useQuery(
-    "courses",
-    getCourses
-  );
-
-  const getData = async () => {
-    return await axiosPrivate.get("/profiles/career_profile/me");
-  };
-  const { data: cachedData } = useQuery("career-profile", getData);
+  const { data: courses, isLoading: isLoadingCourses } = useCourses();
+  const { data: cachedData, isLoading: isLoadingDisplay } =
+    useGetCareerProfile();
 
   const [careerProfile, setCareerProfile] = useState(null);
 
@@ -75,7 +68,7 @@ const careerProfileEditModal = ({ open, onClose }) => {
     if (cachedData) {
       setCareerProfile({
         ...cachedData.data,
-        year_graduated: cachedData?.data?.year_graduated || null,
+        date_graduated: cachedData?.data?.date_graduated || null,
         course: cachedData?.data?.course || "",
         course_name: cachedData?.data?.course || "",
         post_grad_act: cachedData?.data?.post_grad_act || [],
@@ -120,20 +113,20 @@ const careerProfileEditModal = ({ open, onClose }) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleDateChange = (date) => {
-    const year = date.year();
     setCareerProfile((prevProfile) => ({
       ...prevProfile,
-      year_graduated: year,
+      date_graduated: date,
     }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = {
-      year_graduated:
-        careerProfile?.year_graduated === cachedData?.data?.year_graduated
+      date_graduated:
+        careerProfile?.date_graduated === cachedData?.data?.date_graduated
           ? null
-          : careerProfile?.year_graduated,
+          : careerProfile?.date_graduated.format("YYYY-MM-DD"),
+
       course:
         careerProfile?.course === cachedData?.data?.course
           ? null
@@ -264,7 +257,7 @@ const careerProfileEditModal = ({ open, onClose }) => {
     );
   }
 
-  const coursesOptions = courses.data;
+  const coursesOptions = courses?.data;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -309,7 +302,7 @@ const careerProfileEditModal = ({ open, onClose }) => {
                 }))
               }
               value={
-                coursesOptions.find(
+                coursesOptions?.find(
                   (option) => option.name === careerProfile?.course_name
                 ) || null
               }
@@ -323,8 +316,8 @@ const careerProfileEditModal = ({ open, onClose }) => {
                     views={["year"]}
                     label="Year graduated"
                     value={
-                      careerProfile?.year_graduated
-                        ? dayjs(`${careerProfile.year_graduated}-01-01`)
+                      careerProfile?.date_graduated
+                        ? dayjs(careerProfile.date_graduated)
                         : null
                     }
                     onChange={handleDateChange}
@@ -340,7 +333,7 @@ const careerProfileEditModal = ({ open, onClose }) => {
               <Select
                 labelId="post-grad-act-label"
                 multiple
-                value={careerProfile?.post_grad_act}
+                value={careerProfile?.post_grad_act || []}
                 onChange={(event) => {
                   setCareerProfile({
                     ...careerProfile,

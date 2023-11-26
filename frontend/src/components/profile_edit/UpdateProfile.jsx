@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useMutation, useQueryClient, useQuery } from "react-query";
+import useGetDemographicProfile from "../../hooks/useGetDemographicProfile";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import {
   Box,
   Breadcrumbs,
@@ -21,41 +24,54 @@ import ProfileEditModal from "./ProfileEditModal";
 import EducProfileEditModal from "./CareerEditModal";
 import AddEmploymentModal from "./AddEmploymentModal";
 import AddAchievementModal from "./AddAchievementModal";
-import axios from "axios";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import useGetCareerProfile from "../../hooks/useGetCareerProfile";
+import AddEducationModal from "./AddEducationModal";
 
 function UpdateProfile() {
-  const axiosPrivate = useAxiosPrivate();
-
-  const getCities = async () => {
-    try {
-      const response = await axios.get("https://psgc.gitlab.io/api/cities/", {
-        headers: {
-          accept: "text/html",
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching cities:", error);
-      throw error;
-    }
-  };
-
-  const getJobs = async () => {
-    return await axiosPrivate.get("/selections/jobs/");
-  };
-
-
-  useQuery("jobs", getJobs);
-  useQuery("cities", getCities);
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { auth, setAuth } = useAuth();
   const [value, setValue] = React.useState(0);
   const [modalOpen, setModalOpen] = useState({
     profile: false,
     career: false,
     employment: false,
     add_achievement: false,
+    add_achievement: false,
+    add_education: false,
   });
+
+  const {
+    data: demographicData,
+    isLoading: isLoadingDemographicData,
+    isError: isErrorDemographicData,
+    error: errorDemographicData,
+  } = useGetDemographicProfile();
+
+  const {
+    data: careerData,
+    isLoading: isLoadingCareerData,
+    isError: isErrorCareerData,
+    error: errorCareerData,
+  } = useGetCareerProfile();
+
+  if (isErrorDemographicData || isErrorCareerData) {
+    const expiredCareerData =
+      errorCareerData.response.data.detail === "Token has expired";
+    const expiredDemographicData =
+      errorDemographicData.response.data.detail === "Token has expired";
+    if (expiredDemographicData || expiredCareerData) {
+      setAuth({}); // Clears out all the token, logs you out
+      navigate("/login", {
+        state: {
+          from: location,
+          message:
+            "You have been logged out for security purposes, please login again",
+        },
+        replace: true,
+      });
+    }
+  }
 
   const handleModalOpen = (type) => {
     setModalOpen((prevState) => ({
@@ -71,6 +87,7 @@ function UpdateProfile() {
       career: false,
       employment: false,
       add_achievement: false,
+      add_education: false,
     }));
   };
 
@@ -81,13 +98,14 @@ function UpdateProfile() {
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const targetOffset = element.offsetTop - 165; // Fixed offset of -63
+      const targetOffset = element.offsetTop - 165; 
       window.scrollTo({
         top: targetOffset,
         behavior: "smooth",
       });
     }
   };
+
   return (
     <Box
       flex={4}
@@ -100,6 +118,7 @@ function UpdateProfile() {
       }}
     >
       <Box
+        position="sticky"
         top={63}
         zIndex={1000}
         bgcolor="inherit"
@@ -164,7 +183,10 @@ function UpdateProfile() {
             <Edit />
           </Fab>
         </Tooltip>
-        <DemographicProfile />
+        <DemographicProfile
+          data={demographicData}
+          isLoading={isLoadingDemographicData}
+        />
       </Box>
 
       <Box
@@ -207,6 +229,15 @@ function UpdateProfile() {
               <Add />
             </Fab>
           </Tooltip>
+          <Tooltip title="add education">
+            <Fab
+              size="small"
+              onClick={() => handleModalOpen("add_education")}
+              color="primary"
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
           <Tooltip title="edit career profile">
             <Fab
               size="small"
@@ -217,7 +248,7 @@ function UpdateProfile() {
             </Fab>
           </Tooltip>
         </Box>
-        <CareerProfile />
+        <CareerProfile data={careerData} isLoading={isLoadingCareerData} />
       </Box>
 
       <Box
@@ -275,6 +306,12 @@ function UpdateProfile() {
       {modalOpen.add_achievement && (
         <AddAchievementModal
           open={modalOpen.add_achievement}
+          onClose={handleCloseModal}
+        />
+      )}
+      {modalOpen.add_education && (
+        <AddEducationModal
+          open={modalOpen.add_education}
           onClose={handleCloseModal}
         />
       )}

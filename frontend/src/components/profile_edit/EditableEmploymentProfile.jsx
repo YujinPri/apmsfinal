@@ -50,7 +50,7 @@ import AddEmploymentModal from "./AddEmploymentModal";
 import EditEmploymentModal from "./EditEmploymentModal";
 import DeleteEmploymentModal from "./DeleteEmploymentModal";
 
-export const EmploymentProfile = () => {
+export const EditableEmploymentProfile = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -237,47 +237,45 @@ export const EmploymentProfile = () => {
                       position: "relative",
                     }}
                   >
-                    <Box>
-                      <PopupState variant="popover" popupId="demo-popup-menu">
-                        {(popupState) => (
-                          <React.Fragment>
-                            <Button
-                              {...bindTrigger(popupState)}
-                              size="small"
-                              sx={{
-                                position: "absolute",
-                                top: "1rem",
-                                right: "1rem",
-                              }}
+                    <PopupState variant="popover" popupId="demo-popup-menu">
+                      {(popupState) => (
+                        <React.Fragment>
+                          <Button
+                            {...bindTrigger(popupState)}
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: "1rem",
+                              right: "1rem",
+                            }}
+                          >
+                            <MoreHoriz color="primary" />
+                          </Button>
+                          <Menu {...bindMenu(popupState)}>
+                            <MenuItem
+                              onClick={() =>
+                                handleModalOpen("editModal", employment.id)
+                              } // Trigger the profile edit modal
                             >
-                              <MoreHoriz color="primary" />
-                            </Button>
-                            <Menu {...bindMenu(popupState)}>
-                              <MenuItem
-                                onClick={() =>
-                                  handleModalOpen("editModal", employment.id)
-                                } // Trigger the profile edit modal
-                              >
-                                <ListItemIcon>
-                                  <Edit fontSize="small" />
-                                </ListItemIcon>
-                                edit
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() =>
-                                  handleModalOpen("deleteModal", employment.id)
-                                }
-                              >
-                                <ListItemIcon>
-                                  <Delete fontSize="small" />
-                                </ListItemIcon>
-                                delete
-                              </MenuItem>
-                            </Menu>
-                          </React.Fragment>
-                        )}
-                      </PopupState>
-                    </Box>
+                              <ListItemIcon>
+                                <Edit fontSize="small" />
+                              </ListItemIcon>
+                              edit
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() =>
+                                handleModalOpen("deleteModal", employment.id)
+                              }
+                            >
+                              <ListItemIcon>
+                                <Delete fontSize="small" />
+                              </ListItemIcon>
+                              delete
+                            </MenuItem>
+                          </Menu>
+                        </React.Fragment>
+                      )}
+                    </PopupState>
                     <Grid
                       container
                       alignItems="center"
@@ -373,7 +371,6 @@ export const EmploymentProfile = () => {
                           actual="this job is aligned with their graduated academic program"
                         />
                       )}
-                      
                     </Box>
                     <Divider sx={{ paddingBottom: 1 }}>
                       <Typography variant="subtitle2">job snapshot</Typography>
@@ -450,4 +447,4 @@ export const EmploymentProfile = () => {
   );
 };
 
-export default EmploymentProfile;
+export default EditableEmploymentProfile;

@@ -6,7 +6,7 @@ function MainLayout({ children, mode, setMode, activeIndex }) {
   return (
     <Box>
       <Navbar />
-      <Stack direction="row">
+      <Stack direction="row" minHeight={"100vh"}>
         <Sidebar mode={mode} setMode={setMode} activeIndex={activeIndex} />
         <Box sx={{ width: { md: "70vw", sm: "100vw" } }} marginX={"auto"}>
           <Box sx={{ width: { md: "70%", sm: "100%" } }}>{children}</Box>

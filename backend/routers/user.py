@@ -90,7 +90,7 @@ async def fetchProfile(db: Session = Depends(get_db), user: UserResponse = Depen
         "first_name": profile.first_name,
         "present_employment_status": profile.present_employment_status,
         "course": profile.course.name if profile.course else "",
-        "year_graduated": profile.year_graduated,
+        "date_graduated": profile.date_graduated,
         "role": profile.role,
         "profile_picture": profile.profile_picture,
         "employments": employments_data,

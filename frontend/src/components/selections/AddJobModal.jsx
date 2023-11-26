@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useTheme } from "@mui/material/styles";
+import useClassifications from "../../hooks/useClassifications";
 
 import {
   Alert,
@@ -43,9 +44,9 @@ const MenuProps = {
 
 const AddJob = ({ open, onClose }) => {
   const queryClient = useQueryClient();
-  const cachedData = queryClient.getQueryData("classifications-all");
-  const isLoadingClassification = queryClient.isFetching("classifications-all");
+  const { data: cachedData, isLoading: isLoadingClassification } = useClassifications();
   const [job, setJob] = useState(null);
+
   const [classificationIds, setClassificationIds] = useState([]);
 
   const handleChangeSelect = (event) => {
@@ -127,7 +128,6 @@ const AddJob = ({ open, onClose }) => {
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
 
-    console.log(payload);
 
     try {
       await mutation.mutateAsync(payload);

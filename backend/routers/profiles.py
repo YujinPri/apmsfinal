@@ -99,13 +99,21 @@ async def get_demographic_profiles(
           "region": user.region,
           "city": user.city,
           "barangay": user.barangay,
+          "region_code": user.region_code,
+          "city_code": user.city_code,
+          "barangay_code": user.barangay_code,
           "address": user.address,
-          "provincial_region": user.provincial_region,
-          "provincial_city": user.provincial_city,
-          "provincial_barangay": user.provincial_barangay,
-          "provincial_address": user.provincial_address,
+          "origin_is_international": user.origin_is_international,
+          "origin_country": user.origin_country,
+          "origin_region": user.origin_region,
+          "origin_city": user.origin_city,
+          "origin_barangay": user.origin_barangay,
+          "origin_region_code": user.origin_region_code,
+          "origin_city_code": user.origin_city_code,
+          "origin_barangay_code": user.origin_barangay_code,
+          "origin_address": user.origin_address,
           "civil_status": user.civil_status,          
-          "year_graduated": user.year_graduated,          
+          "date_graduated": user.date_graduated,          
           "course": user.course.name if user.course else '',          
       }
       profile.append(profile_dict)
@@ -124,7 +132,6 @@ async def get_demographic_profile(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     profile_dict = {
-        "id": user_data.id,
         "gender": user_data.gender,
         "username": user_data.username,
         "first_name": user_data.first_name,
@@ -136,20 +143,27 @@ async def get_demographic_profile(
         "student_number": user_data.student_number,
         "birthdate": user_data.birthdate,
         "profile_picture": user_data.profile_picture,
+        "headline": user_data.headline,
         "is_international": user_data.is_international,
         "country": user_data.country,
         "region": user_data.region,
-        "province": user_data.province,
         "city": user_data.city,
         "barangay": user_data.barangay,
+        "region_code": user_data.region_code,
+        "city_code": user_data.city_code,
+        "barangay_code": user_data.barangay_code,
         "address": user_data.address,
-        "provincial_region": user_data.provincial_region,
-        "provincial_province": user_data.provincial_province,
-        "provincial_city": user_data.provincial_city,
-        "provincial_barangay": user_data.provincial_barangay,
-        "provincial_address": user_data.provincial_address,
+        "origin_is_international": user_data.origin_is_international,
+        "origin_country": user_data.origin_country,
+        "origin_region": user_data.origin_region,
+        "origin_city": user_data.origin_city,
+        "origin_barangay": user_data.origin_barangay,
+        "origin_region_code": user_data.origin_region_code,
+        "origin_city_code": user_data.origin_city_code,
+        "origin_barangay_code": user_data.origin_barangay_code,
+        "origin_address": user_data.origin_address,
         "civil_status": user_data.civil_status,          
-        "year_graduated": user_data.year_graduated,          
+        "date_graduated": user_data.date_graduated,          
         "course": user_data.course.name if user_data.course else '',          
     }
 
@@ -167,19 +181,27 @@ async def put_demographic_profiles(
         birthdate: Optional[date] = Form(None), 
         gender: Optional[str] = Form(None), 
         headline: Optional[str] = Form(None), 
-        is_international: Optional[str] = Form(None), 
+        is_international: Optional[bool] = Form(None), 
+        mobile_number: Optional[str] = Form(None), 
+        telephone_number: Optional[str] = Form(None), 
         country: Optional[str] = Form(None), 
         region: Optional[str] = Form(None), 
-        province: Optional[str] = Form(None), 
         city: Optional[str] = Form(None), 
         barangay: Optional[str] = Form(None), 
+        region_code: Optional[str] = Form(None), 
+        city_code: Optional[str] = Form(None), 
+        barangay_code: Optional[str] = Form(None), 
         address: Optional[str] = Form(None), 
         civil_status: Optional[str] = Form(None),
-        provincial_region: Optional[str] = Form(None), 
-        provincial_province: Optional[str] = Form(None), 
-        provincial_city: Optional[str] = Form(None), 
-        provincial_barangay: Optional[str] = Form(None), 
-        provincial_address: Optional[str] = Form(None), 
+        origin_is_international: Optional[bool] = Form(None), 
+        origin_country: Optional[str] = Form(None), 
+        origin_region: Optional[str] = Form(None), 
+        origin_city: Optional[str] = Form(None), 
+        origin_barangay: Optional[str] = Form(None), 
+        origin_region_code: Optional[str] = Form(None), 
+        origin_city_code: Optional[str] = Form(None), 
+        origin_barangay_code: Optional[str] = Form(None), 
+        origin_address: Optional[str] = Form(None), 
         student_number: Optional[str] = Form(None),
         profile_picture: Optional[UploadFile] = File(None), 
         user: UserResponse = Depends(get_current_user), 
@@ -217,18 +239,26 @@ async def put_demographic_profiles(
             'birthdate': birthdate, 
             'gender': gender, 
             'headline': headline, 
+            'mobile_number': mobile_number, 
+            'telephone_number': telephone_number, 
             'is_international': is_international, 
             'country': country, 
             'region': region, 
-            'province': province, 
             'city': city, 
             'barangay': barangay, 
+            'region_code': region_code, 
+            'city_code': city_code, 
+            'barangay_code': barangay_code, 
             'address': address, 
-            'provincial_region': provincial_region, 
-            'provincial_province': provincial_province, 
-            'provincial_city': provincial_city, 
-            'provincial_barangay': provincial_barangay, 
-            'provincial_address': provincial_address, 
+            'origin_is_international': origin_is_international, 
+            'origin_country': origin_country, 
+            'origin_region': origin_region, 
+            'origin_city': origin_city, 
+            'origin_barangay': origin_barangay, 
+            'origin_region_code': origin_region_code, 
+            'origin_city_code': origin_city_code, 
+            'origin_barangay_code': origin_barangay_code, 
+            'origin_address': origin_address, 
             'civil_status': civil_status, 
             'student_number': student_number, 
             'profile_picture': profile_picture   
@@ -250,7 +280,7 @@ async def put_demographic_profiles(
         return {"message": "Profile updated successfully"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Account creation failed")
+        raise HTTPException(status_code=400, detail="Profile Update Failed")
 
 @router.get("/career_profile/me")
 async def get_career_profiles(
@@ -270,7 +300,7 @@ async def get_career_profiles(
     profile_dict = {
         "id": user_data.id,
         "role": user_data.role,
-        "year_graduated": user_data.year_graduated,          
+        "date_graduated": user_data.date_graduated,          
         "course": user_data.course.name if user_data.course else '',          
         "post_grad_act": user_data.post_grad_act,          
         "achievement": achievements if achievements else None,          
@@ -282,10 +312,8 @@ async def get_career_profiles(
 @router.put("/career_profiles/")
 async def put_career_profiles(
     *,
-    year_graduated: Optional[int] = Body(None),
-    year_start: Optional[int] = Body(None),
-    month_graduated: Optional[int] = Body(None),
-    month_start: Optional[int] = Body(None),
+    date_graduated: Optional[date] = Body(None),
+    date_start: Optional[date] = Body(None),
     course: Optional[UUID] = Body(None),
     post_grad_act: Optional[List[str]] = Body(None),
     db: Session = Depends(get_db),
@@ -306,10 +334,8 @@ async def put_career_profiles(
 
     try:
         profile = {
-            'year_graduated': year_graduated,
-            'year_start': year_start,
-            'month_graduated': month_graduated,
-            'month_start': month_start,
+            'date_graduated': date_graduated,
+            'date_start': date_start,
             'course': course_instance,
             'post_grad_act': post_grad_act,
         }
@@ -351,7 +377,7 @@ async def get_career_profiles(
         profile_dict = {
             "id": user.id,
             "role": user.role,
-            "year_graduated": user.year_graduated,          
+            "date_graduated": user.date_graduated,          
             "course": user.course.name if user.course else '',          
             "post_grad_act": user.post_grad_act,          
             "achievement": achievements if achievements else None,          
@@ -365,25 +391,16 @@ async def get_career_profiles(
 
 @router.get("/employment_profiles/me")
 async def get_user_employments(
-    page: int = Query(default=1, description="Page number"),
-    per_page: int = Query(default=50, description="Number of records per page"),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
 
     # Calculate the offset for pagination
-    offset = (page - 1) * per_page
 
     employments_data = []
 
     profile = db.query(models.User).filter(models.User.id == user.id).first()
-    employments = (
-        db.query(models.Employment)
-        .filter(models.Employment.user_id == user.id)
-        .offset(offset)
-        .limit(per_page)
-        .all()
-    )
+    employments = (db.query(models.Employment).filter(models.Employment.user_id == user.id).all())
 
     # Access the user's course classifications from their profile
     user_course_classification_ids = None
@@ -420,8 +437,9 @@ async def get_user_employments(
             "is_international": employment.is_international,
             "country": employment.country,
             "region": employment.region,
-            "province": employment.province,
             "city": employment.city,
+            "region_code": employment.region_code,
+            "city_code": employment.city_code,
             "address": employment.address,
         }
         employments_data.append(employment_dict)
@@ -430,8 +448,6 @@ async def get_user_employments(
         "present_employment_status": profile.present_employment_status,
         "employments": employments_data,
         "total_records": len(employments_data),  # Total number of records in this response
-        "page": page,
-        "per_page": per_page,
     }
 
 @router.get("/employment_profiles/all")
@@ -496,8 +512,9 @@ async def get_employment_profiles(
                     "is_international": employment.is_international,
                     "country": employment.country,
                     "region": employment.region,
-                    "province": employment.province,
                     "city": employment.city,
+                    "region_code": employment.region_code,
+                    "city_code": employment.city_code,
                     "address": employment.address,
                 }
           )
@@ -526,9 +543,10 @@ async def put_employment(
     is_international: Optional[bool] = Body(None),
     country: Optional[str] = Body(None),
     region: Optional[str] = Body(None),
-    province: Optional[str] = Body(None),
     city: Optional[str] = Body(None),
     address: Optional[str] = Body(None),
+    region_code: Optional[str] = Body(None),
+    city_code: Optional[str] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -556,20 +574,18 @@ async def put_employment(
             'job_position': job_position,
             'employer_type': employer_type,
             'is_international': is_international,
+            'address': address,
             'country': country,
             'region': region,
-            'province': province,
+            'region_code': region_code,
             'city': city,
-            'address': address,
+            'city_code': city_code,
         }
 
          # Iterate through the profile dictionary and populate saved_profile
         for key, value in profile.items():
-            if value != None and value != "" and key != "date_end":
-                setattr(employment, key, value)
-            if key == "date_end" and value == "" or value is None:
-               setattr(employment, key, value)
-        
+            setattr(employment, key, value)
+            
         db.commit()
         await afterEmploymentPostRoutine(user.id, db)
         return {"message": "Employment Profile updated successfully"}
@@ -590,11 +606,12 @@ async def post_employment(
     job_position: str = Body(...),
     employer_type: str = Body(...),
     is_international: bool = Body(...),
+    address: str = Body(...),
     country: str = Body(...),
     region: str = Body(...),
-    province: str = Body(...),
+    region_code: str = Body(...),
     city: str = Body(...),
-    address: str = Body(...),
+    city_code: str = Body(...),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -617,8 +634,9 @@ async def post_employment(
           is_international=is_international,
           country=country,
           region=region,
-          province=province,
           city=city,
+          region_code=region_code,
+          city_code=city_code,
           address=address,
       )
 
@@ -678,6 +696,8 @@ async def get_employment(
             "country": employment.country,
             "region": employment.region,
             "city": employment.city,
+            "region_code": employment.region_code,
+            "city_code": employment.city_code,
             "address": employment.address,
         }
 
@@ -715,9 +735,9 @@ async def post_achievement(
     *,
     type_of_achievement: str = Body(...),
     description: str = Body(...),
-    story: str = Body(...),
-    link_reference: str = Body(...),
-    year_of_attainment: int = Body(...),
+    story: Optional[str] = Body(None),
+    link_reference: Optional[str] = Body(None),
+    date_of_attainment: date = Body(...),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -729,7 +749,7 @@ async def post_achievement(
     try:
       achievement = models.Achievement(
           type_of_achievement=type_of_achievement,
-          year_of_attainment=year_of_attainment,
+          date_of_attainment=date_of_attainment,
           description=description,
           story=story,
           link_reference=link_reference,
@@ -812,7 +832,7 @@ async def put_achievement(
     description: str = Body(None),
     story: str = Body(None),
     link_reference: str = Body(None),
-    year_of_attainment: int = Body(None),
+    date_of_attainment: date = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -832,14 +852,13 @@ async def put_achievement(
             'description': description,
             'story': story,
             'link_reference': link_reference,
-            'year_of_attainment': year_of_attainment,
+            'date_of_attainment': date_of_attainment,
             "user": user_instance,
         }
 
          # Iterate through the profile dictionary and populate saved_profile
         for key, value in profile.items():
-            if value != None and value != "":
-                setattr(achievement, key, value)
+            setattr(achievement, key, value)
         
         db.commit()
         return {"message": "Achievement Updated Successfully"}
@@ -861,12 +880,13 @@ async def post_education(
     region: str = Body(...),
     city: str = Body(...),
     barangay: str = Body(...),
+    region_code: str = Body(...),
+    city_code: str = Body(...),
+    barangay_code: str = Body(...),
     address: str = Body(...),
     story: str = Body(...),
-    month_start: int = Body(...),
-    month_graduated: int = Body(...),
-    year_start: int = Body(...),
-    year_graduated: int = Body(...),
+    date_start: date = Body(...),
+    date_graduated: date = Body(...),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -888,12 +908,13 @@ async def post_education(
         region=region,
         city=city,
         barangay=barangay,
+        region_code=region_code,
+        city_code=city_code,
+        barangay_code=barangay_code,
         address=address,
         story=story,
-        month_start=month_start,
-        month_graduated=month_graduated,
-        year_start=year_start,
-        year_graduated=year_graduated,
+        date_start=date_start,
+        date_graduated=date_graduated,
         user=user_instance,
         course=course_instance,
       )
@@ -980,12 +1001,13 @@ async def put_achievement(
     region: str = Body(None),
     city: str = Body(None),
     barangay: str = Body(None),
+    region_code: str = Body(None),
+    city_code: str = Body(None),
+    barangay_code: str = Body(None),
     address: str = Body(None),
     story: str = Body(None),
-    month_start: int = Body(None),
-    month_graduated: int = Body(None),
-    year_start: int = Body(None),
-    year_graduated: int = Body(None),
+    date_start: date = Body(None),
+    date_graduated: date = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -1011,12 +1033,13 @@ async def put_achievement(
             'region': region,
             'city': city,
             'barangay': barangay,
+            'region_code': region_code,
+            'city_code': city_code,
+            'barangay_code': barangay_code,
             'address': address,
             'story': story,
-            'month_start': month_start,
-            'month_graduated': month_graduated,
-            'year_start': year_start,
-            'year_graduated': year_graduated,
+            'date_start': date_start,
+            'date_graduated': date_graduated,
             'user': user_instance,
             'course': course_instance,
         }
@@ -1075,7 +1098,7 @@ async def student_Insert_Data_Attachment(file: UploadFile = File(...), db: Sessi
     else:
         raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
     
-    expected_columns = ['username', 'email', 'first_name', 'last_name', 'birthdate', 'gender', 'city', 'address', 'mobile_number', 'civil_status', 'student_number', 'year_graduated', 'degree', 'field']
+    expected_columns = ['username', 'email', 'first_name', 'last_name', 'birthdate', 'gender', 'city', 'address', 'mobile_number', 'civil_status', 'student_number', 'date_graduated', 'degree', 'field']
     
     valid, response = validate_columns(df, expected_columns)
     if not valid:
@@ -1115,7 +1138,7 @@ async def student_Insert_Data_Attachment(file: UploadFile = File(...), db: Sessi
                     address=row.get('address', ''),
                     mobile_number=row.get('mobile_number', ''),
                     student_number=row.get('student_number', ''),
-                    year_graduated=row.get('year_graduated', ''),
+                    date_graduated=row.get('date_graduated', ''),
                     degree=row.get('degree', ''),
                     field=row.get('field', ''),
                 )

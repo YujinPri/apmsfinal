@@ -26,6 +26,7 @@ import {
   OutlinedInput,
   Chip,
 } from "@mui/material";
+import useClassifications from "../../hooks/useClassifications";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -40,15 +41,15 @@ const MenuProps = {
 
 const AddCourse = ({ open, onClose }) => {
   const queryClient = useQueryClient();
-  const classificationsData = queryClient.getQueryData("classifications-all");
-  const isLoadingClassification = queryClient.isFetching("classifications-all");
+  const { data: classificationsData, isLoading: isLoadingClassification } =
+    useClassifications();
+
   const [courseProfile, setCourseProfile] = useState(null);
   const [classificationIds, setClassificationIds] = useState([]);
   const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-
 
   const handleChangeSelect = (event) => {
     const {
@@ -116,11 +117,9 @@ const AddCourse = ({ open, onClose }) => {
     }
 
     const data = {
-        name: courseProfile?.name,
-        classification_ids: courseProfile?.classification_ids,
-      }
-    ;
-
+      name: courseProfile?.name,
+      classification_ids: courseProfile?.classification_ids,
+    };
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
 
@@ -222,7 +221,7 @@ const AddCourse = ({ open, onClose }) => {
                 )}
                 MenuProps={MenuProps}
               >
-                {classifications.map((classification) => (
+                {classifications?.map((classification) => (
                   <MenuItem key={classification.id} value={classification.id}>
                     {classification.name}
                   </MenuItem>

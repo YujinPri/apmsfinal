@@ -31,7 +31,6 @@ export const Profile = () => {
     getProfile,
     {
       staleTime: 300000,
-      // refetchOnWindowFocus: true,
     }
   );
 
@@ -88,7 +87,7 @@ export const Profile = () => {
   }
 
   return (
-    <Box    >
+    <Box>
       <Card
         variant="outlined"
         sx={{

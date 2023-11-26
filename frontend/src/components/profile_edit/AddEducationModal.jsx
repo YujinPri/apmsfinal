@@ -61,54 +61,30 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import useGetEmploymentSpecific from "../../hooks/useGetEmploymentSpecific";
-import useJobs from "../../hooks/useJobs";
+import useGetAchievementSpecific from "../../hooks/useGetAchievementsSpecific";
+import useCourses from "../../hooks/useCourses";
 import useRegions from "../../hooks/useRegion";
-import useCitiesMunicipalities from "../../hooks/useCitiesMunicipalities";
 import useCountries from "../../hooks/useCountries";
-import AddJob from "../selections/AddJobModal";
+import useCitiesMunicipalities from "../../hooks/useCitiesMunicipalities";
+import AddCourse from "../selections/AddCourseModal";
 
-const EditEmploymentModal = ({ open, onClose, employmentID }) => {
+const AddEducationModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
-  const [employmentProfile, setEmploymentProfile] = useState(null);
 
+  const axiosPrivate = useAxiosPrivate();
+  const [message, setMessage] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const { data: jobs, isLoading: isLoadingJobs } = useJobs();
+  const [severity, setSeverity] = useState("error");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const [educationProfile, setEducationProfile] = useState(null);
+  const { data: courses, isLoading: isLoadingCourses } = useCourses();
   const { data: regions, isLoading: isLoadingRegions } = useRegions();
   const { data: countries, isLoading: isLoadingCountries } = useCountries();
   const {
     data: citiesMunicipalities,
     isLoading: isLoadingCitiesMunicipalities,
-  } = useCitiesMunicipalities(employmentProfile?.region_code);
-  const { data: cachedData, isLoading: isLoadingProfile } =
-    useGetEmploymentSpecific(employmentID);
-
-  useEffect(() => {
-    if (cachedData) {
-      setEmploymentProfile({
-        company_name: cachedData?.data?.company_name || "",
-        job: cachedData?.data?.job || "",
-        job_title: cachedData?.data?.job_title || "",
-        
-        current_job: cachedData?.data?.date_end || true,
-        date_hired: dayjs(cachedData?.data.date_hired) || null,
-        date_end: dayjs(cachedData?.data.date_end) || null,
-        
-        is_international: cachedData?.data?.is_international || false,
-        country_code: cachedData?.data?.country_code || "",
-        country: cachedData?.data?.country || "",
-        region_code: cachedData?.data?.region_code || "",
-        region: cachedData?.data?.region || "",
-        city: cachedData?.data?.city || "",
-        city_code: cachedData?.data?.city_code || "",
-
-        gross_monthly_income: cachedData?.data?.gross_monthly_income || "",
-        employment_contract: cachedData?.data?.employment_contract || "",
-        job_position: cachedData?.data?.job_position || "",
-        employer_type: cachedData?.data?.employer_type || "",
-      });
-    }
-  }, [cachedData]);
+  } = useCitiesMunicipalities(educationProfile?.region_code);
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -117,8 +93,8 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
           "Content-Type": "application/json",
         },
       };
-      const response = await axiosPrivate.put(
-        `/profiles/employment_profiles/${employmentID}`,
+      const response = await axiosPrivate.post(
+        `/profiles/education/`,
         newProfile,
         axiosConfig
       );
@@ -130,14 +106,10 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("employment-profile");
-        queryClient.invalidateQueries(
-          "employment-profile-specific",
-          employmentID
-        );
+        queryClient.invalidateQueries("educations-profile");
         queryClient.invalidateQueries("profile-me");
 
-        setMessage("Employment Profile updated successfully");
+        setMessage("achievement updated successfully");
         setSeverity("success");
       },
     }
@@ -145,48 +117,46 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
 
   const { isLoading, isError, error, isSuccess } = mutation;
 
-  const axiosPrivate = useAxiosPrivate();
-  const [message, setMessage] = useState("");
-  const [severity, setSeverity] = useState("error");
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const handleDateStarted = (date) => {
+    setEducationProfile((prevProfile) => ({
+      ...prevProfile,
+      date_start: date,
+    }));
+  };
+
+  const handleDateGraduated = (date) => {
+    setEducationProfile((prevProfile) => ({
+      ...prevProfile,
+      date_graduated: date,
+    }));
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setEmploymentProfile((prevProfile) => ({
+    setEducationProfile((prevProfile) => ({
       ...prevProfile,
       [name]: value,
     }));
-  };
 
-  const handleDateHiredChange = (date) => {
-    setEmploymentProfile((prevProfile) => ({
-      ...prevProfile,
-      date_hired: date,
-    }));
-  };
-
-  const handleDateEndChange = (date) => {
-    setEmploymentProfile((prevProfile) => ({
-      ...prevProfile,
-      date_end: date,
-    }));
+    console.log(value);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("employmentProfile:", employmentProfile);
-
     if (
-      employmentProfile.job == "" ||
-      employmentProfile.company_name == "" ||
-      employmentProfile.date_hired == null ||
-      (!employmentProfile.current_job && employmentProfile.date_end == null) ||
-      (!employmentProfile.is_international && employmentProfile.city == null && employmentProfile.region == null) ||
-      (employmentProfile.is_international && employmentProfile.country == null) ||
-      employmentProfile.gross_monthly_income == "" ||
-      employmentProfile.employment_contract == "" ||
-      employmentProfile.job_position == "" ||
-      employmentProfile.employer_type == ""
+      educationProfile?.course_id == "" ||
+      educationProfile?.level == "" ||
+      educationProfile?.school_name == "" ||
+      educationProfile?.story == "" ||
+      educationProfile?.is_international == null ||
+      educationProfile?.address == "" ||
+      educationProfile?.country == "" ||
+      educationProfile?.region == "" ||
+      educationProfile?.region_code == "" ||
+      educationProfile?.city == "" ||
+      educationProfile?.city_code == "" ||
+      educationProfile?.date_start == null ||
+      educationProfile?.date_graduated == null
     ) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
@@ -194,44 +164,37 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
       return; // Prevent form submission
     }
 
-    const now = new Date(); // Get the current date
-
-    if (
-      employmentProfile?.date_end <= employmentProfile?.date_hired ||
-      employmentProfile?.date_end > now ||
-      employmentProfile?.date_hired > now
-    ) {
-      setMessage("invalid date range.");
-      setSeverity("error");
-      setOpenSnackbar(true);
-      return; // Prevent form submission
+    if (educationProfile?.is_international) {
+      setEducationProfile((prevProfile) => ({
+        ...prevProfile,
+        address: country,
+        region: "",
+        region_code: "",
+        region: "",
+        region_code: "",
+      }));
     }
 
     const data = {
-      job: employmentProfile?.job,
-      company_name: employmentProfile?.company_name,
-      date_hired: employmentProfile?.date_hired.format("YYYY-MM-DD"),
-      date_end: employmentProfile?.date_end?.format("YYYY-MM-DD"),
-      gross_monthly_income: employmentProfile?.gross_monthly_income,
-      employment_contract: employmentProfile?.employment_contract,
-      job_position: employmentProfile?.job_position,
-      employer_type: employmentProfile?.employer_type,
-      is_international: employmentProfile?.is_international,
-      address: employmentProfile?.address,
-      country: employmentProfile?.country,
-      region: employmentProfile?.region,
-      region_code: employmentProfile?.region_code,
-      city: employmentProfile?.city,
-      city_code: employmentProfile?.city_code,
+      course_id: educationProfile?.course_id,
+      level: educationProfile?.level,
+      school_name: educationProfile?.school_name,
+      story: educationProfile?.story,
+      is_international: educationProfile?.is_international,
+      address: educationProfile?.story,
+      country: educationProfile?.country,
+      region: educationProfile?.region,
+      region_code: educationProfile?.region_code,
+      city: educationProfile?.city,
+      city_code: educationProfile?.city_code,
+      date_start: educationProfile?.date_start.format("YYYY-MM-DD"),
+      date_graduated: educationProfile?.date_graduated.format("YYYY-MM-DD"),
     };
-
-    if (employmentProfile?.current_job) data.date_end = null;
-    if (employmentProfile?.is_international) data.city = "";
 
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-
     console.log(payload);
+
     try {
       await mutation.mutateAsync(payload);
     } catch (error) {
@@ -257,132 +220,79 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
     setOpenSnackbar(false);
   };
 
-  const monthlyGrossIncome = [
+  const levelOptions = [
     {
-      value: "Less than ₱9,100",
+      value: "Early Childhood Education",
     },
     {
-      value: "₱9,100 to ₱18,200",
+      value: "Primary",
     },
     {
-      value: "₱18,200 to ₱36,400",
+      value: "Lower Secondary",
     },
     {
-      value: "₱36,400 to ₱63,700",
+      value: "Upper Secondary",
     },
     {
-      value: "₱63,700 to ₱109,200",
+      value: "Post-Secondary Non-Tertiary",
     },
     {
-      value: "₱109,200 to ₱182,000",
+      value: "Short Cycle Tertiary",
     },
     {
-      value: "Above ₱182,000",
-    },
-  ];
-
-  const employmentContract = [
-    {
-      value: "Regular",
+      value: "Bachelor's or equivalent level",
     },
     {
-      value: "Casual",
+      value: "Master's or equivalent elvel",
     },
     {
-      value: "Project",
-    },
-    {
-      value: "Seasonal",
-    },
-    {
-      value: "Fixed-term",
-    },
-    {
-      value: "Probationary",
+      value: "Doctoral or equivalent level",
     },
   ];
 
-  const jobPosition = [
-    {
-      value: "Chairperson / Board of Directors",
-    },
-    {
-      value: "Chief Executive Offices & C-Suite",
-    },
-    {
-      value: "Vice President",
-    },
-    {
-      value: "Director",
-    },
-    {
-      value: "Manager",
-    },
-    {
-      value: "Individual Contributor",
-    },
-    {
-      value: "Entry Level",
-    },
-  ];
 
-  const employerType = [
-    {
-      value: "Public / Government",
-    },
-    {
-      value: "Private Sector",
-    },
-    {
-      value: "Non-profit / Third sector",
-    },
-    {
-      value: "Self-Employed / Independent",
-    },
-  ];
 
-  if (
-    isLoadingJobs ||
-    isLoadingRegions ||
-    isLoadingProfile ||
-    isLoadingCountries
-  ) {
-    return (
-      <Dialog open={true}>
-        <DialogTitle>
-          <Skeleton variant="text" />
-        </DialogTitle>
-        <DialogContent sx={{ width: "40vw" }}>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-          <Box>
-            <Skeleton variant="rectangular" width="100%" height={50} />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled>
+    if (
+      isLoadingCourses ||
+      isLoadingRegions ||
+      isLoadingCountries
+    ) {
+      return (
+        <Dialog open={true}>
+          <DialogTitle>
             <Skeleton variant="text" />
-          </Button>
-          <Button disabled>
-            <Skeleton variant="text" />
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
+          </DialogTitle>
+          <DialogContent sx={{ width: "40vw" }}>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+            <Box>
+              <Skeleton variant="rectangular" width="100%" height={50} />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button disabled>
+              <Skeleton variant="text" />
+            </Button>
+            <Button disabled>
+              <Skeleton variant="text" />
+            </Button>
+          </DialogActions>
+        </Dialog>
+      );
+    }
 
   return (
     <>
@@ -400,22 +310,39 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
           {isLoading && <LinearProgress />}
           {!isLoading && <Box sx={{ height: 4 }} />}
         </Box>
-        <DialogTitle>Edit Employment History</DialogTitle>
+        <DialogTitle>School Information</DialogTitle>
         <DialogContent>
           <Grid container spacing={5}>
             <Grid item xs={12}>
               <Typography variant="h6" my={2}>
-                Job Details
+                Achievement Details
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <TextField
-                    name="company_name"
-                    label="Company Name"
-                    value={employmentProfile?.company_name}
+                    name="school_name"
+                    label="Name of School"
+                    value={educationProfile?.school_name || ""}
                     onChange={handleChange}
                     sx={{ width: "100%" }}
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Educational Level</InputLabel>
+                    <Select
+                      name="level"
+                      onChange={handleChange}
+                      value={educationProfile?.level || ""}
+                      input={<OutlinedInput label="Educational Level" />}
+                    >
+                      {levelOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.value}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <Box
@@ -428,26 +355,26 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                   >
                     <Autocomplete
                       sx={{ width: "80%" }}
-                      name="job"
-                      options={jobs?.data}
+                      name="course"
+                      options={courses?.data}
                       getOptionLabel={(option) => option.name}
                       getOptionSelected={(option, value) =>
                         option.name === value.name
                       }
                       renderInput={(params) => (
-                        <TextField {...params} label="Job Title" />
+                        <TextField {...params} label="Course Name" />
                       )}
                       onChange={(event, value) =>
-                        setEmploymentProfile((prevProfile) => ({
+                        setEducationProfile((prevProfile) => ({
                           ...prevProfile,
-                          job: value ? value.id : null,
-                          job_title: value ? value.name : null,
+                          course: value ? value.id : null,
+                          course_name: value ? value.name : null,
                         }))
                       }
                       value={
-                        jobs?.data?.find(
+                        courses?.data?.find(
                           (option) =>
-                            option.name === employmentProfile?.job_title
+                            option.name === educationProfile?.course_name
                         ) || null
                       }
                     />
@@ -456,7 +383,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                       startIcon={<Add />}
                       onClick={() => setOpenModal(true)}
                     >
-                      Job
+                      Course
                     </Button>
                   </Box>
                 </Grid>
@@ -465,7 +392,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
 
             <Grid item xs={12}>
               <Typography variant="h6" my={2}>
-                Job Length
+                Education Length
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -474,17 +401,17 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                     control={
                       <Switch
                         defaultChecked
-                        checked={employmentProfile?.current_job || false}
+                        checked={educationProfile?.currently_studying || false}
                         onChange={() => {
-                          setEmploymentProfile((prevProfile) => ({
+                          setEducationProfile((prevProfile) => ({
                             ...prevProfile,
-                            current_job: event.target.checked,
+                            currently_studying: event.target.checked,
                           }));
                         }}
-                        name="current_job"
+                        name="currently_studying"
                       />
                     }
-                    label="current job"
+                    label="currently studying"
                   />
                 </Grid>
                 <Grid item xs={6}>
@@ -492,10 +419,11 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                     <DemoContainer components={["DatePicker"]}>
                       <DemoItem>
                         <DatePicker
-                          name="date_hired"
-                          label="Date Hired"
-                          value={employmentProfile?.date_hired}
-                          onChange={handleDateHiredChange}
+                          views={["year", "month"]}
+                          name="date_started"
+                          label="Date Started"
+                          value={educationProfile?.date_started}
+                          onChange={handleDateStarted}
                           renderInput={(params) => (
                             <TextField {...params} required />
                           )}
@@ -508,7 +436,9 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                   item
                   xs={6}
                   style={{
-                    display: employmentProfile?.current_job ? "none" : "block",
+                    display: educationProfile?.currently_studying
+                      ? "none"
+                      : "block",
                   }}
                 >
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -518,10 +448,11 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                     >
                       <DemoItem>
                         <DatePicker
-                          name="date_end"
-                          label="Date End"
-                          value={employmentProfile?.date_end}
-                          onChange={handleDateEndChange}
+                          views={["year", "month"]}
+                          name="date_graduated"
+                          label="Date Graduated"
+                          value={educationProfile?.date_graduated}
+                          onChange={handleDateGraduated}
                           renderInput={(params) => <TextField {...params} />}
                         />
                       </DemoItem>
@@ -533,7 +464,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
 
             <Grid item xs={12}>
               <Typography variant="h6" my={2}>
-                Job Address
+                School Address
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -542,9 +473,9 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                     control={
                       <Switch
                         defaultChecked
-                        checked={employmentProfile?.is_international || false}
+                        checked={educationProfile?.is_international || false}
                         onChange={(event) => {
-                          setEmploymentProfile((prevProfile) => ({
+                          setEducationProfile((prevProfile) => ({
                             ...prevProfile,
                             is_international: event.target.checked,
                           }));
@@ -552,7 +483,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                         name="is_international"
                       />
                     }
-                    label="working internationally"
+                    label="studying or studied internationally"
                   />
                 </Grid>
               </Grid>
@@ -562,7 +493,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                   item
                   xs={12}
                   style={{
-                    display: !employmentProfile?.is_international
+                    display: !educationProfile?.is_international
                       ? "none"
                       : "block",
                   }}
@@ -580,14 +511,14 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                       <TextField {...params} label="country" />
                     )}
                     onChange={(event, value) => {
-                      setEmploymentProfile((prevProfile) => ({
+                      setEducationProfile((prevProfile) => ({
                         ...prevProfile,
                         country: value ? value.name : null,
                       }));
                     }}
                     value={
-                      countries.find(
-                        (option) => option.name === employmentProfile?.country
+                      countries?.find(
+                        (option) => option.name === educationProfile?.country
                       ) || null
                     }
                   />
@@ -596,7 +527,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                   item
                   xs={12}
                   style={{
-                    display: employmentProfile?.is_international
+                    display: educationProfile?.is_international
                       ? "none"
                       : "block",
                   }}
@@ -613,7 +544,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                       <TextField {...params} label="Region" />
                     )}
                     onChange={(event, value) => {
-                      setEmploymentProfile((prevProfile) => ({
+                      setEducationProfile((prevProfile) => ({
                         ...prevProfile,
                         region: value ? value.name : null,
                         address: value ? value.name : null,
@@ -623,8 +554,8 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                       }));
                     }}
                     value={
-                      regions.find(
-                        (option) => option.name === employmentProfile?.region
+                      regions?.find(
+                        (option) => option.name === educationProfile?.region
                       ) || null
                     }
                   />
@@ -633,7 +564,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                   item
                   xs={12}
                   style={{
-                    display: employmentProfile?.is_international
+                    display: educationProfile?.is_international
                       ? "none"
                       : "block",
                   }}
@@ -653,7 +584,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                       <TextField {...params} label="City or Municipality" />
                     )}
                     onChange={(event, value) => {
-                      setEmploymentProfile((prevProfile) => ({
+                      setEducationProfile((prevProfile) => ({
                         ...prevProfile,
                         city: value ? value.name : null,
                         address: value
@@ -664,88 +595,29 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
                     }}
                     value={
                       citiesMunicipalities?.find(
-                        (option) => option.name === employmentProfile?.city
+                        (option) => option.name === educationProfile?.city
                       ) || null
                     }
                   />
                 </Grid>
               </Grid>
             </Grid>
+
             <Grid item xs={12}>
               <Typography variant="h6" my={2}>
-                Job Details
+                Education's Story
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Gross Monthly Income</InputLabel>
-                    <Select
-                      name="gross_monthly_income"
-                      onChange={handleChange}
-                      value={employmentProfile?.gross_monthly_income || ""}
-                      input={<OutlinedInput label="Gross Monthly Income" />}
-                    >
-                      {monthlyGrossIncome.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Employment Contract</InputLabel>
-                    <Select
-                      name="employment_contract"
-                      onChange={handleChange}
-                      value={employmentProfile?.employment_contract || ""}
-                      input={<OutlinedInput label="Employment Contract" />}
-                    >
-                      {employmentContract.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Job Position</InputLabel>
-                    <Select
-                      name="job_position"
-                      onChange={handleChange}
-                      value={employmentProfile?.job_position || ""}
-                      input={<OutlinedInput label="Job Position" />}
-                    >
-                      {jobPosition.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Employer Type</InputLabel>
-                    <Select
-                      name="employer_type"
-                      value={employmentProfile?.employer_type || ""}
-                      onChange={handleChange}
-                      input={<OutlinedInput label="Employer Type" />}
-                    >
-                      {employerType.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.value}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <TextField
+                    name="story"
+                    label="highlights of your education (optional)"
+                    value={educationProfile?.story || ""}
+                    onChange={handleChange}
+                    sx={{ width: "100%" }}
+                    multiline
+                    rows={2}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -763,9 +635,11 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {openModal && <AddJob open={openModal} onClose={() => setOpenModal(false)} />}
+      {openModal && (
+        <AddCourse open={openModal} onClose={() => setOpenModal(false)} />
+      )}
     </>
   );
 };
 
-export default EditEmploymentModal;
+export default AddEducationModal;

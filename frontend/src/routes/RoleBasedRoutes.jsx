@@ -12,10 +12,88 @@ import Missing from "../components/Missing";
 import PublicLayout from "../layout/PublicLayout";
 import MainLayout from "../layout/MainLayout";
 import { ManageSelections } from "../components/selections/ManageSelections";
-
+import EditableEmploymentProfile from "../components/profile_edit/EditableEmploymentProfile";
+import EditableAchievementModal from "../components/profile_edit/EditableAchievementModal";
 const RoleBasedRoutes = ({ mode, setMode }) => {
   const { auth } = useAuth();
   const location = useLocation();
+
+  const commonRoutes = (
+    <>
+      <Route
+        path="home"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+            <Feed />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="explore"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
+            <Explore />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="announcements"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
+            <Announcements />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="news"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
+            <News />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="events"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
+            <Events />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="profile/me"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+            <UpdateProfile />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="profile/me/educational-details"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+            <EditableEmploymentProfile />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="profile/me/achievements-details"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+            <EditableAchievementModal />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="fundraise"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
+            <Fundraise />
+          </MainLayout>
+        }
+      />
+    </>
+  );
 
   if (auth?.role === "public") {
     return (
@@ -25,77 +103,13 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       </Routes>
     );
   } else if (auth?.role === "alumni") {
-    return (
-      <Routes>
-        <Route
-          path="home"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-              <Feed />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="explore"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-              <Explore />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="announcements"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-              <Announcements />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="news"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-              <News />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="events"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-              <Events />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="profile/me"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-              <UpdateProfile />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="fundraise"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-              <Fundraise />
-            </MainLayout>
-          }
-        />
-      </Routes>
-    );
+    return <Routes>{commonRoutes}</Routes>;
+  } else if (auth?.role === "faculty") {
+    return <Routes>{commonRoutes}</Routes>;
   } else if (auth?.role === "admin") {
     return (
       <Routes>
-        <Route
-          path="home"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
-              <Feed />
-            </MainLayout>
-          }
-        />
+        {commonRoutes}
         <Route
           path="selections"
           element={
@@ -112,59 +126,11 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
             </MainLayout>
           }
         />
-        <Route
-          path="explore"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
-              <Explore />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="announcements"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-              <Announcements />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="news"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-              <News />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="events"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-              <Events />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="profile/me"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
-              <UpdateProfile />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="fundraise"
-          element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
-              <Fundraise />
-            </MainLayout>
-          }
-        />
         <Route path="*" element={<Missing />} />;
       </Routes>
     );
   } else {
-    <Route path="*" element={<Missing />} />;
+    return <Route path="*" element={<Missing />} />;
   }
 };
 

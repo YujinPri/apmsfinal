@@ -154,14 +154,16 @@ export const EditableAchievementModal = () => {
           gap: 2,
           justifyContent: "center",
           position: "relative",
+          marginY: "2rem",
         }}
       >
         <Box
           sx={{
             display: "flex",
             justifyContent: "stretch",
+            gap: 2,
             flexDirection: "column",
-            width: "75%",
+            width: "80%",
           }}
         >
           {data?.data?.achievements.map((achievement, index) => {
@@ -169,8 +171,7 @@ export const EditableAchievementModal = () => {
             return (
               <React.Fragment key={achievement.id}>
                 <Card
-                  sx={{ width: "100%", marginX: "auto", marginBottom: 2 }}
-                  key={index}
+                  sx={{ width: "100%" }} key={index}
                 >
                   <CardContent
                     sx={{
