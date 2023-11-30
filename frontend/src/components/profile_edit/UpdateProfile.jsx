@@ -7,6 +7,7 @@ import {
   Box,
   Breadcrumbs,
   Fab,
+  Grid,
   Link,
   Tab,
   Tabs,
@@ -19,13 +20,23 @@ import SchoolIcon from "@mui/icons-material/School";
 import DemographicProfile from "../profile_display/DemographicProfile";
 import CareerProfile from "../profile_display/CareerProfile";
 import EditableEmploymentProfile from "../profile_edit/EditableEmploymentProfile";
-import { Add, AddCircleRounded, Edit } from "@mui/icons-material";
-import ProfileEditModal from "./ProfileEditModal";
-import EducProfileEditModal from "./CareerEditModal";
+import {
+  Add,
+  AddCircleRounded,
+  Edit,
+  PersonPin,
+  School,
+  Star,
+  Work,
+} from "@mui/icons-material";
+import ProfileEditModal from "./EditProfileModal";
+import EducProfileEditModal from "./EditCareerModal";
 import AddEmploymentModal from "./AddEmploymentModal";
 import AddAchievementModal from "./AddAchievementModal";
 import useGetCareerProfile from "../../hooks/useGetCareerProfile";
 import AddEducationModal from "./AddEducationModal";
+import EmploymentProfile from "../profile_display/EmploymentProfile";
+import AchievementProfile from "../profile_display/AchievementProfile";
 
 function UpdateProfile() {
   const navigate = useNavigate();
@@ -98,7 +109,7 @@ function UpdateProfile() {
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const targetOffset = element.offsetTop - 165; 
+      const targetOffset = element.offsetTop - 165;
       window.scrollTo({
         top: targetOffset,
         behavior: "smooth",
@@ -123,171 +134,284 @@ function UpdateProfile() {
         zIndex={1000}
         bgcolor="inherit"
         borderBottom="1px solid rgba(0, 0, 0, 0.12)"
-        sx={{ backgroundColor: (theme) => theme.palette.common.main }}
+        sx={{
+          backgroundColor: (theme) => theme.palette.common.main,
+          display: { sm: "flex" },
+          alignItems: "center",
+          justifyContent: "space-around",
+        }}
       >
         <Tabs
           value={value}
           onChange={handleChange}
           variant="fullWidth"
           aria-label="icon tabs example"
+          sx={{
+            width: "100%",
+          }}
         >
           <Tab
-            icon={<PersonPinIcon />}
-            label="profile"
+            icon={<PersonPin />}
+            label="Profile"
             onClick={() => scrollToSection("profile_background")}
           />
           <Tab
-            icon={<SchoolIcon />}
-            label="career background"
-            onClick={() => scrollToSection("career_background")}
+            icon={<School />}
+            label="Education"
+            onClick={() => scrollToSection("educational_background")}
           />
           <Tab
-            icon={<WorkIcon />}
-            label="employment"
+            icon={<Star />}
+            label="Achievement"
+            onClick={() => scrollToSection("achievement_background")}
+          />
+          <Tab
+            icon={<Work />}
+            label="Experience"
             onClick={() => scrollToSection("employment_history")}
           />
         </Tabs>
       </Box>
 
-      <Box
+      <Grid
+        container
         sx={{
-          backgroundColor: (theme) => theme.palette.common.main,
-          padding: 2,
-          borderRadius: 3,
-          position: "relative",
+          gap: 2,
+          justifyContent: { sm: "stretch" },
+          display: { sm: "flex" },
+          flexDirection: "column",
         }}
-        id="profile_background"
       >
-        <Typography
-          variant="h1"
-          fontWeight={800}
+        <Grid
+          item
           sx={{
-            padding: "10px",
-            borderBottom: "2px solid",
-            color: "primary",
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: "1rem",
+            position: "relative",
           }}
+          id="profile_background"
         >
-          profile
-        </Typography>
-        <Tooltip title="update demographic profile">
-          <Fab
-            size="small"
-            color="primary"
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              color: "primary",
+              display: { sm: "flex" },
+            }}
+          >
+            Profile
+          </Typography>
+
+          <Box
             sx={{
               position: "absolute",
               top: "1rem",
               right: "1rem",
+              display: "flex",
+              gap: "0.5rem",
             }}
-            onClick={() => handleModalOpen("profile")}
           >
-            <Edit />
-          </Fab>
-        </Tooltip>
-        <DemographicProfile
-          data={demographicData}
-          isLoading={isLoadingDemographicData}
-        />
-      </Box>
-
-      <Box
-        sx={{
-          backgroundColor: (theme) => theme.palette.common.main,
-          padding: 2,
-          borderRadius: 3,
-          position: "relative",
-        }}
-        id="career_background"
-      >
-        <Typography
-          variant="h1"
-          fontWeight={800}
-          // color="secondary"
+            <Tooltip title="update demographic profile">
+              <Fab
+                size="small"
+                onClick={() => handleModalOpen("profile")}
+                color="primary"
+              >
+                <Edit />
+              </Fab>
+            </Tooltip>
+          </Box>
+          <DemographicProfile
+            data={demographicData}
+            isLoading={isLoadingDemographicData}
+          />
+        </Grid>
+        <Grid
+          item
           sx={{
-            padding: "10px",
-            borderBottom: "2px solid",
-            marginBottom: "10px",
-            color: "primary",
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: "1rem",
+            position: "relative",
           }}
+          id="educational_background"
         >
-          pupqc career background
-        </Typography>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            display: "flex",
-            gap: "0.5rem",
-          }}
-        >
-          <Tooltip title="add achievement">
-            <Fab
-              size="small"
-              onClick={() => handleModalOpen("add_achievement")}
-              color="primary"
-            >
-              <Add />
-            </Fab>
-          </Tooltip>
-          <Tooltip title="add education">
-            <Fab
-              size="small"
-              onClick={() => handleModalOpen("add_education")}
-              color="primary"
-            >
-              <Add />
-            </Fab>
-          </Tooltip>
-          <Tooltip title="edit career profile">
-            <Fab
-              size="small"
-              color="primary"
-              onClick={() => handleModalOpen("career")}
-            >
-              <Edit />
-            </Fab>
-          </Tooltip>
-        </Box>
-        <CareerProfile data={careerData} isLoading={isLoadingCareerData} />
-      </Box>
-
-      <Box
-        sx={{
-          backgroundColor: (theme) => theme.palette.common.main,
-          padding: 2,
-          borderRadius: 3,
-          position: "relative",
-        }}
-        id="employment_history"
-      >
-        <Typography
-          variant="h1"
-          fontWeight={800}
-          sx={{
-            padding: "10px",
-            borderBottom: "2px solid",
-            marginBottom: "10px",
-            color: "primary",
-          }}
-        >
-          employment history
-        </Typography>
-        <Tooltip title="add employment">
-          <Fab
-            size="small"
-            color="primary"
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            // color="secondary"
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              marginBottom: "10px",
+              color: "primary",
+            }}
+          >
+            Education
+          </Typography>
+          <Box
             sx={{
               position: "absolute",
               top: "1rem",
               right: "1rem",
+              display: "flex",
+              gap: "0.5rem",
             }}
-            onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
           >
-            <Add />
-          </Fab>
-        </Tooltip>
-        <EditableEmploymentProfile />
-      </Box>
+            <Tooltip title="add education">
+              <Fab
+                size="small"
+                onClick={() => handleModalOpen("add_education")}
+                color="primary"
+              >
+                <Add />
+              </Fab>
+            </Tooltip>
+            <Tooltip title="edit education">
+              <Fab
+                size="small"
+                onClick={() =>
+                  navigate(
+                    "/profile/me/educational-details",
+                    {
+                      state: {
+                        from: location,
+                      },
+                      replace: true,
+                    }
+                  )
+                }
+                color="primary"
+              >
+                <Edit />
+              </Fab>
+            </Tooltip>
+          </Box>
+          <CareerProfile data={careerData} isLoading={isLoadingCareerData} />
+        </Grid>
+        <Grid
+          item
+          sx={{
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: "1rem",
+            position: "relative",
+          }}
+          id="achievement_background"
+        >
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            // color="secondary"
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              marginBottom: "10px",
+              color: "primary",
+            }}
+          >
+            Achievements
+          </Typography>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+              display: "flex",
+              gap: "0.5rem",
+            }}
+          >
+            <Tooltip title="add achievement">
+              <Fab
+                size="small"
+                onClick={() => handleModalOpen("add_achievement")}
+                color="primary"
+              >
+                <Add />
+              </Fab>
+            </Tooltip>
+            <Tooltip title="edit achievements">
+              <Fab
+                size="small"
+                onClick={() =>
+                  navigate("/profile/me/achievements-details", {
+                    state: {
+                      from: location,
+                    },
+                    replace: true,
+                  })
+                }
+                color="primary"
+              >
+                <Edit />
+              </Fab>
+            </Tooltip>
+          </Box>
+          {/* <CareerProfile data={careerData} isLoading={isLoadingCareerData} /> */}
+          <AchievementProfile />
+        </Grid>
+        <Grid
+          item
+          sx={{
+            backgroundColor: (theme) => theme.palette.common.main,
+            padding: "1rem",
+            position: "relative",
+          }}
+          id="employment_history"
+        >
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            sx={{
+              padding: "10px",
+              borderBottom: "2px solid",
+              marginBottom: "10px",
+              color: "primary",
+            }}
+          >
+            Experience
+          </Typography>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+              display: "flex",
+              gap: "0.5rem",
+            }}
+          >
+            <Tooltip title="add employment">
+              <Fab
+                size="small"
+                color="primary"
+                onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
+              >
+                <Add />
+              </Fab>
+            </Tooltip>
+
+            <Tooltip title="edit employments">
+              <Fab
+                size="small"
+                color="primary"
+                onClick={() =>
+                  navigate("/profile/me/employment-details", {
+                    state: {
+                      from: location,
+                    },
+                    replace: true,
+                  })
+                }
+              >
+                <Edit />
+              </Fab>
+            </Tooltip>
+          </Box>
+
+          <EmploymentProfile />
+        </Grid>
+      </Grid>
+
       {modalOpen.profile && (
         <ProfileEditModal open={modalOpen.profile} onClose={handleCloseModal} />
       )}

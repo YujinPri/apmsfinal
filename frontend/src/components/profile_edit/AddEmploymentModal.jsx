@@ -188,21 +188,21 @@ const AddEmploymentModal = ({ open, onClose }) => {
     }
 
     const data = {
-      job: employmentProfile?.job,
-      company_name: employmentProfile?.company_name,
-      date_hired: employmentProfile?.date_hired.format("YYYY-MM-DD"),
-      date_end: employmentProfile?.date_end?.format("YYYY-MM-DD"),
-      gross_monthly_income: employmentProfile?.gross_monthly_income,
-      employment_contract: employmentProfile?.employment_contract,
-      job_position: employmentProfile?.job_position,
-      employer_type: employmentProfile?.employer_type,
-      is_international: employmentProfile?.is_international,
-      address: employmentProfile?.address,
-      country: employmentProfile?.country,
-      region: employmentProfile?.region,
-      region_code: employmentProfile?.region_code,
-      city: employmentProfile?.city,
-      city_code: employmentProfile?.city_code,
+      job: employmentProfile?.job || "",
+      company_name: employmentProfile?.company_name || "",
+      date_hired: employmentProfile?.date_hired.format("YYYY-MM-DD") || null,
+      date_end: employmentProfile?.date_end?.format("YYYY-MM-DD") || null,
+      gross_monthly_income: employmentProfile?.gross_monthly_income || "",
+      employment_contract: employmentProfile?.employment_contract || "",
+      job_position: employmentProfile?.job_position || "",
+      employer_type: employmentProfile?.employer_type || "",
+      is_international: employmentProfile?.is_international || false,
+      address: employmentProfile?.address || "",
+      country: employmentProfile?.country || "",
+      region: employmentProfile?.region || "",
+      region_code: employmentProfile?.region_code || "",
+      city: employmentProfile?.city || "",
+      city_code: employmentProfile?.city_code || "",
     };
 
     if (employmentProfile?.current_job) data.date_end = null;
@@ -211,7 +211,6 @@ const AddEmploymentModal = ({ open, onClose }) => {
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
 
-    console.log(payload);
     try {
       await mutation.mutateAsync(payload);
     } catch (error) {

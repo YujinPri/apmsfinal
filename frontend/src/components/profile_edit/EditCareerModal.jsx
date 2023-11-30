@@ -24,6 +24,7 @@ import {
   Skeleton,
   FormControlLabel,
   Switch,
+  OutlinedInput,
 } from "@mui/material";
 
 import {
@@ -270,13 +271,16 @@ const careerProfileEditModal = ({ open, onClose }) => {
           {message}
         </Alert>
       </Snackbar>
-      <Box sx={{ width: "100%", position: "relative", top: 0 }}>
+      <Box sx={{ position: "relative", top: 0 }}>
         {isLoading && <LinearProgress />}
         {!isLoading && <Box sx={{ height: 4 }} />}
       </Box>
       <DialogTitle>Edit Profile</DialogTitle>
-      <DialogContent sx={{ width: "40vw" }}>
+      <DialogContent>
         <Grid container spacing={2} p={2}>
+          <Typography variant="h6" my={2}>
+            Achievement Details
+          </Typography>
           <Grid item xs={12}>
             <Autocomplete
               name="course"
@@ -289,7 +293,6 @@ const careerProfileEditModal = ({ open, onClose }) => {
                   label="Course"
                   style={{
                     whiteSpace: "nowrap",
-                    overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
                 />
@@ -310,7 +313,7 @@ const careerProfileEditModal = ({ open, onClose }) => {
           </Grid>
           <Grid item xs={12}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DatePicker"]} sx={{ width: "100%" }}>
+              <DemoContainer components={["DatePicker"]}>
                 <DemoItem>
                   <DatePicker
                     views={["year"]}
@@ -329,11 +332,14 @@ const careerProfileEditModal = ({ open, onClose }) => {
           </Grid>
           <Grid item xs={12}>
             <FormControl sx={{ width: "100%" }}>
-              <InputLabel id="post-grad-act-label">Post Grad Act</InputLabel>
+              <InputLabel id="post-grad-act-label">
+                Post Graduation Activities
+              </InputLabel>
               <Select
                 labelId="post-grad-act-label"
                 multiple
                 value={careerProfile?.post_grad_act || []}
+                input={<OutlinedInput label="Post Graduation Activities" />}
                 onChange={(event) => {
                   setCareerProfile({
                     ...careerProfile,

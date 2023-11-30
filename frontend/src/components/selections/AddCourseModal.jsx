@@ -109,7 +109,7 @@ const AddCourse = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (courseProfile.name == "") {
+    if (courseProfile.name == "" || courseProfile?.classification_ids == null) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
@@ -123,7 +123,6 @@ const AddCourse = ({ open, onClose }) => {
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
 
-    console.log(payload);
 
     try {
       await mutation.mutateAsync(payload);

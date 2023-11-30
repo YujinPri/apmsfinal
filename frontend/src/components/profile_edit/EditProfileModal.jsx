@@ -95,12 +95,7 @@ const ProfileEditModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
   const localForceLogoutRef = useRef(false);
   const [profile, setProfile] = useState(null);
-  const [shrinkAddress, setShrinkAddress] = useState(profile?.adress);
   const [isEmailValid, setEmailValidity] = useState(true);
-
-  const [shrinkOriginAddress, setShrinkOriginAddress] = useState(
-    profile?.origin_address
-  );
 
   const { data: cachedData, isLoading: isLoadingDisplay } =
     useGetDemographicProfile();
@@ -745,15 +740,6 @@ const ProfileEditModal = ({ open, onClose }) => {
             ) : (
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="address"
-                    label="address"
-                    value={profile?.address || ""}
-                    InputLabelProps={{ shrink: shrinkAddress }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
                   <Autocomplete
                     fullWidth
                     name="region"
@@ -775,9 +761,6 @@ const ProfileEditModal = ({ open, onClose }) => {
                         region_code: value ? value.code : null,
                         city_code: null,
                       }));
-                      // Trigger the label animation
-                      setShrinkAddress(true);
-                      if (!value) setShrinkAddress(false);
                     }}
                     value={
                       regions.find(
@@ -914,15 +897,6 @@ const ProfileEditModal = ({ open, onClose }) => {
                 ) : (
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        name="origin_address"
-                        label="origin address"
-                        value={profile?.origin_address || ""}
-                        InputLabelProps={{ shrink: shrinkOriginAddress }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
                       <Autocomplete
                         fullWidth
                         name="origin_region"
@@ -944,9 +918,6 @@ const ProfileEditModal = ({ open, onClose }) => {
                             origin_region_code: value ? value.code : null,
                             origin_city_code: null,
                           }));
-                          // Trigger the label animation
-                          setShrinkOriginAddress(true);
-                          if (!value) setShrinkOriginAddress(false);
                         }}
                         value={
                           originRegions.find(

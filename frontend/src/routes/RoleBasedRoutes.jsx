@@ -14,6 +14,7 @@ import MainLayout from "../layout/MainLayout";
 import { ManageSelections } from "../components/selections/ManageSelections";
 import EditableEmploymentProfile from "../components/profile_edit/EditableEmploymentProfile";
 import EditableAchievementModal from "../components/profile_edit/EditableAchievementModal";
+import EditableEducationProfile from "../components/profile_edit/EditableEducationProfile";
 const RoleBasedRoutes = ({ mode, setMode }) => {
   const { auth } = useAuth();
   const location = useLocation();
@@ -69,10 +70,18 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
         }
       />
       <Route
-        path="profile/me/educational-details"
+        path="profile/me/employment-details"
         element={
           <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
             <EditableEmploymentProfile />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="profile/me/educational-details"
+        element={
+          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+            <EditableEducationProfile />
           </MainLayout>
         }
       />

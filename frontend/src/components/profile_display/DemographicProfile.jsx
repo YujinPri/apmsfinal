@@ -19,6 +19,7 @@ import {
   Email,
   Female,
   Fingerprint,
+  FormatQuote,
   LocationOn,
   Male,
   Phone,
@@ -26,7 +27,7 @@ import {
   Transgender,
 } from "@mui/icons-material";
 
-export const DemographicProfile = ({data, isLoading}) => {
+export const DemographicProfile = ({ data, isLoading }) => {
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
     <Tooltip
       color="secondary"
@@ -165,145 +166,90 @@ export const DemographicProfile = ({data, isLoading}) => {
       container
       sx={{
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
         marginY: "2rem",
+        gap: 3,
       }}
     >
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: 2,
-          }}
-        >
-          <Avatar
-            alt="Profile"
-            src={data?.data?.profile_picture || undefined}
-            sx={{ width: "100px", height: "100px" }}
-          />
-          <Typography variant="subtitle1">@{data?.data?.username}</Typography>
+      <Grid
+        item
+        xs={12}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <Avatar
+          alt="Profile"
+          src={data?.data?.profile_picture || undefined}
+          sx={{ width: "100px", height: "100px" }}
+        />
+        <Typography variant="subtitle1">@{data?.data?.username}</Typography>
+      </Grid>
+      <Grid
+        item
+        xs={12}
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {data?.data?.first_name && data?.data?.last_name && (
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: "bold",
+                textTransform: "capitalize",
+              }}
+            >
+              {data?.data?.first_name} {data?.data?.last_name}
+            </Typography>
+          )}
+          {data?.data?.student_number && (
+            <Typography variant="subtitle2">
+              {data?.data?.student_number}
+            </Typography>
+          )}
         </Box>
-        <Grid
-          container
-          spacing={1}
-          xs={12}
-          m="0, auto"
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+
+        {data?.data?.address && (
+          <Tooltip title="current residence address">
+            <Typography variant="subtitle1">{data?.data?.address}</Typography>
+          </Tooltip>
+        )}
+
+        {data?.data?.headline && (
           <Box
             sx={{
-              borderRadius: 3,
-              padding: 1,
+              marginY: "2rem",
               display: "flex",
               flexDirection: "column",
+              alignItems: "center",
+              gap: 1,
             }}
           >
-            {data?.data?.first_name && data?.data?.last_name && (
-              <Typography
-                variant="h6"
-                gap={1}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                  padding: "0 1rem",
-                  fontWeight: "bold",
-                  marginX: "auto",
-                }}
-              >
-                {data?.data?.first_name} {data?.data?.last_name}
-                {data?.data?.student_number && (
-                  <Typography variant="subtitle2">
-                    {data?.data?.student_number}
-                  </Typography>
-                )}
-              </Typography>
-            )}
-
-            {data?.data?.address && (
-              <Tooltip title="current residence address">
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    height: "100%",
-                    padding: "0 1rem",
-                    marginX: "auto",
-                  }}
-                >
-                  {data?.data?.address}
-                </Typography>
-              </Tooltip>
-            )}
-
-            {data?.data?.headline && (
-              <Box
-                sx={{
-                  position: "relative",
-                  margin: " auto 0",
-                  marginY: "1rem",
-                }}
-              >
-                <Typography
-                  variant="h1" // You can adjust the variant to match your preferred heading style
-                  sx={{
-                    display: "block", // Display the quotation marks as blocks
-                    position: "absolute", // Position them absolutely within the parent container
-                    top: 0, // Position at the top
-                    left: 0, // Position at the left
-                  }}
-                >
-                  &ldquo;
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    // fontWeight: "bold", // Make the text bold
-                    height: "100%", // Consume available vertical space
-                    padding: "1rem",
-                    width: "40ch",
-                    position: "relative", // Make the main content container relative for positioning
-                    textAlign: "center",
-                  }}
-                >
-                  {data?.data.headline}
-                </Typography>
-                <Typography
-                  variant="h1" // You can adjust the variant to match your preferred heading style
-                  sx={{
-                    display: "block", // Display the quotation marks as blocks
-                    position: "absolute", // Position them absolutely within the parent container
-                    bottom: 0, // Position at the bottom
-                    right: 0, // Position at the right
-                  }}
-                >
-                  &rdquo;
-                </Typography>
-              </Box>
-            )}
+            <Typography>
+              <FormatQuote />
+            </Typography>
+            <Typography>{data?.data.headline}</Typography>
           </Box>
-        </Grid>
+        )}
+      </Grid>
+      <Grid
+        item
+        xs={12}
+        sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+      >
         {data?.data?.origin_address && (
-          <Divider sx={{ padding: 2 }}>
-            <Typography variant="subtitle2">home town</Typography>
+          <Divider>
+            <Typography variant="subtitle2">Home Town</Typography>
           </Divider>
         )}
         <Box
           sx={{
             display: "flex",
-            gap: 1,
-            paddingY: 2,
+            gap: 1.5,
             alignItems: "center",
             justifyContent: "center",
+            flexWrap: "wrap", // Allow content to wrap onto the next line
           }}
         >
           {data?.data?.origin_address && (
@@ -313,20 +259,27 @@ export const DemographicProfile = ({data, isLoading}) => {
             />
           )}
         </Box>
+      </Grid>
+      <Grid
+        item
+        xs={12}
+        sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+      >
         {(data?.data?.contact_number ||
           data?.data?.telephone_number ||
           data?.data?.email) && (
           <Divider sx={{ padding: 2 }}>
-            <Typography variant="subtitle2">contact details</Typography>
+            <Typography variant="subtitle2">Contact Details</Typography>
           </Divider>
         )}
+
         <Box
           sx={{
             display: "flex",
-            gap: 1,
-            paddingY: 2,
+            gap: 1.5,
             alignItems: "center",
             justifyContent: "center",
+            flexWrap: "wrap", // Allow content to wrap onto the next line
           }}
         >
           {data?.data?.email && (
@@ -348,18 +301,25 @@ export const DemographicProfile = ({data, isLoading}) => {
             />
           )}
         </Box>
-
+      </Grid>
+      <Grid
+        item
+        xs={12}
+        sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+      >
         {(data?.data?.birthdate || data?.data?.civil_status) && (
           <Divider sx={{ padding: 2 }}>
-            <Typography variant="subtitle2">personal details</Typography>
+            <Typography variant="subtitle2">Personal Details</Typography>
           </Divider>
         )}
+
         <Box
           sx={{
             display: "flex",
-            gap: 1,
+            gap: 1.5,
             alignItems: "center",
             justifyContent: "center",
+            flexWrap: "wrap", // Allow content to wrap onto the next line
           }}
         >
           {data?.data?.birthdate && (
@@ -381,7 +341,7 @@ export const DemographicProfile = ({data, isLoading}) => {
             />
           )}
         </Box>
-      </Box>
+      </Grid>
     </Grid>
   );
 };

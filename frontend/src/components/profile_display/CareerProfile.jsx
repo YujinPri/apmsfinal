@@ -1,5 +1,5 @@
 import useLogout from "../../hooks/useLogout";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Avatar,
@@ -28,6 +28,7 @@ import {
   School,
 } from "@mui/icons-material";
 import EditableAchievementModal from "../profile_edit/EditableAchievementModal";
+import OtherEducationProfile from "./OtherEducationProfile";
 
 export const CareerProfile = ({ isLoading, data }) => {
   const navigate = useNavigate();
@@ -208,96 +209,87 @@ export const CareerProfile = ({ isLoading, data }) => {
       container
       sx={{
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative", // Add relative positioning to the container
         marginY: "2rem",
+        gap: 3,
       }}
     >
       <Grid
-        container
-        spacing={1} // Set the width spacing to 2.5
+        item
         xs={12}
-        m="0, auto"
-        gap={2}
         sx={{
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
         }}
       >
-        <Box
+        <Typography
+          variant="h6"
+          gap={1}
           sx={{
-            padding: 1,
             display: "flex",
-            alignItems: "flex-start",
-            gap: 1,
-            flexDirection: "column",
+            alignItems: "center",
+            padding: "0 1rem",
+            fontWeight: "bold", // Make the text bold
+            textTransform: "capitalize"
           }}
         >
-          <Typography
-            variant="h6"
-            gap={1}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              padding: "0 1rem",
-              fontWeight: "bold", // Make the text bold
-              height: "100%", // Consume available vertical space
-              width: "100%",
-            }}
-          >
-            {data?.data?.course ? data?.data?.course : "no course selected"}
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            {data?.data?.date_graduated && (
-              <Chiptip
-                icon={<School color="primary" />}
-                label={dayjs(data?.data?.date_graduated).format("YYYY")}
-                additional="batch "
-              />
-            )}
-          </Box>
-        </Box>
-        <Box sx={{ width: "100%" }}>
-          {data?.data?.post_grad_act && (
-            <Divider sx={{ padding: 2.5 }}>
-              <Typography variant="subtitle2">
-                post graduation activities
-              </Typography>
-            </Divider>
+          {data?.data?.course ? data?.data?.course : "No Background in PUPQC"}
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {data?.data?.date_graduated && (
+            <Chiptip
+              icon={<School color="primary" />}
+              label={dayjs(data?.data?.date_graduated).format("YYYY")}
+              additional="year graduated: "
+            />
           )}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 1.5,
-              alignItems: "center",
-              justifyContent: "center",
-              flexWrap: "wrap", // Allow content to wrap onto the next line
-            }}
-          >
-            {data?.data?.post_grad_act &&
-              data?.data?.post_grad_act.map((activity, index) => (
-                <Chiptip
-                  key={index}
-                  icon={<CheckCircleSharp color="primary" />}
-                  label={activity}
-                />
-              ))}
-          </Box>
         </Box>
-
-        {data?.data?.achievement?.length != 0 && (
-          <Box sx={{ width: "100%" }}>
-            <Divider sx={{ padding: 2.5 }}>
-              <Typography variant="subtitle2">alumni achievements</Typography>
-            </Divider>
-            <EditableAchievementModal />
-          </Box>
-        )}
       </Grid>
+
+      <Grid
+        item
+        xs={12}
+        sx={{ display: "flex", flexDirection: "column", gap: 3}}
+      >
+        {data?.data?.post_grad_act && (
+          <Divider>
+            <Typography variant="subtitle2">
+              Post Graduation Activities
+            </Typography>
+          </Divider>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap", // Allow content to wrap onto the next line
+          }}
+        >
+          {data?.data?.post_grad_act &&
+            data?.data?.post_grad_act.map((activity, index) => (
+              <Chiptip
+                key={index}
+                icon={<CheckCircleSharp color="primary" />}
+                label={activity}
+              />
+            ))}
+        </Box>
+      </Grid>
+      
+      {data?.data?.achievement?.length != 0 && (
+        <Grid
+          item
+          xs={12}
+          sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+        >
+          <Divider>
+            <Typography variant="subtitle2">Education Outside PUPQC</Typography>
+          </Divider>
+          <OtherEducationProfile />
+        </Grid>
+      )}
     </Grid>
   );
 };

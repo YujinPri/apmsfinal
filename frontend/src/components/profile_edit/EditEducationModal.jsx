@@ -61,14 +61,14 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import useGetAchievementSpecific from "../../hooks/useGetAchievementsSpecific";
 import useCourses from "../../hooks/useCourses";
 import useRegions from "../../hooks/useRegion";
 import useCountries from "../../hooks/useCountries";
 import useCitiesMunicipalities from "../../hooks/useCitiesMunicipalities";
 import AddCourse from "../selections/AddCourseModal";
+import useGetEducationSpecific from "../../hooks/useGetEducationSpecific";
 
-const AddEducationModal = ({ open, onClose }) => {
+const EditEducationModal = ({ open, onClose, educationID }) => {
   const queryClient = useQueryClient();
 
   const axiosPrivate = useAxiosPrivate();
@@ -85,6 +85,36 @@ const AddEducationModal = ({ open, onClose }) => {
     data: citiesMunicipalities,
     isLoading: isLoadingCitiesMunicipalities,
   } = useCitiesMunicipalities(educationProfile?.region_code);
+  const { data: cachedData, isLoading: isLoadingProfile } =
+    useGetEducationSpecific(educationID);
+
+  useEffect(() => {
+    if (cachedData) {
+      setEducationProfile({
+        ...cachedData?.data?.education,
+        school_name: cachedData?.data?.education?.school_name || "",
+        city_code: cachedData?.data?.education?.city_code || "",
+        story: cachedData?.data?.education?.story || "",
+        is_international:
+          cachedData?.data?.education?.is_international || false,
+        date_graduated: cachedData?.data?.education?.date_graduated
+          ? dayjs(cachedData?.data?.education?.date_graduated)
+          : null,
+        date_start: cachedData?.data?.education?.date_start
+          ? dayjs(cachedData?.data?.education?.date_start)
+          : null,
+        address: cachedData?.data?.education?.address || "",
+        country: cachedData?.data?.education?.country || "",
+        region: cachedData?.data?.education?.region || "",
+        city: cachedData?.data?.education?.city || "",
+        course: cachedData?.data?.education?.course || null,
+        level: cachedData?.data?.education?.level || "",
+        region_code: cachedData?.data?.education?.region_code || "",
+        currently_studying:
+          cachedData?.data?.education?.date_graduated == null || false,
+      });
+    }
+  }, [cachedData]);
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -93,8 +123,8 @@ const AddEducationModal = ({ open, onClose }) => {
           "Content-Type": "application/json",
         },
       };
-      const response = await axiosPrivate.post(
-        `/profiles/education/`,
+      const response = await axiosPrivate.put(
+        `/profiles/education/${educationID}`,
         newProfile,
         axiosConfig
       );
@@ -106,7 +136,7 @@ const AddEducationModal = ({ open, onClose }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("educations-profile");
+        queryClient.invalidateQueries("education-me");
         queryClient.invalidateQueries("profile-me");
 
         setMessage("achievement updated successfully");
@@ -147,7 +177,7 @@ const AddEducationModal = ({ open, onClose }) => {
       educationProfile?.school_name == "" ||
       educationProfile?.story == "" ||
       (educationProfile?.is_international &&
-        (educationProfile?.country == "" || educationProfile?.address == "")) ||
+        (educationProfile?.country == "")) ||
       (!educationProfile?.is_international &&
         (educationProfile?.region == "" ||
           educationProfile?.region_code == "" ||
@@ -162,6 +192,7 @@ const AddEducationModal = ({ open, onClose }) => {
       setOpenSnackbar(true);
       return; // Prevent form submission
     }
+
 
     if (educationProfile?.is_international) {
       setEducationProfile((prevProfile) => ({
@@ -193,7 +224,6 @@ const AddEducationModal = ({ open, onClose }) => {
 
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-    console.log(payload);
 
     try {
       await mutation.mutateAsync(payload);
@@ -367,8 +397,7 @@ const AddEducationModal = ({ open, onClose }) => {
                       }
                       value={
                         courses?.data?.find(
-                          (option) =>
-                            option.name === educationProfile?.course_name
+                          (option) => option.id === educationProfile?.course_id
                         ) || null
                       }
                     />
@@ -395,7 +424,7 @@ const AddEducationModal = ({ open, onClose }) => {
                     control={
                       <Switch
                         defaultChecked
-                        checked={educationProfile?.currently_studying || false}
+                        checked={educationProfile?.currently_studying}
                         onChange={() => {
                           setEducationProfile((prevProfile) => ({
                             ...prevProfile,
@@ -416,7 +445,7 @@ const AddEducationModal = ({ open, onClose }) => {
                           views={["year", "month"]}
                           name="date_started"
                           label="Date Started"
-                          value={educationProfile?.date_started}
+                          value={educationProfile?.date_start}
                           onChange={handleDateStarted}
                           renderInput={(params) => (
                             <TextField {...params} required />
@@ -636,4 +665,4 @@ const AddEducationModal = ({ open, onClose }) => {
   );
 };
 
-export default AddEducationModal;
+export default EditEducationModal;

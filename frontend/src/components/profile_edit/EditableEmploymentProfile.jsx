@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -24,13 +24,17 @@ import {
   Typography,
 } from "@mui/material";
 import {
+  Add,
+  ArrowBack,
   AddCircleRounded,
+  Business,
   BusinessRounded,
   Cake,
   CheckCircle,
   CheckCircleSharp,
   Delete,
   DeleteForever,
+  Description,
   Edit,
   Email,
   EmojiEvents,
@@ -49,11 +53,14 @@ import {
 import AddEmploymentModal from "./AddEmploymentModal";
 import EditEmploymentModal from "./EditEmploymentModal";
 import DeleteEmploymentModal from "./DeleteEmploymentModal";
+import EmploymentProfile from "../profile_display/EmploymentProfile";
 
 export const EditableEmploymentProfile = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
+  const from = location.state?.from?.pathname || "/home";
+
   const { auth, setAuth } = useAuth();
   const [isModalOpen, setModalOpen] = useState({
     addModal: false,
@@ -82,6 +89,10 @@ export const EditableEmploymentProfile = () => {
       <Chip icon={icon} label={label} />
     </Tooltip>
   );
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const getData = async () => {
     return await axiosPrivate.get(
@@ -208,32 +219,81 @@ export const EditableEmploymentProfile = () => {
   return (
     data?.data?.employments && (
       <Grid
-        container
+        item
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 2,
-          justifyContent: "center",
+          backgroundColor: (theme) => theme.palette.common.main,
+          padding: "1rem",
           position: "relative",
-          marginY: "2rem",
         }}
+        id="employment_history"
       >
-        <Box
+        <Typography
+          variant="h5"
+          fontWeight={800}
           sx={{
-            display: "flex",
-            justifyContent: "stretch",
-            gap: 2,
-            flexDirection: "column",
-            width: "80%",
+            padding: "10px",
+            borderBottom: "2px solid",
+            marginBottom: "10px",
+            color: "primary",
           }}
         >
-          {data?.data?.employments.map((employment, index) => {
-            return (
-              <React.Fragment key={employment.id}>
-                <Card sx={{ width: "100%" }} key={index}>
-                  <CardContent
+          Experience
+        </Typography>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "1rem",
+            right: "1rem",
+            display: "flex",
+            gap: "0.5rem",
+          }}
+        >
+          <Tooltip title="go back">
+            <Fab
+              size="small"
+              onClick={() => navigate(from, { replace: true })}
+              color="primary"
+            >
+              <ArrowBack />
+            </Fab>
+          </Tooltip>
+          <Tooltip title="add employment">
+            <Fab
+              size="small"
+              color="primary"
+              onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
+        </Box>
+        <Grid
+          container
+          sx={{
+            marginY: "1rem",
+            gap: 3,
+          }}
+        >
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 3,
+              paddingX: "1rem",
+              flexDirection: "column",
+            }}
+          >
+            {data?.data?.employments.map((employment, index) => {
+              return (
+                <React.Fragment key={employment.id}>
+                  <Grid
+                    container
                     sx={{
+                      gap: 2,
+                      borderBottom: "2px #aaa solid",
+                      paddingY: "0.5rem",
                       position: "relative",
                     }}
                   >
@@ -277,116 +337,116 @@ export const EditableEmploymentProfile = () => {
                       )}
                     </PopupState>
                     <Grid
-                      container
-                      alignItems="center"
-                      sx={{ display: "flex", flexWrap: "wrap" }}
+                      item
+                      xs={12}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                      }}
                     >
-                      <Grid
-                        item
+                      <Typography
+                        variant="subtitle1"
                         sx={{
-                          padding: "0 1rem",
                           fontWeight: "bold",
-                          whiteSpace: "nowrap",
                         }}
                       >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {employment.company_name}
-                        </Typography>
-                      </Grid>
-                      <Grid item sx={{ whiteSpace: "nowrap" }}>
-                        <Typography variant="subtitle2">
-                          {(() => {
-                            const startDate = new Date(employment.date_hired);
-                            if (!employment.date_end)
-                              return (
-                                "active job since " + startDate.getFullYear()
-                              );
-                            const endDate = employment.date_end
-                              ? new Date(employment.date_end)
-                              : "ongoing";
-                            const monthsDifference =
-                              (endDate.getFullYear() -
-                                startDate.getFullYear()) *
-                                12 +
-                              (endDate.getMonth() - startDate.getMonth());
+                        {employment.company_name}
+                      </Typography>
+                      <Chiptip
+                        label={(() => {
+                          const startDate = new Date(employment.date_hired);
+                          if (!employment.date_end)
+                            return (
+                              "active job since " + startDate.getFullYear()
+                            );
+                          const endDate = employment.date_end
+                            ? new Date(employment.date_end)
+                            : "ongoing";
+                          const monthsDifference =
+                            (endDate.getFullYear() - startDate.getFullYear()) *
+                              12 +
+                            (endDate.getMonth() - startDate.getMonth());
 
-                            const yearsDifference = monthsDifference / 12; // Calculate years with decimal
-                            const formattedYears =
-                              yearsDifference.toFixed(1) + "0"; // Round to 2 decimal places
+                          const yearsDifference = monthsDifference / 12; // Calculate years with decimal
+                          const formattedYears = yearsDifference.toFixed(1); // Round to 2 decimal places
+                          const timespan =
+                            monthsDifference < 1
+                              ? ""
+                              : ` (${formattedYears} years)`;
 
-                            const timespan =
-                              monthsDifference < 1
-                                ? ""
-                                : ` (${formattedYears} years)`;
-
-                            return `${startDate.getFullYear()} to ${endDate.getFullYear()}${timespan}`;
-                          })()}
-                        </Typography>
-                      </Grid>
+                          return `${startDate.getFullYear()} to ${endDate.getFullYear()}${timespan}`;
+                        })()}
+                      />
                     </Grid>
                     <Grid
-                      container
-                      alignItems="center"
-                      sx={{ display: "flex", flexWrap: "wrap" }}
+                      item
+                      xs={12}
+                      sx={{
+                        paddingX: "1rem",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
                     >
-                      <Grid
-                        item
-                        sx={{
-                          marginTop: "0.5rem",
-                          padding: "0 1.5rem",
-                          whiteSpace: "nowrap",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          sx={{ textTransform: "lowercase" }}
-                        >
-                          {employment?.job_title
-                            ? employment?.job_title
-                            : "unknown job title"}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ textTransform: "lowercase" }}
-                        >
-                          {employment?.classification
-                            ? employment?.classification
-                            : "unknown job classification"}
-                        </Typography>
-                      </Grid>
+                      <Typography variant="subtitle2">
+                        {employment?.job_title
+                          ? employment?.job_title
+                          : "unknown job title"}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {employment?.classification
+                          ? employment?.classification
+                          : "unknown job classification"}
+                      </Typography>
                     </Grid>
-                    <Box sx={{ display: "flex", gap: 1, paddingY: 2 }}>
-                      {employment.aligned_with_academic_program && (
+                    <Grid item sx={{ display: "flex", gap: "0.5rem" }}>
+                      {employment?.aligned_with_academic_program && (
                         <Chiptip
                           icon={<CheckCircle color="primary" />}
                           label="academically aligned"
                           actual="this job is aligned with their graduated academic program"
                         />
                       )}
-                    </Box>
-                    <Divider sx={{ paddingBottom: 1 }}>
-                      <Typography variant="subtitle2">job snapshot</Typography>
-                    </Divider>
-                    <Typography
-                      variant="h6"
+                      {employment?.address ? (
+                        <Chiptip
+                          icon={<LocationOn color="primary" />}
+                          label={employment?.address}
+                        />
+                      ) : (
+                        <Chiptip
+                          icon={<LocationOn color="primary" />}
+                          label={employment?.country}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Divider>
+                        <Typography variant="subtitle2">
+                          job snapshot
+                        </Typography>
+                      </Divider>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
                       sx={{
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        padding: 1,
+                        display: "flex",
+                        flexDirection: "column",
                       }}
                     >
-                      <Tooltip color="secondary" title="gross monthly income">
-                        {employment?.gross_monthly_income}
-                      </Tooltip>
-                    </Typography>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          textAlign: "center",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        <Tooltip color="secondary" title="gross monthly income">
+                          {employment?.gross_monthly_income}
+                        </Tooltip>
+                      </Typography>
+                    </Grid>
+
                     <Box
                       sx={{
                         display: "flex",
@@ -398,50 +458,53 @@ export const EditableEmploymentProfile = () => {
                       }}
                     >
                       <Chiptip
-                        icon={<WorkOutlined color="primary" />}
+                        icon={<Description color="primary" />}
                         label={
-                          <Typography sx={{ textTransform: "lowercase" }}>
-                            {employment.employment_contract}
+                          <Typography>
+                            {employment?.employment_contract}
                           </Typography>
                         }
                         actual="employment contract"
                       />
                       <Chiptip
-                        icon={<PublicRounded color="primary" />}
+                        icon={<Business color="primary" />}
                         label={
-                          <Typography sx={{ textTransform: "lowercase" }}>
-                            {employment.is_international
-                              ? "international"
-                              : employment.city}
-                          </Typography>
+                          <Typography>{employment?.employer_type}</Typography>
                         }
-                        actual="employment location"
+                        actual="employer type"
+                      />
+                      <Chiptip
+                        icon={<Work color="primary" />}
+                        label={
+                          <Typography>{employment?.job_position}</Typography>
+                        }
+                        actual="job position"
                       />
                     </Box>
-                  </CardContent>
-                </Card>
-              </React.Fragment>
-            );
-          })}
-        </Box>
-        {
-          <>
-            {employmentID && (
-              <>
-                <EditEmploymentModal
-                  open={isModalOpen.editModal}
-                  onClose={() => handleCloseModal("editModal")}
-                  employmentID={employmentID}
-                />
-                <DeleteEmploymentModal
-                  open={isModalOpen.deleteModal}
-                  onClose={() => handleCloseModal("deleteModal")}
-                  employmentID={employmentID}
-                />
-              </>
-            )}
-          </>
-        }
+                  </Grid>
+                </React.Fragment>
+              );
+            })}
+          </Grid>
+          {
+            <>
+              {employmentID && (
+                <>
+                  <EditEmploymentModal
+                    open={isModalOpen.editModal}
+                    onClose={() => handleCloseModal("editModal")}
+                    employmentID={employmentID}
+                  />
+                  <DeleteEmploymentModal
+                    open={isModalOpen.deleteModal}
+                    onClose={() => handleCloseModal("deleteModal")}
+                    employmentID={employmentID}
+                  />
+                </>
+              )}
+            </>
+          }
+        </Grid>
       </Grid>
     )
   );

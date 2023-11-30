@@ -112,7 +112,7 @@ const AddJob = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (job.name == "") {
+    if (job.name == "" || job?.classification_ids == null) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);

@@ -1,5 +1,6 @@
+import dayjs from "dayjs";
 import { styled } from "@mui/material/styles";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -30,7 +31,9 @@ import {
   Link,
 } from "@mui/material";
 import {
+  Add,
   AddCircleRounded,
+  ArrowBack,
   BusinessRounded,
   Cake,
   CheckCircle,
@@ -78,6 +81,10 @@ const ExpandMore = styled((props) => {
 
 export const EditableAchievementModal = () => {
   const [expanded, setExpanded] = React.useState({});
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleExpandClick = (achievementId) => {
     setExpanded((prevExpanded) => ({
@@ -89,6 +96,7 @@ export const EditableAchievementModal = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
+  const from = location.state?.from?.pathname || "/home";
   const { auth, setAuth } = useAuth();
   const [isModalOpen, setModalOpen] = useState({
     addModal: false,
@@ -96,8 +104,6 @@ export const EditableAchievementModal = () => {
     deleteModal: false,
   });
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
   const [achievementID, setAchievementID] = useState(null);
 
   const handleModalOpen = (type, id) => {
@@ -146,35 +152,84 @@ export const EditableAchievementModal = () => {
   return (
     data?.data?.achievements && (
       <Grid
-        container
+        item
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 2,
-          justifyContent: "center",
+          backgroundColor: (theme) => theme.palette.common.main,
+          padding: "1rem",
           position: "relative",
-          marginY: "2rem",
         }}
+        id="achievement_background"
       >
-        <Box
+        <Typography
+          variant="h5"
+          fontWeight={800}
+          // color="secondary"
           sx={{
-            display: "flex",
-            justifyContent: "stretch",
-            gap: 2,
-            flexDirection: "column",
-            width: "80%",
+            padding: "10px",
+            borderBottom: "2px solid",
+            marginBottom: "10px",
+            color: "primary",
           }}
         >
-          {data?.data?.achievements.map((achievement, index) => {
-            const isExpanded = expanded[achievement.id];
-            return (
-              <React.Fragment key={achievement.id}>
-                <Card
-                  sx={{ width: "100%" }} key={index}
-                >
-                  <CardContent
+          Achievements
+        </Typography>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "1rem",
+            right: "1rem",
+            display: "flex",
+            gap: "0.5rem",
+          }}
+        >
+          <Tooltip title="go back">
+            <Fab
+              size="small"
+              onClick={() => navigate(from, { replace: true })}
+              color="primary"
+            >
+              <ArrowBack />
+            </Fab>
+          </Tooltip>
+          <Tooltip title="add achievement">
+            <Fab
+              size="small"
+              onClick={() => handleModalOpen("add_achievement")}
+              color="primary"
+            >
+              <Add />
+            </Fab>
+          </Tooltip>
+        </Box>
+        <Grid
+          container
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            justifyContent: "center",
+            position: "relative",
+            marginY: "2rem",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "stretch",
+              gap: 2,
+              flexDirection: "column",
+              width: "80%",
+            }}
+          >
+            {data?.data?.achievements.map((achievement, index) => {
+              const isExpanded = expanded[achievement.id];
+              return (
+                <React.Fragment key={achievement.id}>
+                  <Grid
+                    container
                     sx={{
+                      display: "flex",
                       position: "relative",
                     }}
                   >
@@ -186,8 +241,7 @@ export const EditableAchievementModal = () => {
                             size="small"
                             sx={{
                               position: "absolute",
-                              top: "1rem",
-                              right: "1rem",
+                              right: "0rem",
                             }}
                           >
                             <MoreHoriz color="primary" />
@@ -217,115 +271,114 @@ export const EditableAchievementModal = () => {
                         </React.Fragment>
                       )}
                     </PopupState>
-
                     <Grid
-                      container
-                      sx={{ display: "flex", flexDirection: "column" }}
+                      item
+                      xs={12}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                      }}
                     >
-                      <Grid item sx={{ marginBottom: 2 }}>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {achievement?.type_of_achievement}
-                        </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {achievement?.year_of_attainment}
-                        </Typography>
-                      </Grid>
-                      <Grid item>
-                        <Box
-                          style={{
-                            display: "flex",
-                            gap: "0.5rem",
-                            alignItems: "center",
-                            width: "80%",
-                          }}
-                        >
-                          <Star />
-                          <Typography
-                            variant="body2"
-                            style={{ wordBreak: "break-word" }}
-                          >
-                            {achievement?.description}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      {achievement?.story || achievement?.link_reference ? (
-                        <>
-                          <CardActions
-                            sx={{
-                              position: "absolute",
-                              bottom: "0rem",
-                              right: "1rem",
-                            }}
-                          >
-                            <ExpandMore
-                              expand={isExpanded}
-                              onClick={() => handleExpandClick(achievement.id)}
-                              aria-expanded={isExpanded}
-                              aria-label="show more"
-                            >
-                              <ExpandMoreIcon />
-                            </ExpandMore>
-                          </CardActions>
-                          <Collapse
-                            in={expanded[achievement.id]}
-                            timeout="auto"
-                            unmountOnExit
-                          >
-                            <CardContent>
-                              {achievement?.story ? (
-                                <Typography
-                                  variant="subtitle2"
-                                  style={{ wordBreak: "break-word" }}
-                                >
-                                  {achievement?.story}
-                                </Typography>
-                              ) : null}
-                              {achievement?.link_reference ? (
-                                <Typography variant="subtitle2">
-                                  <Link
-                                    href={achievement?.link_reference}
-                                    target="_blank"
-                                  >
-                                    click to see more about this achievement
-                                    here
-                                  </Link>
-                                </Typography>
-                              ) : null}
-                            </CardContent>
-                          </Collapse>
-                        </>
-                      ) : null}
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {achievement?.type_of_achievement}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        <Chiptip
+                          label={dayjs(achievement?.date_of_attainment).format(
+                            "YYYY"
+                          )}
+                        />
+                      </Typography>
                     </Grid>
-                  </CardContent>
-                </Card>
-              </React.Fragment>
-            );
-          })}
-        </Box>
-        {achievementID && (
-          <>
-            <EditAchievementModal
-              open={isModalOpen.editModal}
-              onClose={() => handleCloseModal("editModal")}
-              achievementID={achievementID}
-            />
-            <DeleteAchievementModal
-              open={isModalOpen.deleteModal}
-              onClose={() => handleCloseModal("deleteModal")}
-              achievementID={achievementID}
-            />
-          </>
-        )}
+                    <Grid item xs={12}>
+                      <Box
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
+                        <Typography variant="body2">
+                          {achievement?.description}
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    {achievement?.story || achievement?.link_reference ? (
+                      <>
+                        <CardActions
+                          sx={{
+                            position: "absolute",
+                            bottom: "-1rem",
+                            right: "0.25rem",
+                          }}
+                        >
+                          <ExpandMore
+                            expand={isExpanded}
+                            onClick={() => handleExpandClick(achievement.id)}
+                            aria-expanded={isExpanded}
+                            aria-label="show more"
+                          >
+                            <Tooltip title="show more">
+                              <ExpandMoreIcon />
+                            </Tooltip>
+                          </ExpandMore>
+                        </CardActions>
+                        <Collapse
+                          in={expanded[achievement.id]}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          <CardContent>
+                            {achievement?.story ? (
+                              <Typography
+                                variant="body1"
+                                style={{ wordBreak: "break-word" }}
+                              >
+                                {achievement?.story}
+                              </Typography>
+                            ) : null}
+                            {achievement?.link_reference ? (
+                              <Typography variant="subtitle2">
+                                <Link
+                                  href={achievement?.link_reference}
+                                  target="_blank"
+                                >
+                                  click to see more about this achievement here
+                                </Link>
+                              </Typography>
+                            ) : null}
+                          </CardContent>
+                        </Collapse>
+                      </>
+                    ) : null}
+                    <Divider />
+                  </Grid>
+                </React.Fragment>
+              );
+            })}
+          </Box>
+          {achievementID && (
+            <>
+              <EditAchievementModal
+                open={isModalOpen.editModal}
+                onClose={() => handleCloseModal("editModal")}
+                achievementID={achievementID}
+              />
+              <DeleteAchievementModal
+                open={isModalOpen.deleteModal}
+                onClose={() => handleCloseModal("deleteModal")}
+                achievementID={achievementID}
+              />
+            </>
+          )}
+        </Grid>
       </Grid>
     )
   );

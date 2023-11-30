@@ -872,21 +872,19 @@ async def put_achievement(
 @router.post("/education/")
 async def post_education(
     *,
+    course: Optional[UUID] = Body(None),
     level: str = Body(...),
-    course: UUID = Body(...),
     school_name: str = Body(...),
     is_international: bool = Body(...),
-    country: str = Body(...),
-    region: str = Body(...),
-    city: str = Body(...),
-    barangay: str = Body(...),
-    region_code: str = Body(...),
-    city_code: str = Body(...),
-    barangay_code: str = Body(...),
-    address: str = Body(...),
-    story: str = Body(...),
+    country: Optional[str] = Body(None),
+    region: Optional[str] = Body(None),
+    city: Optional[str] = Body(None),
+    region_code: Optional[str] = Body(None),
+    city_code: Optional[str] = Body(None),
+    address: Optional[str] = Body(None),
+    story: Optional[str] = Body(None),
     date_start: date = Body(...),
-    date_graduated: date = Body(...),
+    date_graduated: Optional[date] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -895,9 +893,11 @@ async def post_education(
     if user_instance is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    course_instance = db.query(models.Course).filter_by(id=course).first()
-    if course_instance is None:
-        raise HTTPException(status_code=404, detail="Course not found")
+    course_instance = None
+    if(course):
+        course_instance = db.query(models.Course).filter_by(id=course).first()
+        if course_instance is None:
+            raise HTTPException(status_code=404, detail="Course not found")
     
     try:
       education = models.Education(
@@ -907,10 +907,8 @@ async def post_education(
         country=country,
         region=region,
         city=city,
-        barangay=barangay,
         region_code=region_code,
         city_code=city_code,
-        barangay_code=barangay_code,
         address=address,
         story=story,
         date_start=date_start,
@@ -944,8 +942,25 @@ async def get_education(
         .all()
     )
 
+    educations_list = []
+    for education in educations:
+        if education.course:
+            # Add the "course_name" key to the existing education dictionary
+            education_dict = {
+                **education.__dict__,
+                "course_name": education.course.name if education.course.name else ''
+            }
+        else:
+            # Handle the case where education has no associated course
+            education_dict = {
+                **education.__dict__,
+                "course_name": None
+            }
 
-    return {"educations": educations}
+        # Append the modified education dictionary to the educations_list
+        educations_list.append(education_dict)
+
+    return {"educations": educations_list}
     
 @router.get("/education/{education_id}")
 async def get_education(
@@ -993,21 +1008,21 @@ async def delete_education(
 @router.put("/education/{education_id}")
 async def put_achievement(
     education_id: UUID,
-    level: str = Body(None),
-    course: UUID = Body(None),
-    school_name: str = Body(None),
-    is_international: bool = Body(None),
-    country: str = Body(None),
-    region: str = Body(None),
-    city: str = Body(None),
-    barangay: str = Body(None),
-    region_code: str = Body(None),
-    city_code: str = Body(None),
-    barangay_code: str = Body(None),
-    address: str = Body(None),
-    story: str = Body(None),
-    date_start: date = Body(None),
-    date_graduated: date = Body(None),
+    level: Optional[str] = Body(None),
+    course: Optional[UUID] = Body(None),
+    school_name: Optional[str] = Body(None),
+    is_international: Optional[bool] = Body(None),
+    country: Optional[str] = Body(None),
+    region: Optional[str] = Body(None),
+    city: Optional[str] = Body(None),
+    barangay: Optional[str] = Body(None),
+    region_code: Optional[str] = Body(None),
+    city_code: Optional[str] = Body(None),
+    barangay_code: Optional[str] = Body(None),
+    address: Optional[str] = Body(None),
+    story: Optional[str] = Body(None),
+    date_start: Optional[date] = Body(None),
+    date_graduated: Optional[date] = Body(None),
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -1020,10 +1035,12 @@ async def put_achievement(
         if user_instance is None:
             raise HTTPException(status_code=404, detail="User not found")
         
-        course_instance = db.query(models.Course).filter_by(id=course).first()
-        if course_instance is None:
-            raise HTTPException(status_code=404, detail="Course not found")
-      
+        course_instance = None
+        if course :
+            course_instance = db.query(models.Course).filter_by(id=course).first()
+            if course_instance is None:
+                raise HTTPException(status_code=404, detail="Course not found")
+        
         profile = {
             'level': level,
             'course': course,
