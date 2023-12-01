@@ -105,7 +105,7 @@ const AddEducationModal = ({ open, onClose }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("educations-profile");
+        queryClient.invalidateQueries("education-me");
         queryClient.invalidateQueries("profile-me");
 
         setMessage("achievement updated successfully");

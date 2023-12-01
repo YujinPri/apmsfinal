@@ -89,10 +89,9 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
         company_name: cachedData?.data?.company_name || "",
         job: cachedData?.data?.job || "",
         job_title: cachedData?.data?.job_title || "",
-        
-        current_job: cachedData?.data?.date_end || true,
         date_hired: dayjs(cachedData?.data.date_hired) || null,
         date_end: dayjs(cachedData?.data.date_end) || null,
+        current_job: !cachedData?.data?.date_end,
         
         is_international: cachedData?.data?.is_international || false,
         country_code: cachedData?.data?.country_code || "",

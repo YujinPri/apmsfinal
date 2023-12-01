@@ -173,7 +173,7 @@ const EditAchievementModal = ({ open, onClose, achievementID }) => {
       story: achievementProfile?.story,
       link_reference: achievementProfile?.link_reference,
       date_of_attainment:
-        achievementProfile?.date_of_attainment,
+        achievementProfile?.date_of_attainment.format("YYYY-MM-DD"),
     };
 
     // Convert the object to a JSON string

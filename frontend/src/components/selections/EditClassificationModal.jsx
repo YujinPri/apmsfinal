@@ -113,9 +113,7 @@ const EditClassificationModal = ({ open, onClose, classificationID }) => {
         setMessage("classification deleted successfully");
         setSeverity("success");
         setOpenSnackbar(true);
-        console.log("nani");
         setTimeout(() => {}, 6000);
-        console.log("nanii");
         setIsLoadingDelete(false);
         onClose();
       },
@@ -201,7 +199,6 @@ const EditClassificationModal = ({ open, onClose, classificationID }) => {
       </Dialog>
     );
   }
-  console.log(isLoadingDelete);
 
   return (
     <Dialog open={open} onClose={onClose}>

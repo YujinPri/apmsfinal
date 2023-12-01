@@ -45,7 +45,10 @@ const MenuProps = {
 const AddJob = ({ open, onClose }) => {
   const queryClient = useQueryClient();
   const { data: cachedData, isLoading: isLoadingClassification } = useClassifications();
-  const [job, setJob] = useState(null);
+  const [job, setJob] = useState({
+    name: "",
+    classification_ids: null,
+  });
 
   const [classificationIds, setClassificationIds] = useState([]);
 
@@ -112,7 +115,11 @@ const AddJob = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (job.name == "" || job?.classification_ids == null) {
+    if (
+      job.name == "" ||
+      !job?.classification_ids ||
+      job.classification_ids.length === 0
+    ) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
@@ -125,9 +132,9 @@ const AddJob = ({ open, onClose }) => {
         classification_ids: job?.classification_ids,
       },
     ];
+
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-
 
     try {
       await mutation.mutateAsync(payload);
@@ -195,7 +202,7 @@ const AddJob = ({ open, onClose }) => {
           <Grid item xs={12}>
             <TextField
               name="name"
-              label="name"
+              label="Name"
               value={job?.name}
               onChange={handleChange}
               sx={{ width: "100%" }}
@@ -203,12 +210,12 @@ const AddJob = ({ open, onClose }) => {
           </Grid>
           <Grid item xs={12}>
             <FormControl sx={{ width: "100%" }}>
-              <InputLabel>related classifications</InputLabel>
+              <InputLabel>Related Classifications</InputLabel>
               <Select
                 multiple
                 value={classificationIds}
                 onChange={handleChangeSelect}
-                input={<OutlinedInput label="Chip" />}
+                input={<OutlinedInput label="Related Classifications" />}
                 renderValue={(selected) => (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {selected.map((value) => (

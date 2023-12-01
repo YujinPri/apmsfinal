@@ -44,7 +44,10 @@ const AddCourse = ({ open, onClose }) => {
   const { data: classificationsData, isLoading: isLoadingClassification } =
     useClassifications();
 
-  const [courseProfile, setCourseProfile] = useState(null);
+  const [courseProfile, setCourseProfile] = useState({
+    name: "",
+    classification_ids: [],
+  });
   const [classificationIds, setClassificationIds] = useState([]);
   const axiosPrivate = useAxiosPrivate();
   const [message, setMessage] = useState("");
@@ -94,7 +97,7 @@ const AddCourse = ({ open, onClose }) => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("courses-all");
+        queryClient.invalidateQueries("courses");
         queryClient.invalidateQueries("courses-specific");
         queryClient.invalidateQueries("profile-me");
 
@@ -109,20 +112,25 @@ const AddCourse = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (courseProfile.name == "" || courseProfile?.classification_ids == null) {
+    if (
+      courseProfile.name == "" ||
+      !courseProfile?.classification_ids ||
+      courseProfile.classification_ids.length === 0
+    ) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
       return; // Prevent form submission
     }
 
+
     const data = {
       name: courseProfile?.name,
       classification_ids: courseProfile?.classification_ids,
     };
+
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-
 
     try {
       await mutation.mutateAsync(payload);
@@ -190,7 +198,7 @@ const AddCourse = ({ open, onClose }) => {
           <Grid item xs={12}>
             <TextField
               name="name"
-              label="name"
+              label="Name"
               value={courseProfile?.name}
               onChange={handleChange}
               sx={{ width: "100%" }}
@@ -198,12 +206,12 @@ const AddCourse = ({ open, onClose }) => {
           </Grid>
           <Grid item xs={12}>
             <FormControl sx={{ width: "100%" }}>
-              <InputLabel>related classifications</InputLabel>
+              <InputLabel>Related Classifications</InputLabel>
               <Select
                 multiple
                 value={classificationIds}
                 onChange={handleChangeSelect}
-                input={<OutlinedInput label="Chip" />}
+                input={<OutlinedInput label="Related Classifications" />}
                 renderValue={(selected) => (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {selected.map((value) => (

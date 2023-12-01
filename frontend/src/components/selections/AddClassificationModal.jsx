@@ -28,7 +28,7 @@ import {
 
 const AddClassification = ({ open, onClose }) => {
   const queryClient = useQueryClient();
-  const [classificationProfile, setClassificationProfile] = useState(null);
+  const [classificationProfile, setClassificationProfile] = useState({name: "", code: ""});
 
   const mutation = useMutation(
     async (newProfile) => {
@@ -78,21 +78,22 @@ const AddClassification = ({ open, onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (classificationProfile.name == "" || classificationProfile.code == "") {
+    if (classificationProfile?.name == "" || classificationProfile?.code == "") {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
       return; // Prevent form submission
     }
 
+    
     const data = [{
       name: classificationProfile?.name,
       code: classificationProfile?.code,
     }];
-
+    
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-
+    
     try {
       await mutation.mutateAsync(payload);
     } catch (error) {

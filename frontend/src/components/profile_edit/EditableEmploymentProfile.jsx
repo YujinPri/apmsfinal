@@ -407,10 +407,10 @@ export const EditableEmploymentProfile = () => {
                           actual="this job is aligned with their graduated academic program"
                         />
                       )}
-                      {employment?.address ? (
+                      {employment?.region && employment?.city ? (
                         <Chiptip
                           icon={<LocationOn color="primary" />}
-                          label={employment?.address}
+                          label={employment?.region + ", " +  employment?.city}
                         />
                       ) : (
                         <Chiptip
@@ -486,7 +486,7 @@ export const EditableEmploymentProfile = () => {
               );
             })}
           </Grid>
-          {employmentID && isModalOpen.addModal ? (
+          {isModalOpen.addModal ? (
             <AddEmploymentModal
               open={isModalOpen.addModal}
               onClose={() => handleCloseModal("addModal")}

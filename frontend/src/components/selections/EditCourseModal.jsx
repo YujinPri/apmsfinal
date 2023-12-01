@@ -41,7 +41,10 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
   const queryClient = useQueryClient();
   const classificationsData = queryClient.getQueryData("classifications-all");
   const isLoadingClassification = queryClient.isFetching("classifications-all");
-  const [courseProfile, setCourseProfile] = useState(null);
+  const [courseProfile, setCourseProfile] = useState({
+    name: "",
+    classification_ids: [],
+  });
   const [message, setMessage] = useState("");
   const [classificationIds, setClassificationIds] = useState([]);
   const [severity, setSeverity] = useState("error");
@@ -177,7 +180,11 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (courseProfile.name == "") {
+    if (
+      courseProfile.name == "" ||
+      !courseProfile?.classification_ids ||
+      courseProfile.classification_ids.length === 0
+    ) {
       setMessage("please fill out all of the fields.");
       setSeverity("error");
       setOpenSnackbar(true);
@@ -280,12 +287,12 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
               </Grid>
               <Grid item xs={12}>
                 <FormControl sx={{ width: "100%" }}>
-                  <InputLabel>related classifications</InputLabel>
+                  <InputLabel>Related Classifications</InputLabel>
                   <Select
                     multiple
                     value={classificationIds}
                     onChange={handleChangeSelect}
-                    input={<OutlinedInput label="Chip" />}
+                    input={<OutlinedInput label="Related Classifications" />}
                     renderValue={(selected) => (
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                         {selected.map((value) => (
