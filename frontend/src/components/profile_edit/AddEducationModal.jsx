@@ -61,7 +61,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import useGetAchievementSpecific from "../../hooks/useGetAchievementsSpecific";
 import useCourses from "../../hooks/useCourses";
 import useRegions from "../../hooks/useRegion";
 import useCountries from "../../hooks/useCountries";

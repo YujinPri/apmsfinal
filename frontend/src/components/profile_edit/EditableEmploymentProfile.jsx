@@ -261,7 +261,7 @@ export const EditableEmploymentProfile = () => {
             <Fab
               size="small"
               color="primary"
-              onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
+              onClick={() => handleModalOpen("addModal")} // Trigger the profile edit modal
             >
               <Add />
             </Fab>
@@ -486,24 +486,27 @@ export const EditableEmploymentProfile = () => {
               );
             })}
           </Grid>
-          {
-            <>
-              {employmentID && (
-                <>
-                  <EditEmploymentModal
-                    open={isModalOpen.editModal}
-                    onClose={() => handleCloseModal("editModal")}
-                    employmentID={employmentID}
-                  />
-                  <DeleteEmploymentModal
-                    open={isModalOpen.deleteModal}
-                    onClose={() => handleCloseModal("deleteModal")}
-                    employmentID={employmentID}
-                  />
-                </>
-              )}
-            </>
-          }
+          {employmentID && isModalOpen.addModal ? (
+            <AddEmploymentModal
+              open={isModalOpen.addModal}
+              onClose={() => handleCloseModal("addModal")}
+            />
+          ) : null}
+          {employmentID && isModalOpen.editModal ? (
+            <EditEmploymentModal
+              open={isModalOpen.editModal}
+              onClose={() => handleCloseModal("editModal")}
+              employmentID={employmentID}
+            />
+          ) : null}
+
+          {employmentID && isModalOpen.deleteModal ? (
+            <DeleteEmploymentModal
+              open={isModalOpen.deleteModal}
+              onClose={() => handleCloseModal("deleteModal")}
+              employmentID={employmentID}
+            />
+          ) : null}
         </Grid>
       </Grid>
     )

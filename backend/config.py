@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     LINKEDIN_CLIENT_SECRET: str
     LINKEDIN_REDIRECT: str
 
+    RECAPTCHA_CODE_KEY: str
+
 
 
     class Config:

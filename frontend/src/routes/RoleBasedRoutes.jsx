@@ -107,8 +107,39 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
   if (auth?.role === "public") {
     return (
       <Routes>
-        <Route path="home" element={<PublicLayout />} />
+        <Route
+          path="home"
+          element={
+            <PublicLayout>
+              <UpdateProfile />
+            </PublicLayout>
+          }
+        />
         <Route path="*" element={<Missing />} />
+        <Route
+          path="profile/me/employment-details"
+          element={
+            <PublicLayout>
+              <EditableEmploymentProfile />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="profile/me/educational-details"
+          element={
+            <PublicLayout>
+              <EditableEducationProfile />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="profile/me/achievements-details"
+          element={
+            <PublicLayout>
+              <EditableAchievementModal />
+            </PublicLayout>
+          }
+        />
       </Routes>
     );
   } else if (auth?.role === "alumni") {

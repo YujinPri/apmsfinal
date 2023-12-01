@@ -67,6 +67,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteAchievementModal from "./DeleteAchievementModal";
 import EditAchievementModal from "./EditAchievementModal";
+import AddAchievementModal from "./AddAchievementModal";
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -81,7 +82,7 @@ const ExpandMore = styled((props) => {
 
 export const EditableAchievementModal = () => {
   const [expanded, setExpanded] = React.useState({});
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -194,7 +195,7 @@ export const EditableAchievementModal = () => {
           <Tooltip title="add achievement">
             <Fab
               size="small"
-              onClick={() => handleModalOpen("add_achievement")}
+              onClick={() => handleModalOpen("addModal")}
               color="primary"
             >
               <Add />
@@ -364,20 +365,26 @@ export const EditableAchievementModal = () => {
               );
             })}
           </Box>
-          {achievementID && (
-            <>
-              <EditAchievementModal
-                open={isModalOpen.editModal}
-                onClose={() => handleCloseModal("editModal")}
-                achievementID={achievementID}
-              />
-              <DeleteAchievementModal
-                open={isModalOpen.deleteModal}
-                onClose={() => handleCloseModal("deleteModal")}
-                achievementID={achievementID}
-              />
-            </>
-          )}
+          {isModalOpen.addModal ? (
+            <AddAchievementModal
+              open={isModalOpen.addModal}
+              onClose={() => handleCloseModal("addModal")}
+            />
+          ) : null}
+          {achievementID && isModalOpen.editModal ? (
+            <EditAchievementModal
+              open={isModalOpen.editModal}
+              onClose={() => handleCloseModal("editModal")}
+              achievementID={achievementID}
+            />
+          ) : null}
+          {achievementID && isModalOpen.deleteModal ? (
+            <DeleteAchievementModal
+              open={isModalOpen.deleteModal}
+              onClose={() => handleCloseModal("deleteModal")}
+              achievementID={achievementID}
+            />
+          ) : null}
         </Grid>
       </Grid>
     )

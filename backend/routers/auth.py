@@ -21,6 +21,7 @@ import requests
 import cloudinary.uploader
 
 
+
 router = APIRouter()
 
 def decode_linkedin_access_token(access_token):
@@ -80,7 +81,16 @@ async def create_user(*, username: str = Form(...), email: str = Form(...), pass
 
 @router.post('/register/alumni', status_code=status.HTTP_201_CREATED)
 async def create_alumni(username: str = Form(...), email: str = Form(...), password: str = Form(...), first_name: str = Form(...), 
-                        last_name: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
+                        last_name: str = Form(...), recaptcha: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f"https://www.google.com/recaptcha/api/siteverify?secret={settings.RECAPTCHA_CODE_KEY}&response={recaptcha}")
+            data = response.json()
+
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=400, detail=f"An error occurred while verifying the captcha: {exc}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {exc}")
         
     # Check if email already exists
     user = db.query(models.User).filter(models.User.email == email).first()
@@ -115,9 +125,8 @@ async def create_alumni(username: str = Form(...), email: str = Form(...), passw
             # Save the URL of the image
             new_user.profile_picture = result.get("url")
             db.commit()
-            db.refresh(new_user)
 
-        return new_user
+        return data
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail="Account creation failed")

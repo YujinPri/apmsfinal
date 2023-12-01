@@ -10,7 +10,7 @@ const Adaptive = styled(Box)(({ theme }) => ({
   },
 }));
 
-function PublicLayout() {
+function PublicLayout({ children }) {
   return (
     <Box>
       <Navbar />
@@ -35,7 +35,7 @@ function PublicLayout() {
             approval, we recommend updating your profile in the meantime.
           </Typography>
         </Box>
-        <UpdateProfile />
+        {children}
       </Adaptive>
     </Box>
   );

@@ -1,3 +1,4 @@
+import { Button } from "@mui/material";
 import React from "react";
 
 const LinkedInLogin = () => {
@@ -21,7 +22,30 @@ const LinkedInLogin = () => {
     window.location.href = authUrl;
   };
 
-  return <button onClick={handleLinkedInAuth}>Sign in with LinkedIn</button>;
+  return (
+    <Button
+      onClick={handleLinkedInAuth}
+      sx={{
+        backgroundColor: "transparent",
+        "&:hover": {
+          backgroundColor: "rgba(0, 0, 0, 0.1)",
+        },
+      }}
+    >
+      <img
+        src="linkedIn.png"
+        alt="Sign in with LinkedIn"
+        style={{
+          padding: 1,
+          transition: "filter 0.3s ease",
+          filter: "brightness(1)",
+          "&:hover": {
+            filter: "brightness(0.5)",
+          },
+        }}
+      />
+    </Button>
+  );
 };
 
 export default LinkedInLogin;

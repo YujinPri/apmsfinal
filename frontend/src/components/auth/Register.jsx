@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient, useQuery } from "react-query";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import {
   Avatar,
@@ -49,6 +50,7 @@ const validatePassword = (password) => {
 
 const Register = () => {
   const navigate = useNavigate();
+  const recaptcha = useRef();
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -104,7 +106,6 @@ const Register = () => {
 
       onSuccess: (data, variables, context) => {
         setMessage("successfully registered!");
-
         setSeverity("success");
 
         setFormData({
@@ -121,6 +122,8 @@ const Register = () => {
           state: {
             message:
               "successfully registered now please login your credentials",
+            snackbar: 
+              "successfully registered!"
           },
           replace: true,
         });
@@ -132,6 +135,14 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const captchaValue = recaptcha.current.getValue();
+    if (!captchaValue) {
+      setMessage("Please Verify the reCAPTCHA");
+      setSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
 
     if (formData.confirmation_password != formData.password) {
       setMessage("password does not match");
@@ -154,6 +165,7 @@ const Register = () => {
     payload.append("email", formData.email);
     payload.append("password", formData.password);
     payload.append("profile_picture", formData.profile_picture);
+    payload.append("recaptcha", captchaValue);
 
     await mutation.mutateAsync(payload);
   };
@@ -294,16 +306,31 @@ const Register = () => {
                   required
                 />
               </Grid>
-
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-                fullWidth
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "1rem",
+                }}
               >
-                register
-              </Button>
+                <ReCAPTCHA
+                  ref={recaptcha}
+                  sitekey={`${import.meta.env.VITE_RECAPTCHA_HTML_KEY}`}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  fullWidth
+                >
+                  register
+                </Button>
+              </Grid>
             </Grid>
             <Link
               to={"/login"}

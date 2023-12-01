@@ -514,28 +514,32 @@ export const EditableEducationProfile = () => {
               );
             })}
           </Grid>
-          {educationID && (
-            <>
-              <EditEducationModal
-                open={isModalOpen.editModal}
-                onClose={() => handleCloseModal("editModal")}
-                educationID={educationID}
-              />
-              <DeleteEducationModal
-                open={isModalOpen.deleteModal}
-                onClose={() => handleCloseModal("deleteModal")}
-                educationID={educationID}
-              />
-              <EducProfileEditModal
-                open={isModalOpen.career}
-                onClose={() => handleCloseModal("career")}
-              />
-              <AddEducationModal
-                open={isModalOpen.addEducation}
-                onClose={() => handleCloseModal("addEducation")}
-              />
-            </>
-          )}
+          {educationID && isModalOpen.editModal ? (
+            <EditEducationModal
+              open={isModalOpen.editModal}
+              onClose={() => handleCloseModal("editModal")}
+              educationID={educationID}
+            />
+          ) : null}
+          {educationID && isModalOpen.deleteModal ? (
+            <DeleteEducationModal
+              open={isModalOpen.deleteModal}
+              onClose={() => handleCloseModal("deleteModal")}
+              educationID={educationID}
+            />
+          ) : null}
+          {isModalOpen.career ? (
+            <EducProfileEditModal
+              open={isModalOpen.career}
+              onClose={() => handleCloseModal("career")}
+            />
+          ) : null}
+          {isModalOpen.addEducation ? (
+            <AddEducationModal
+              open={isModalOpen.addEducation}
+              onClose={() => handleCloseModal("addEducation")}
+            />
+          ) : null}
         </Grid>
       )}
     </Grid>

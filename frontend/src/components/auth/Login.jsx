@@ -34,6 +34,7 @@ const Login = () => {
   const from = location.state?.from?.pathname || "/home";
   const refreshMessage =
     location.state?.message || "ready to relive memories? just loginn!";
+  const snackbarMessage = location.state?.snackbar || "";
 
   const userRef = useRef();
 
@@ -42,11 +43,19 @@ const Login = () => {
   const [message, setMessage] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const [severity, setSeverity] = useState("error");
 
   useEffect(() => {
     userRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    if (snackbarMessage) {
+      setMessage(snackbarMessage);
+      setSeverity("success");
+      setOpen(true);
+    }
   }, []);
 
   const submitLogin = async () => {
