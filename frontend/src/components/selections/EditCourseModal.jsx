@@ -195,10 +195,9 @@ const EditCourseModal = ({ open, onClose, courseID }) => {
       name: courseProfile?.name,
       classification_ids: courseProfile?.classification_ids,
     };
+    
     // Convert the object to a JSON string
     const payload = JSON.stringify(data);
-
-    console.log(payload);
 
     try {
       await mutation.mutateAsync(payload);

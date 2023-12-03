@@ -67,6 +67,7 @@ class User(Base):
     education = relationship("Education", back_populates="user")
     achievement = relationship("Achievement", back_populates="user")
     employment = relationship("Employment", back_populates="user")
+    upload_history = relationship("UploadHistory", back_populates="user")
 
 
 class Achievement(Base):
@@ -214,10 +215,10 @@ class UploadHistory(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     type = Column(String) # Upload User or Employment or Achievement
-    state = Column(String) # Whether this is a list of failed, or succeed
-    group = Column(String) # What upload sequence does it belong
+    group = Column(Integer, primary_key=True, autoincrement=True)
     link = Column(String) # The Cloudinary Link of the PDF table 
-
+    user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE")) #Uploaded by
+    user = relationship("User", back_populates="upload_history")
 
 
 
