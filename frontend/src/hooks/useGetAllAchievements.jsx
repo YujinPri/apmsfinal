@@ -1,14 +1,14 @@
 import useAxiosPrivate from "./useAxiosPrivate";
 import { useQuery } from "react-query";
 
-const useGetAllProfiles = () => {
+const useGetAllAchievements = () => {
   const axiosPrivate = useAxiosPrivate();
   const getData = async () => {
-    return await axiosPrivate.get("/uploads/profiles/all");
+    return await axiosPrivate.get("/uploads/achievements/all");
   };
-  return useQuery("profiles-all", getData, {
+  return useQuery("achievements-all", getData, {
     staleTime: Infinity,
   });
 };
 
-export default useGetAllProfiles;
+export default useGetAllAchievements;

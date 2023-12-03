@@ -1,14 +1,14 @@
 import useAxiosPrivate from "./useAxiosPrivate";
 import { useQuery } from "react-query";
 
-const useGetAllProfiles = () => {
+const useGetAllEmployments = () => {
   const axiosPrivate = useAxiosPrivate();
   const getData = async () => {
-    return await axiosPrivate.get("/uploads/profiles/all");
+    return await axiosPrivate.get("/uploads/employments/all");
   };
-  return useQuery("profiles-all", getData, {
+  return useQuery("employments-all", getData, {
     staleTime: Infinity,
   });
 };
 
-export default useGetAllProfiles;
+export default useGetAllEmployments;

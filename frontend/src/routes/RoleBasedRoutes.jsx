@@ -15,7 +15,7 @@ import { ManageSelections } from "../components/selections/ManageSelections";
 import EditableEmploymentProfile from "../components/profile_edit/EditableEmploymentProfile";
 import EditableAchievementModal from "../components/profile_edit/EditableAchievementModal";
 import EditableEducationProfile from "../components/profile_edit/EditableEducationProfile";
-import { UploadProfiles } from "../components/users_upload/UploadProfiles";
+import { UploadProfiles } from "../components/users_upload/UploadUserAccounts";
 const RoleBasedRoutes = ({ mode, setMode }) => {
   const { auth } = useAuth();
   const location = useLocation();

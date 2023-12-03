@@ -129,6 +129,87 @@ async def get_demographic_profile(
     # Close the database session
     return {"length": len(profiles), "profiles": profiles}
 
+@router.get("/educations/all")
+async def get_demographic_profile(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    education_data = db.query(models.Education).all()
+    educations = []
+    for education_profile in education_data:
+        employment_dict = {
+            "id": education_profile.id,
+            "user_id": education_profile.user.id if education_profile.user and education_profile.user.id else '',
+            "username": education_profile.user.username if education_profile.user and education_profile.user.username else '',
+            "course": education_profile.course.name if education_profile.course and education_profile.course.name else '',
+            "level": education_profile.level,
+            "school_name": education_profile.school_name,
+            "story": education_profile.story,
+            "is_international": education_profile.is_international,
+            "country": education_profile.country,
+            "region": education_profile.region,
+            "city": education_profile.city,
+            "date_start": education_profile.date_start,
+            "date_graduated": education_profile.date_graduated,          
+        }
+        educations.append(employment_dict)
+    db.close() 
+    # Close the database session
+    return {"length": len(educations), "educations": educations}
+
+@router.get("/employments/all")
+async def get_demographic_profile(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    employment_data = db.query(models.Employment).all()
+    employments = []
+    for employment_profile in employment_data:
+        employment_dict = {
+            "id": employment_profile.id,
+            "user_id": employment_profile.user.id if employment_profile.user and employment_profile.user.id else '',
+            "username": employment_profile.user.username if employment_profile.user and employment_profile.user.username else '',
+            "job": employment_profile.job.name if employment_profile.job and employment_profile.job.name else '',
+            "company_name": employment_profile.company_name,
+            "date_hired": employment_profile.date_hired,
+            "date_end": employment_profile.date_end,
+            "gross_monthly_income": employment_profile.gross_monthly_income,
+            "employment_contract": employment_profile.employment_contract,
+            "job_position": employment_profile.job_position,
+            "employer_type": employment_profile.employer_type,
+            "is_international": employment_profile.is_international,
+            "country": employment_profile.country,          
+            "region": employment_profile.region,          
+            "city": employment_profile.city,          
+        }
+        employments.append(employment_dict)
+    db.close() 
+    # Close the database session
+    return {"length": len(employments), "employments": employments}
+
+@router.get("/achievements/all")
+async def get_demographic_profile(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    achievements_data = db.query(models.Achievement).all()
+    achievements = []
+    for achievements_profile in achievements_data:
+        achievement_dict = {
+            "id": achievements_profile.id,
+            "user_id": achievements_profile.user.id if achievements_profile.user and achievements_profile.user.id else '',
+            "username": achievements_profile.user.username if achievements_profile.user and achievements_profile.user.username else '',
+            "type_of_achievement": achievements_profile.type_of_achievement,
+            "date_of_attainment": achievements_profile.date_of_attainment,
+            "description": achievements_profile.description,
+            "story": achievements_profile.story,
+            "link_reference": achievements_profile.link_reference,   
+        }
+        achievements.append(achievement_dict)
+    db.close() 
+    # Close the database session
+    return {"length": len(achievements), "achievements": achievements}
+
 @router.post("/upload_demo_profile/")
 async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
     responses = []

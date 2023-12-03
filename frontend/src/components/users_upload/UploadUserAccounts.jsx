@@ -25,10 +25,12 @@ import {
   CloudUpload,
   Edit,
   FilterList,
+  GroupAdd,
   Label,
   MenuBook,
   PersonPin,
   School,
+  Stars,
   Work,
 } from "@mui/icons-material";
 import ClassificationsRow from "../selections/ClassificationsRow";
@@ -37,12 +39,18 @@ import JobsRow from "../selections/JobsRow";
 import AddClassification from "../selections/AddClassificationModal";
 import AddCourse from "../selections/AddCourseModal";
 import AddJob from "../selections/AddJobModal";
-import DemoProfileDataGrid from "./DemoProfileDataGrid";
+import DemoProfileDataGrid from "./ProfileDataGrid";
 import ProfilesUploadInput from "./ProfilesUploadInput";
+import EducationUploadInput from "./EducationUploadInput";
+import EducationDataGrid from "./EducationDataGrid";
+import EmploymentUploadInput from "./EmploymentUploadInput";
+import EmploymentDataGrid from "./EmploymentDataGrid";
+import AchievementUploadInput from "./AchievementUploadInput";
+import AchievementDataGrid from "./AchievementDataGrid";
 
 export const UploadProfiles = () => {
   const [value, setValue] = useState(0);
-  const [activeTab, setActiveTab] = useState("manage_classifications");
+  const [activeTab, setActiveTab] = useState("upload_profiles");
   const [modalOpen, setModalOpen] = useState({
     classification: false,
     job: false,
@@ -117,24 +125,29 @@ export const UploadProfiles = () => {
             aria-label="icon tabs example"
           >
             <Tab
-              icon={<Label />}
+              icon={<GroupAdd />}
               label="User Accounts"
-              onClick={() => setActiveTab("manage_classifications")}
+              onClick={() => setActiveTab("upload_profiles")}
             />
             <Tab
-              icon={<MenuBook />}
-              label="courses"
-              onClick={() => setActiveTab("manage_courses")}
+              icon={<School />}
+              label="Education"
+              onClick={() => setActiveTab("upload_education")}
             />
             <Tab
-              icon={<Business />}
-              label="jobs"
-              onClick={() => setActiveTab("manage_jobs")}
+              icon={<Work />}
+              label="employment"
+              onClick={() => setActiveTab("upload_employments")}
+            />
+            <Tab
+              icon={<Stars />}
+              label="Achievements"
+              onClick={() => setActiveTab("upload_achievements")}
             />
           </Tabs>
         </Box>
 
-        {activeTab === "manage_classifications" && (
+        {activeTab === "upload_profiles" && (
           <Grid
             container
             sx={{
@@ -142,12 +155,12 @@ export const UploadProfiles = () => {
               padding: 2,
               borderRadius: 3,
               position: "relative",
-              opacity: activeTab === "manage_classifications" ? 1 : 0,
-              display: activeTab === "manage_classifications" ? "flex" : "none",
+              opacity: activeTab === "upload_profiles" ? 1 : 0,
+              display: activeTab === "upload_profiles" ? "flex" : "none",
               gap: 2,
               transition: "opacity 0.5s ease-in-out",
             }}
-            id="manage_classifications"
+            id="upload_profiles"
           >
             <Grid item xs={12}>
               <Typography
@@ -159,7 +172,7 @@ export const UploadProfiles = () => {
                   color: "primary",
                 }}
               >
-                Upload User Accounts
+                Upload Profiles
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -170,109 +183,115 @@ export const UploadProfiles = () => {
             </Grid>
           </Grid>
         )}
-        {activeTab === "manage_courses" && (
-          <Box
+        {activeTab === "upload_education" && (
+          <Grid
+            container
             sx={{
               backgroundColor: (theme) => theme.palette.common.main,
               padding: 2,
               borderRadius: 3,
               position: "relative",
-              opacity: activeTab === "manage_courses" ? 1 : 0,
-              display: activeTab === "manage_courses" ? "block" : "none",
+              opacity: activeTab === "upload_education" ? 1 : 0,
+              display: activeTab === "upload_education" ? "flex" : "none",
+              gap: 2,
               transition: "opacity 0.5s ease-in-out",
             }}
-            id="manage_courses"
+            id="upload_education"
           >
-            <Typography
-              variant="h1"
-              fontWeight={800}
-              sx={{
-                padding: "10px",
-                borderBottom: "2px solid",
-                color: "primary",
-              }}
-            >
-              manage courses
-            </Typography>
-            <Tooltip title="add courses">
-              <Fab
-                size="small"
-                color="primary"
+            <Grid item xs={12}>
+              <Typography
+                variant="h1"
+                fontWeight={800}
                 sx={{
-                  position: "absolute",
-                  top: "1rem",
-                  right: "1rem",
+                  padding: "10px",
+                  borderBottom: "2px solid",
+                  color: "primary",
                 }}
-                onClick={() => handleModalOpen("course")}
               >
-                <Add />
-              </Fab>
-            </Tooltip>
-            <Box p={4}>
-              <Paper>
-                <CoursesRow />
-              </Paper>
-            </Box>
-          </Box>
+                Upload Educations
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <EducationUploadInput />
+            </Grid>
+            <Grid item xs={12}>
+              <EducationDataGrid />
+            </Grid>
+          </Grid>
         )}
-        {activeTab === "manage_jobs" && (
-          <Box
+        {activeTab === "upload_employments" && (
+          <Grid
+            container
             sx={{
               backgroundColor: (theme) => theme.palette.common.main,
               padding: 2,
               borderRadius: 3,
               position: "relative",
-              opacity: activeTab === "manage_jobs" ? 1 : 0,
-              display: activeTab === "manage_jobs" ? "block" : "none",
+              opacity: activeTab === "upload_employments" ? 1 : 0,
+              display: activeTab === "upload_employments" ? "flex" : "none",
+              gap: 2,
               transition: "opacity 0.5s ease-in-out",
             }}
-            id="manage_jobs"
+            id="upload_employments"
           >
-            <Typography
-              variant="h1"
-              fontWeight={800}
-              sx={{
-                padding: "10px",
-                borderBottom: "2px solid",
-                color: "primary",
-              }}
-            >
-              manage jobs
-            </Typography>
-            <Tooltip title="add jobs">
-              <Fab
-                size="small"
-                color="primary"
+            <Grid item xs={12}>
+              <Typography
+                variant="h1"
+                fontWeight={800}
                 sx={{
-                  position: "absolute",
-                  top: "1rem",
-                  right: "1rem",
+                  padding: "10px",
+                  borderBottom: "2px solid",
+                  color: "primary",
                 }}
-                onClick={() => handleModalOpen("job")}
               >
-                <Add />
-              </Fab>
-            </Tooltip>
-            <Box p={4}>
-              <Paper>
-                <JobsRow />
-              </Paper>
-            </Box>
-          </Box>
+                Upload Employments
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <EmploymentUploadInput />
+            </Grid>
+            <Grid item xs={12}>
+              <EmploymentDataGrid />
+            </Grid>
+          </Grid>
+        )}
+        {activeTab === "upload_achievements" && (
+          <Grid
+            container
+            sx={{
+              backgroundColor: (theme) => theme.palette.common.main,
+              padding: 2,
+              borderRadius: 3,
+              position: "relative",
+              opacity: activeTab === "upload_achievements" ? 1 : 0,
+              display: activeTab === "upload_achievements" ? "flex" : "none",
+              gap: 2,
+              transition: "opacity 0.5s ease-in-out",
+            }}
+            id="upload_achievements"
+          >
+            <Grid item xs={12}>
+              <Typography
+                variant="h1"
+                fontWeight={800}
+                sx={{
+                  padding: "10px",
+                  borderBottom: "2px solid",
+                  color: "primary",
+                }}
+              >
+                Upload Achievements
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <AchievementUploadInput />
+            </Grid>
+            <Grid item xs={12}>
+              <AchievementDataGrid />
+            </Grid>
+          </Grid>
         )}
       </Box>
-      {modalOpen.classification && (
-        <AddClassification
-          open={modalOpen.classification}
-          onClose={handleCloseModal}
-        />
-      )}
-      {modalOpen.course && (
-        <AddCourse open={modalOpen.course} onClose={handleCloseModal} />
-      )}
-      {modalOpen.job && (
-        <AddJob open={modalOpen.job} onClose={handleCloseModal} />
-      )}
     </Box>
   );
 };

@@ -32,7 +32,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-const ProfilesUploadInput = () => {
+const EmploymentUploadInput = () => {
   const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
@@ -74,7 +74,7 @@ const ProfilesUploadInput = () => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("profiles-all");
+        queryClient.invalidateQueries("all-user-profiles");
         setMessage("user profiles processed successfully");
         setSeverity("success");
       },
@@ -177,4 +177,4 @@ const ProfilesUploadInput = () => {
   );
 };
 
-export default ProfilesUploadInput;
+export default EmploymentUploadInput;

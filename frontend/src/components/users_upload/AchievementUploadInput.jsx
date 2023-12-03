@@ -32,7 +32,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-const ProfilesUploadInput = () => {
+const AchievementUploadInput = () => {
   const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
@@ -177,4 +177,4 @@ const ProfilesUploadInput = () => {
   );
 };
 
-export default ProfilesUploadInput;
+export default AchievementUploadInput;
