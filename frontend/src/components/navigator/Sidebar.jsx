@@ -222,6 +222,33 @@ function Sidebar({ mode, setMode }) {
                 </ListItemButton>
               </ListItem>
             </RouterLink>
+            <RouterLink
+              to="/explore/alumni/Admin"  
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <ListItem
+                disablePadding
+                sx={{
+                  borderRadius: 3,
+                }}
+              >
+                <ListItemButton
+                  selected={selectedIndex === 11}
+                  onClick={(event) => handleListItemClick(event, 11)}
+                >
+                  <ListItemIcon>
+                    <HowToReg />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Typography variant="subtitle2" fontWeight={800}>
+                        sample
+                      </Typography>
+                    }
+                  />
+                </ListItemButton>
+              </ListItem>
+            </RouterLink>
           </>
         ) : null}
 

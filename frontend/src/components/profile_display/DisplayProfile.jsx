@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import useGetDemographicProfile from "../../hooks/useGetDemographicProfile";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import {
   Box,
@@ -29,58 +29,57 @@ import {
   Star,
   Work,
 } from "@mui/icons-material";
-import ProfileEditModal from "./EditProfileModal";
-import EducProfileEditModal from "./EditCareerModal";
-import AddEmploymentModal from "./AddEmploymentModal";
-import AddAchievementModal from "./AddAchievementModal";
 import useGetCareerProfile from "../../hooks/useGetCareerProfile";
-import AddEducationModal from "./AddEducationModal";
 import EmploymentProfile from "../profile_display/EmploymentProfile";
 import AchievementProfile from "../profile_display/AchievementProfile";
-import useGetEmploymentProfile from "../../hooks/useGetEmploymentProfile";
-import useGetAchievementProfiles from "../../hooks/useGetAchievementProfiles";
+import useGetVisitDemographicProfile from "../../hooks/useGetVisitDemographicProfile";
+import useGetVisitCheck from "../../hooks/useGetVisitCheck";
+import LoadingCircular from "../status_display/LoadingCircular";
+import UserNotFound from "../status_display/UserNotFound";
+import useGetVisitCareerProfile from "../../hooks/useGetVisitCareerProfile";
+import useGetVisitEmploymentProfile from "../../hooks/useGetVisitEmploymentProfile";
+import useGetVisitAchievementProfile from "../../hooks/useGetVisitAchievementProfile";
 
-function UpdateProfile() {
+function DisplayProfile() {
+  const { username } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { auth, setAuth } = useAuth();
-  const [value, setValue] = React.useState(0);
-  const [modalOpen, setModalOpen] = useState({
-    profile: false,
-    career: false,
-    employment: false,
-    add_achievement: false,
-    add_achievement: false,
-    add_education: false,
-  });
+  const [value, setValue] = useState(0);
+
+  const { data: checkData, isLoading: isLoadingCheckData } =
+    useGetVisitCheck(username);
 
   const {
     data: demographicData,
     isLoading: isLoadingDemographicData,
     isError: isErrorDemographicData,
     error: errorDemographicData,
-  } = useGetDemographicProfile();
+  } = useGetVisitDemographicProfile(username);
 
   const {
     data: careerData,
     isLoading: isLoadingCareerData,
     isError: isErrorCareerData,
     error: errorCareerData,
-  } = useGetCareerProfile();
+  } = useGetVisitCareerProfile(username);
 
   const {
     data: employmentData,
     isLoading: isLoadingEmploymentData,
     isError: isErrorEmploymentData,
     error: errorEmploymentData,
-  } = useGetEmploymentProfile();
+  } = useGetVisitEmploymentProfile(username);
 
   const {
     data: achievementData,
     isLoading: isLoadingAchievementData,
     isError: isErrorAchievementData,
     error: errorAchievementData,
-  } = useGetAchievementProfiles();
+  } = useGetVisitAchievementProfile(username);
+
+  if (isLoadingCheckData) return <LoadingCircular />;
+  if (!checkData.data) return <UserNotFound />;
 
   if (isErrorDemographicData || isErrorCareerData) {
     const expiredCareerData =
@@ -219,26 +218,6 @@ function UpdateProfile() {
           >
             Profile
           </Typography>
-
-          <Box
-            sx={{
-              position: "absolute",
-              top: "1rem",
-              right: "1rem",
-              display: "flex",
-              gap: "0.5rem",
-            }}
-          >
-            <Tooltip title="update demographic profile">
-              <Fab
-                size="small"
-                onClick={() => handleModalOpen("profile")}
-                color="primary"
-              >
-                <Edit />
-              </Fab>
-            </Tooltip>
-          </Box>
           <DemographicProfile
             data={demographicData}
             isLoading={isLoadingDemographicData}
@@ -266,41 +245,6 @@ function UpdateProfile() {
           >
             Education
           </Typography>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "1rem",
-              right: "1rem",
-              display: "flex",
-              gap: "0.5rem",
-            }}
-          >
-            <Tooltip title="add education">
-              <Fab
-                size="small"
-                onClick={() => handleModalOpen("add_education")}
-                color="primary"
-              >
-                <Add />
-              </Fab>
-            </Tooltip>
-            <Tooltip title="edit education">
-              <Fab
-                size="small"
-                onClick={() =>
-                  navigate("/profile/me/educational-details", {
-                    state: {
-                      from: location,
-                    },
-                    replace: true,
-                  })
-                }
-                color="primary"
-              >
-                <Edit />
-              </Fab>
-            </Tooltip>
-          </Box>
           <CareerProfile data={careerData} isLoading={isLoadingCareerData} />
         </Grid>
         <Grid
@@ -325,42 +269,6 @@ function UpdateProfile() {
           >
             Achievements
           </Typography>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "1rem",
-              right: "1rem",
-              display: "flex",
-              gap: "0.5rem",
-            }}
-          >
-            <Tooltip title="add achievement">
-              <Fab
-                size="small"
-                onClick={() => handleModalOpen("add_achievement")}
-                color="primary"
-              >
-                <Add />
-              </Fab>
-            </Tooltip>
-            <Tooltip title="edit achievements">
-              <Fab
-                size="small"
-                onClick={() =>
-                  navigate("/profile/me/achievements-details", {
-                    state: {
-                      from: location,
-                    },
-                    replace: true,
-                  })
-                }
-                color="primary"
-              >
-                <Edit />
-              </Fab>
-            </Tooltip>
-          </Box>
-          {/* <CareerProfile data={careerData} isLoading={isLoadingCareerData} /> */}
           <AchievementProfile
             data={achievementData}
             isLoading={isLoadingAchievementData}
@@ -387,79 +295,14 @@ function UpdateProfile() {
           >
             Experience
           </Typography>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "1rem",
-              right: "1rem",
-              display: "flex",
-              gap: "0.5rem",
-            }}
-          >
-            <Tooltip title="add employment">
-              <Fab
-                size="small"
-                color="primary"
-                onClick={() => handleModalOpen("employment")} // Trigger the profile edit modal
-              >
-                <Add />
-              </Fab>
-            </Tooltip>
-
-            <Tooltip title="edit employments">
-              <Fab
-                size="small"
-                color="primary"
-                onClick={() =>
-                  navigate("/profile/me/employment-details", {
-                    state: {
-                      from: location,
-                    },
-                    replace: true,
-                  })
-                }
-              >
-                <Edit />
-              </Fab>
-            </Tooltip>
-          </Box>
-
           <EmploymentProfile
             data={employmentData}
             isLoading={isLoadingEmploymentData}
           />
         </Grid>
       </Grid>
-
-      {modalOpen.profile && (
-        <ProfileEditModal open={modalOpen.profile} onClose={handleCloseModal} />
-      )}
-      {modalOpen.career && (
-        <EducProfileEditModal
-          open={modalOpen.career}
-          onClose={handleCloseModal}
-        />
-      )}
-      {modalOpen.employment && (
-        <AddEmploymentModal
-          open={modalOpen.employment}
-          onClose={handleCloseModal}
-        />
-      )}
-      {modalOpen.add_achievement && (
-        <AddAchievementModal
-          open={modalOpen.add_achievement}
-          onClose={handleCloseModal}
-        />
-      )}
-      {modalOpen.add_education && (
-        <AddEducationModal
-          open={modalOpen.add_education}
-          onClose={handleCloseModal}
-        />
-      )}
     </Box>
   );
 }
 
-export default UpdateProfile;
+export default DisplayProfile;

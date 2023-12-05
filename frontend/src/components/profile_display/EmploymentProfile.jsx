@@ -49,23 +49,7 @@ import {
   WorkOutlined,
 } from "@mui/icons-material";
 
-export const EmploymentProfile = () => {
-  const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { auth, setAuth } = useAuth();
-  const [employmentID, setEmploymentID] = useState(null);
-
-  const handleModalOpen = (type, id) => {
-    setEmploymentID(id);
-    setModalOpen((prev) => ({ ...prev, [type]: true }));
-  };
-
-  const handleCloseModal = (type) => {
-    setModalOpen((prev) => ({ ...prev, [type]: false }));
-    setEmploymentID("");
-  };
-
+export const EmploymentProfile = ({data, isLoading}) => {
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
     <Tooltip
       color="secondary"
@@ -76,34 +60,7 @@ export const EmploymentProfile = () => {
     </Tooltip>
   );
 
-  const getData = async () => {
-    return await axiosPrivate.get(
-      "/profiles/employment_profiles/me?page=1&per_page=50"
-    );
-  };
 
-  const { isLoading, data, isError, error, isFetching } = useQuery(
-    "employment-profile",
-    getData,
-    {
-      staleTime: 300000,
-      // refetchOnWindowFocus: true,
-    }
-  );
-
-  if (isError) {
-    if (error?.response?.data?.detail === "Token has expired") {
-      setAuth({}); // Clears out all the token, logs you out
-      navigate("/login", {
-        state: {
-          from: location,
-          message:
-            "You have been logged out for security purposes, please login again",
-        },
-        replace: true,
-      });
-    }
-  }
 
   if (isLoading) {
     return (

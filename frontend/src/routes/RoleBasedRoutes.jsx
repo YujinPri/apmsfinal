@@ -8,7 +8,7 @@ import News from "../components/News";
 import Events from "../components/Events";
 import UpdateProfile from "../components/profile_edit/UpdateProfile";
 import Fundraise from "../components/Fundraise";
-import Missing from "../components/Missing";
+import Missing from "../components/status_display/UserNotFound";
 import PublicLayout from "../layout/PublicLayout";
 import MainLayout from "../layout/MainLayout";
 import { ManageSelections } from "../components/selections/ManageSelections";
@@ -16,6 +16,7 @@ import EditableEmploymentProfile from "../components/profile_edit/EditableEmploy
 import EditableAchievementModal from "../components/profile_edit/EditableAchievementModal";
 import EditableEducationProfile from "../components/profile_edit/EditableEducationProfile";
 import { UploadProfiles } from "../components/users_upload/UploadUserAccounts";
+import DisplayProfile from "../components/profile_display/DisplayProfile";
 const RoleBasedRoutes = ({ mode, setMode }) => {
   const { auth } = useAuth();
   const location = useLocation();
@@ -35,6 +36,14 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
         element={
           <MainLayout mode={mode} setMode={setMode}>
             <Explore />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="explore/alumni/:username"
+        element={
+          <MainLayout mode={mode} setMode={setMode}>
+            <DisplayProfile />
           </MainLayout>
         }
       />

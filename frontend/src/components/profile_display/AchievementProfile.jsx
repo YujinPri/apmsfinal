@@ -74,7 +74,7 @@ const ExpandMore = styled((props) => {
   }),
 }));
 
-export const AchievementProfile = () => {
+export const AchievementProfile = ({data, isLoading}) => {
   const [expanded, setExpanded] = React.useState({});
 
   const handleExpandClick = (achievementId) => {
@@ -82,30 +82,6 @@ export const AchievementProfile = () => {
       ...prevExpanded,
       [achievementId]: !prevExpanded[achievementId],
     }));
-  };
-
-  const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { auth, setAuth } = useAuth();
-  const [isModalOpen, setModalOpen] = useState({
-    addModal: false,
-    editModal: false,
-    deleteModal: false,
-  });
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const [achievementID, setAchievementID] = useState(null);
-
-  const handleModalOpen = (type, id) => {
-    setAchievementID(id);
-    setModalOpen((prev) => ({ ...prev, [type]: true }));
-  };
-
-  const handleCloseModal = (type) => {
-    setModalOpen((prev) => ({ ...prev, [type]: false }));
-    setAchievementID("");
   };
 
   const Chiptip = ({ icon, label, additional = "", actual = "" }) => (
@@ -118,22 +94,7 @@ export const AchievementProfile = () => {
     </Tooltip>
   );
 
-  const { isLoading, data, isError, error, isFetching } =
-    useGetAchievementProfiles();
 
-  if (isError) {
-    if (error?.response?.data?.detail === "Token has expired") {
-      setAuth({}); // Clears out all the token, logs you out
-      navigate("/login", {
-        state: {
-          from: location,
-          message:
-            "You have been logged out for security purposes, please login again",
-        },
-        replace: true,
-      });
-    }
-  }
 
   return (
     data?.data?.achievements && (

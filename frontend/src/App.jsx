@@ -14,9 +14,9 @@ import News from "./components/News";
 import Events from "./components/Events";
 import Fundraise from "./components/Fundraise";
 import { QueryClientProvider, QueryClient } from "react-query";
-import Missing from "./components/Missing";
+import Missing from "./components/status_display/UserNotFound";
 import PersistLogin from "./routes/persistLogin";
-import LinkedInRedirect from "./components/LinkedInRedirect";
+import LinkedInRedirect from "./components/auth/LinkedInRedirect";
 import { ReactQueryDevtools } from "react-query/devtools";
 import RoleBasedRoutes from "./routes/RoleBasedRoutes";
 const App = () => {

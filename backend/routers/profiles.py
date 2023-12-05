@@ -13,16 +13,6 @@ import cloudinary.uploader
 import pandas as pd
 import os
 
-
-from fastapi.responses import JSONResponse, FileResponse
-
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-
-
 router = APIRouter()
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
@@ -47,6 +37,14 @@ async def afterEmploymentPostRoutine(user_id, db: Session):
 
   db.commit()
 
+@router.get("/check/{username}")
+async def check_username(
+    username: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    return bool(db.query(models.User).filter(models.User.username == username).first()) 
+
 @router.put("/change_role/")
 async def update_role(
     role: str,
@@ -60,7 +58,6 @@ async def update_role(
     
     return user_data
     
-
 @router.get("/demographic_profiles/")
 async def get_demographic_profiles(
     page: int = Query(default=1, description="Page number"),
@@ -127,6 +124,59 @@ async def get_demographic_profile(
 ):
 
     user_data = db.query(models.User).filter(models.User.id == user.id).first()
+
+    if not user_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    profile_dict = {
+        "gender": user_data.gender,
+        "username": user_data.username,
+        "first_name": user_data.first_name,
+        "last_name": user_data.last_name,
+        "email": user_data.email,
+        "mobile_number": user_data.mobile_number,
+        "telephone_number": user_data.telephone_number,
+        "role": user_data.role,
+        "student_number": user_data.student_number,
+        "birthdate": user_data.birthdate,
+        "profile_picture": user_data.profile_picture,
+        "headline": user_data.headline,
+        "is_international": user_data.is_international,
+        "country": user_data.country,
+        "region": user_data.region,
+        "city": user_data.city,
+        "barangay": user_data.barangay,
+        "region_code": user_data.region_code,
+        "city_code": user_data.city_code,
+        "barangay_code": user_data.barangay_code,
+        "address": user_data.address,
+        "origin_is_international": user_data.origin_is_international,
+        "origin_country": user_data.origin_country,
+        "origin_region": user_data.origin_region,
+        "origin_city": user_data.origin_city,
+        "origin_barangay": user_data.origin_barangay,
+        "origin_region_code": user_data.origin_region_code,
+        "origin_city_code": user_data.origin_city_code,
+        "origin_barangay_code": user_data.origin_barangay_code,
+        "origin_address": user_data.origin_address,
+        "civil_status": user_data.civil_status,          
+        "date_graduated": user_data.date_graduated,          
+        "course": user_data.course.name if user_data.course else '',          
+    }
+
+    db.close() 
+    # Close the database session
+
+    return profile_dict
+
+@router.get("/demographic_profile/visit/{username}")
+async def get_demographic_profile(
+    username: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+
+    user_data = db.query(models.User).filter(models.User.username == username).first()
 
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -309,6 +359,34 @@ async def get_career_profiles(
 
     return profile_dict
 
+@router.get("/career_profile/visit/{username}")
+async def get_career_profiles(
+    username: str,
+    db: Session = Depends(get_db),    
+    user: UserResponse = Depends(get_current_user)
+):
+
+    user_data = db.query(models.User).filter(models.User.username == username).first()
+
+    if not user_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        
+    achievements = db.query(models.Achievement).filter(models.Achievement.user_id == user_data.id).all()
+
+    educations = db.query(models.Education).filter(models.Education.user_id == user_data.id).all()
+
+    profile_dict = {
+        "id": user_data.id,
+        "role": user_data.role,
+        "date_graduated": user_data.date_graduated,          
+        "course": user_data.course.name if user_data.course else '',          
+        "post_grad_act": user_data.post_grad_act,          
+        "achievement": achievements if achievements else None,          
+        "education": educations if educations else None,          
+    }
+
+    return profile_dict
+
 @router.put("/career_profiles/")
 async def put_career_profiles(
     *,
@@ -447,7 +525,64 @@ async def get_user_employments(
     return {
         "present_employment_status": profile.present_employment_status,
         "employments": employments_data,
-        "total_records": len(employments_data),  # Total number of records in this response
+    }
+
+@router.get("/employment_profile/visit/{username}")
+async def get_user_employments(
+    username: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    employments_data = []
+
+    profile = db.query(models.User).filter(models.User.username == username).first()
+    employments = (db.query(models.Employment).filter(models.Employment.user_id == profile.id).all())
+
+    # Access the user's course classifications from their profile
+    user_course_classification_ids = None
+    if profile.course and profile.course.classifications:
+        user_course_classification_ids = {classification.id for classification in profile.course.classifications}
+
+    for employment in employments:
+        job_classification_ids = None
+
+        # Check if employment.job is not None and it has classifications
+        if employment.job and employment.job.classifications:
+            job_classification_ids = {classification.id for classification in employment.job.classifications}
+
+        # Check if user_course_classification_ids and job_classification_ids are not None before performing the bitwise AND operation
+        if user_course_classification_ids is not None and job_classification_ids is not None:
+            aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+        else:
+            aligned_with_academic_program = False
+
+        # Build a dictionary with selected fields and add it to the list
+        employment_dict = {
+            "id": employment.id,
+            "job": employment.job.id if employment.job else '',  # Set to an empty string if employment.job is None
+            "company_name": employment.company_name,
+            "job_title": employment.job.name if employment.job else '',  # Set to an empty string if employment.job is None
+            "date_hired": employment.date_hired,
+            "date_end": employment.date_end,
+            "classification": employment.job.classifications[0].name if employment.job and employment.job.classifications else '',
+            "aligned_with_academic_program": aligned_with_academic_program,
+            "gross_monthly_income": employment.gross_monthly_income,
+            "employment_contract": employment.employment_contract,
+            "job_position": employment.job_position,
+            "employer_type": employment.employer_type,
+            "is_international": employment.is_international,
+            "country": employment.country,
+            "region": employment.region,
+            "city": employment.city,
+            "region_code": employment.region_code,
+            "city_code": employment.city_code,
+            "address": employment.address,
+        }
+        employments_data.append(employment_dict)
+
+    return {
+        "present_employment_status": profile.present_employment_status,
+        "employments": employments_data,
     }
 
 @router.get("/employment_profiles/all")
@@ -648,7 +783,6 @@ async def post_employment(
         db.rollback() 
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Posting Employment Details failed")
-    
 
 @router.get("/employment_profiles/{employment_id}")
 async def get_employment(
@@ -780,6 +914,25 @@ async def get_achievement(
     if profile is None:
         raise HTTPException(status_code=404, detail="User not found")
 
+    return {"achievements": achievements}  
+    
+@router.get("/achievement_profile/visit/{username}")
+async def get_achievement(
+    username: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.username == username).first()
+    achievements = (
+        db.query(models.Achievement)
+        .filter(models.Achievement.user_id == profile.id)
+        .all()
+    )
+
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
     return {"achievements": achievements}
     
 @router.get("/achievement/{achievement_id}")
@@ -867,8 +1020,6 @@ async def put_achievement(
         print("Error:", e)  # Add this line for debugging
         raise HTTPException(status_code=400, detail="Updating Achievement Details failed")
 
-
-
 @router.post("/education/")
 async def post_education(
     *,
@@ -939,6 +1090,44 @@ async def get_education(
     educations = (
         db.query(models.Education)
         .filter(models.Education.user_id == user.id)
+        .all()
+    )
+
+    educations_list = []
+    for education in educations:
+        if education.course:
+            # Add the "course_name" key to the existing education dictionary
+            education_dict = {
+                **education.__dict__,
+                "course_name": education.course.name if education.course.name else ''
+            }
+        else:
+            # Handle the case where education has no associated course
+            education_dict = {
+                **education.__dict__,
+                "course_name": None
+            }
+
+        # Append the modified education dictionary to the educations_list
+        educations_list.append(education_dict)
+
+    return {"educations": educations_list}
+    
+@router.get("/education/visit/{username}")
+async def get_education(
+    username: str,
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    
+    profile = db.query(models.User).filter(models.User.username == username).first()
+    
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    educations = (
+        db.query(models.Education)
+        .filter(models.Education.user_id == profile.id)
         .all()
     )
 
