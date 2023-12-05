@@ -62,7 +62,7 @@ const EducationUploadInput = () => {
         },
       };
       const response = await axiosPrivate.post(
-        "/uploads/upload_demo_profile/",
+        "/uploads/upload_education_profile/",
         formData,
         axiosConfig
       );
@@ -74,8 +74,8 @@ const EducationUploadInput = () => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("all-user-profiles");
-        setMessage("user profiles processed successfully");
+        queryClient.invalidateQueries("educations-all");
+        setMessage("education profiles processed successfully");
         setSeverity("success");
       },
     }

@@ -30,60 +30,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 router = APIRouter()
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
-def validate_columns(df, expected_columns):
-    if not set(expected_columns).issubset(df.columns):
-        missing_columns = list(set(expected_columns) - set(df.columns))
-        raise HTTPException(status_code=400, detail=f"Invalid file format as there are missing or extra columns: {missing_columns}")
-
-def process_post_grad_act(value):
-    allowed_activities = ['PersonalResponsibilities', 'Career Transition', 'Volunteering', 'Travel', 'Freelancing', 'Internship', 'Education', 'Employment']
-    result = [activity for activity in value if activity.title() in allowed_activities]
-
-    return result
-
-
-def process_data(df):
-    
-    # Create a password with random letters 
-    alphabet = string.ascii_letters + string.digits
-    df['password'] = [utils.hash_password(''.join(secrets.choice(alphabet) for _ in range(10))) for _ in range(len(df))]
-
-    # Clean the data: trim leading/trailing whitespace
-    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
-
-    # Remove duplicate entries based on must-be-unique columns
-    df.drop_duplicates(subset=['username', 'student_number', 'email'], keep='first', inplace=True)
-
-    # Convert date columns to datetime objects
-    date_columns = ['birthdate', 'date_graduated', 'date_start']
-    for col in date_columns:
-        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
-        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
-
-    # Convert date columns to object type and then set NaT values to None
-    for col in date_columns:
-        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
-
-   
-    # Convert boolean columns to boolean type
-    bool_columns = ['is_international', 'origin_is_international']
-    affirmative_words = ['yes', 'true', '1', 'positive', 'affirmative', 'confirmed', 'agree', 'correct', 'valid', 'good', 'okay', 'fine', 'accepted', 'right', 'aye', 'indeed', 'certain', 'omsim', 'tama', 'oo', 'oo na', 'totoo', 'ootot', 'pak', 'labyugab']  
-
-    for col in bool_columns:
-        df[col] = df[col].apply(lambda x: str(x).lower() in affirmative_words)
-
-    # Convert array columns to array type
-    df['post_grad_act'] = df['post_grad_act'].apply(lambda x: process_post_grad_act(x.split(',')) if isinstance(x, str) else [])
-
-    # Convert all other columns to string type
-    other_columns = ['student_number', 'username', 'first_name', 'last_name', 'email', 'gender', 'role', 'civil_status', 'headline', 'present_employment_status', 'country', 'region', 'city', 'barangay', 'origin_country', 'origin_region', 'origin_city', 'origin_barangay', 'course', 'mobile_number', 'telephone_number']
-    for col in other_columns:
-        df[col] = df[col].astype(str)
-
-
-    return df
-
-
 @router.get("/profiles/all")
 async def get_demographic_profile(
     db: Session = Depends(get_db),
@@ -210,11 +156,162 @@ async def get_demographic_profile(
     # Close the database session
     return {"length": len(achievements), "achievements": achievements}
 
+def validate_columns(df, expected_columns):
+    if not set(expected_columns).issubset(df.columns):
+        missing_columns = list(set(expected_columns) - set(df.columns))
+        raise HTTPException(status_code=400, detail=f"Invalid file format as there are missing or extra columns: {missing_columns}")
+
+def process_post_grad_act(value):
+    allowed_activities = ['PersonalResponsibilities', 'Career Transition', 'Volunteering', 'Travel', 'Freelancing', 'Internship', 'Education', 'Employment']
+    result = [activity for activity in value if activity.title() in allowed_activities]
+
+    return result
+
+def process_profile_data(df):
+    # Create a password with random letters 
+    alphabet = string.ascii_letters + string.digits
+    df['password'] = [utils.hash_password(''.join(secrets.choice(alphabet) for _ in range(10))) for _ in range(len(df))]
+
+    # Clean the data: trim leading/trailing whitespace
+    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
+
+    # Remove duplicate entries based on must-be-unique columns
+    df.drop_duplicates(subset=['username', 'student_number', 'email'], keep='first', inplace=True)
+
+    # Convert date columns to datetime objects
+    date_columns = ['birthdate', 'date_graduated', 'date_start']
+    for col in date_columns:
+        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
+        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
+
+    # Convert date columns to object type and then set NaT values to None
+    for col in date_columns:
+        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
+
+    # Convert boolean columns to boolean type
+    bool_columns = ['is_international', 'origin_is_international']
+    affirmative_words = ['yes', 'true', '1', 'positive', 'affirmative', 'confirmed', 'agree', 'correct', 'valid', 'good', 'okay', 'fine', 'accepted', 'right', 'aye', 'indeed', 'certain', 'omsim', 'tama', 'oo', 'oo na', 'totoo', 'ootot', 'pak', 'labyugab']  
+
+    for col in bool_columns:
+        df[col] = df[col].apply(lambda x: str(x).lower() in affirmative_words)
+
+    # Convert array columns to array type
+    df['post_grad_act'] = df['post_grad_act'].apply(lambda x: process_post_grad_act(x.split(',')) if isinstance(x, str) else [])
+
+    # Convert all other columns to string type
+    other_columns = ['student_number', 'username', 'first_name', 'last_name', 'email', 'gender', 'role', 'civil_status', 'headline', 'present_employment_status', 'country', 'region', 'city', 'barangay', 'origin_country', 'origin_region', 'origin_city', 'origin_barangay', 'course', 'mobile_number', 'telephone_number']
+    for col in other_columns:
+        df[col] = df[col].astype(str)
+
+    return df
+
+def process_education_data(df):
+
+    # Clean the data: trim leading/trailing whitespace
+    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
+
+    # Convert date columns to datetime objects
+    date_columns = ['date_graduated', 'date_start']
+    for col in date_columns:
+        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
+        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
+
+    # Convert date columns to object type and then set NaT values to None
+    for col in date_columns:
+        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
+
+    # Convert boolean columns to boolean type
+    bool_columns = ['is_international']
+    affirmative_words = ['yes', 'true', '1', 'positive', 'affirmative', 'confirmed', 'agree', 'correct', 'valid', 'good', 'okay', 'fine', 'accepted', 'right', 'aye', 'indeed', 'certain', 'omsim', 'tama', 'oo', 'oo na', 'totoo', 'ootot', 'pak', 'labyugab']  
+
+    for col in bool_columns:
+        df[col] = df[col].apply(lambda x: str(x).lower() in affirmative_words)
+
+
+    # Convert all other columns to string type
+    other_columns = ['student_number', 'course', 'level', 'school_name', 'story', 'country', 'region', 'city']
+    for col in other_columns:
+        df[col] = df[col].astype(str)
+
+    return df
+
+def process_achievement_data(df):
+
+    # Clean the data: trim leading/trailing whitespace
+    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
+
+    # Convert date columns to datetime objects
+    date_columns = ['date_of_attainment']
+    for col in date_columns:
+        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
+        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
+
+    # Convert date columns to object type and then set NaT values to None
+    for col in date_columns:
+        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
+
+    # Convert all other columns to string type
+    other_columns = ['student_number', 'description', 'story', 'link_reference', 'type_of_achievement']
+    for col in other_columns:
+        df[col] = df[col].astype(str)
+
+    return df
+
+def process_employment_data(df):
+
+    # Clean the data: trim leading/trailing whitespace
+    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
+
+    # Convert date columns to datetime objects
+    date_columns = ['date_hired', 'date_end']
+    for col in date_columns:
+        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
+        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
+
+    # Convert date columns to object type and then set NaT values to None
+    for col in date_columns:
+        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
+
+    # Convert boolean columns to boolean type
+    bool_columns = ['is_international']
+    affirmative_words = ['yes', 'true', '1', 'positive', 'affirmative', 'confirmed', 'agree', 'correct', 'valid', 'good', 'okay', 'fine', 'accepted', 'right', 'aye', 'indeed', 'certain', 'omsim', 'tama', 'oo', 'oo na', 'totoo', 'ootot', 'pak', 'labyugab']  
+
+    for col in bool_columns:
+        df[col] = df[col].apply(lambda x: str(x).lower() in affirmative_words)
+
+    # Convert all other columns to string type
+    other_columns = ['student_number', 'job', 'company_name', 'gross_monthly_income', 'employment_contract', 'job_position', 'employer_type', 'country', 'region', 'city']
+    for col in other_columns:
+        df[col] = df[col].astype(str)
+
+    return df
+
+def generate_excel(data, titles):
+    # Create a Pandas Excel writer using XlsxWriter as the engine
+    now = datetime.now()
+    xlsx_name = f"UploadReport_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+    writer = pd.ExcelWriter(xlsx_name, engine='xlsxwriter')
+
+    for idx, title in enumerate(titles):
+        # Convert the data to a DataFrame and write it to the Excel file
+        df = pd.DataFrame(data[idx])
+        df.to_excel(writer, sheet_name=title, index=False)
+
+    # Close the Pandas Excel writer and output the Excel file
+    writer.close()
+
+    # Upload the xlsx file to cloudinary
+    upload_result = cloudinary.uploader.upload(xlsx_name, 
+                                            resource_type = "raw", 
+                                            public_id = f"InsertData/Reports/{xlsx_name}",
+                                            tags=[xlsx_name])
+    # Delete the local file
+    os.remove(xlsx_name)
+
+    return upload_result
+
 @router.post("/upload_demo_profile/")
-async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
-    responses = []
-    elements = []
-    styleSheet = getSampleStyleSheet()
+async def profile_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
 
     if user.role not in ["admin", "officer"]:
         raise HTTPException(status_code=401, detail="Unauthorized: Access Denied")
@@ -231,7 +328,7 @@ async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db
     validate_columns(df, expected_columns)
 
     # Process the data
-    df = process_data(df)
+    df = process_profile_data(df)
 
     existing_studnums = {alumni.student_number for alumni in db.query(models.User).all()}
     existing_emails = {alumni.email for alumni in db.query(models.User).all()}
@@ -241,7 +338,6 @@ async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db
     inserted = []
     not_inserted = []  # List to store alumni that did not inserted
     incomplete_column = []
-
 
     try:
         for _, row in df.iterrows():
@@ -278,35 +374,14 @@ async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db
 
         db.commit()
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Upload failed.")
-
-
+        raise HTTPException(status_code=400, detail="Upload failed.")  
+    
     try:
         # Prepare the data for the report
         data = [inserted, not_inserted, incomplete_column]
         titles = ["Inserted", "Not Inserted", "Incomplete"]
 
-        # Create a Pandas Excel writer using XlsxWriter as the engine
-        now = datetime.now()
-        xlsx_name = f"Report_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
-        writer = pd.ExcelWriter(xlsx_name, engine='xlsxwriter')
-
-        for idx, title in enumerate(titles):
-            # Convert the data to a DataFrame and write it to the Excel file
-            df = pd.DataFrame(data[idx])
-            df.to_excel(writer, sheet_name=title, index=False)
-
-        # Close the Pandas Excel writer and output the Excel file
-        writer.close()
-
-        # Upload the xlsx file to cloudinary
-        upload_result = cloudinary.uploader.upload(xlsx_name, 
-                                                resource_type = "raw", 
-                                                public_id = f"InsertData/Reports/{xlsx_name}",
-                                                tags=[xlsx_name])
-        
-        # Delete the local file
-        os.remove(xlsx_name)
+        upload_result = generate_excel(data, titles)
 
         user_instance = db.query(models.User).filter(models.User.id == user.id).first()
 
@@ -320,6 +395,283 @@ async def file_upload(file: UploadFile = File(...), db: Session = Depends(get_db
         db.add(new_upload_history)
         db.commit()
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
+    
+@router.post("/upload_education_profile/")
+async def education_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    if user.role not in ["admin", "officer"]:
+        raise HTTPException(status_code=401, detail="Unauthorized: Access Denied")
+
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file.file, encoding='ISO-8859-1')
+    elif file.filename.endswith('.xlsx'):
+        df = pd.read_excel(file.file, engine='openpyxl')
+    else:
+        raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
+    
+    expected_columns = ['student_number', 'course', 'level', 'school_name', 'story', 'is_international', 'country', 'region', 'city', 'date_start', 'date_graduated']
+    
+    validate_columns(df, expected_columns)
+
+    # Process the data
+    df = process_education_data(df)
+
+    # Insert the data into the database
+    inserted = []
+    not_inserted = []  # List to store alumni that did not inserted
+    incomplete_column = []
+
+    try:
+        for _, row in df.iterrows():
+
+            # Check if there's no column
+            if not row['student_number'] or not row['date_start']:
+                incomplete_column.append(row)
+                continue
+
+            actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
+
+            if not actual_user:
+                not_inserted.append(row)
+                continue
+            
+            actual_course = None
+
+            #Check first if there's a course instance
+            if row['course']:
+                # Check if the course exists
+                actual_course = db.query(models.Course).filter(models.Course.name == row['course'].lower()).first()
+
+                # If not, create a new course
+                if not actual_course:
+                    actual_course = models.Course(
+                        name=row['course'],
+                    )
+                    # Add to the session
+                    db.add(actual_course)
+                    db.commit()
+                    db.refresh(actual_course)
+
+            # Create the new user
+            new_data = models.Education(
+                course_id=actual_course.id,
+                user_id=actual_user.id,
+                level=row['level'],
+                school_name=row['school_name'],
+                story=row['story'],
+                is_international=row['is_international'],
+                country=row['country'],
+                region=row['region'],
+                city=row['city'],
+                date_start=row['date_start'],
+                date_graduated=row['date_graduated'],
+                user=actual_user,
+                course=actual_course,
+            )
+            db.add(new_data)
+            inserted.append(row)
+            db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Upload failed.")
+
+    try:
+        # Prepare the data for the report
+        data = [inserted, not_inserted, incomplete_column]
+        titles = ["Inserted", "Not Inserted", "Incomplete"]
+
+        user_instance = db.query(models.User).filter(models.User.id == user.id).first()
+
+        upload_result = generate_excel(data, titles)
+
+        # Create new UploadHistory instance
+        new_upload_history = models.UploadHistory(
+            type="Education",
+            link=upload_result['url'],
+            user_id=user.id,
+            user=user_instance
+        )
+        db.add(new_upload_history)
+        db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
+    
+@router.post("/upload_achievement_profile/")
+async def achievement_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    if user.role not in ["admin", "officer"]:
+        raise HTTPException(status_code=401, detail="Unauthorized: Access Denied")
+
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file.file, encoding='ISO-8859-1')
+    elif file.filename.endswith('.xlsx'):
+        df = pd.read_excel(file.file, engine='openpyxl')
+    else:
+        raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
+    
+    expected_columns = ['student_number', 'type_of_achievement', 'date_of_attainment', 'description', 'story', 'link_reference']
+    
+    validate_columns(df, expected_columns)
+
+    # Process the data
+    df = process_achievement_data(df)
+
+    # Insert the data into the database
+    inserted = []
+    not_inserted = []  # List to store alumni that did not inserted
+    incomplete_column = []
+
+    try:
+        for _, row in df.iterrows():
+
+            # Check if required columns do have value
+            if not row['student_number'] or not row['type_of_achievement']:
+                incomplete_column.append(row)
+                continue
+
+            actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
+
+            # Check if there a valid user
+            if not actual_user:
+                not_inserted.append(row)
+                continue
+            
+
+            # Create the new user
+            new_data = models.Achievement(
+                user_id=actual_user.id,
+                type_of_achievement=row['type_of_achievement'],
+                date_of_attainment=row['date_of_attainment'],
+                story=row['story'],
+                description=row['description'],
+                link_reference=row['link_reference'],
+                user=actual_user,
+            )
+            db.add(new_data)
+            inserted.append(row)
+        db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Upload failed.")
+
+    try:
+        # Prepare the data for the report
+        data = [inserted, not_inserted, incomplete_column]
+        titles = ["Inserted", "Not Inserted", "Incomplete"]
+
+        user_instance = db.query(models.User).filter(models.User.id == user.id).first()
+
+        upload_result = generate_excel(data, titles)
+
+        # Create new UploadHistory instance
+        new_upload_history = models.UploadHistory(
+            type="Achievement",
+            link=upload_result['url'],
+            user_id=user.id,
+            user=user_instance
+        )
+        db.add(new_upload_history)
+        db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
+    
+@router.post("/upload_employment_profile/")
+async def achievement_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    if user.role not in ["admin", "officer"]:
+        raise HTTPException(status_code=401, detail="Unauthorized: Access Denied")
+
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file.file, encoding='ISO-8859-1')
+    elif file.filename.endswith('.xlsx'):
+        df = pd.read_excel(file.file, engine='openpyxl')
+    else:
+        raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
+    
+    expected_columns = ['student_number', 'job', 'company_name', 'date_hired', 'date_end', 'gross_monthly_income', 'employment_contract', 'job_position', 'employer_type', 'is_international', 'country', 'region', 'city']
+    
+    validate_columns(df, expected_columns)
+
+    # Process the data
+    df = process_employment_data(df)
+
+    # Insert the data into the database
+    inserted = []
+    not_inserted = []  # List to store alumni that did not inserted
+    incomplete_column = []
+
+    # try:
+    for _, row in df.iterrows():
+
+        # Check if required columns do have value
+        if not row['student_number'] or not row['job'] or not row['date_hired']:
+            incomplete_column.append(row)
+            continue
+
+        actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
+
+        # Check if there a valid user
+        if not actual_user:
+            not_inserted.append(row)
+            continue
+    
+        # Check if the course exists
+        actual_job = db.query(models.Job).filter(models.Job.name == row['job'].lower()).first()
+
+        # If not, create a new job
+        if not actual_job:
+            actual_job = models.Job(
+                name=row['job'],
+            )
+            # Add to the session
+            db.add(actual_job)
+            db.commit()
+            db.refresh(actual_job)
+
+        # Create the new user
+        new_data = models.Employment(
+            user_id=actual_user.id,
+            job_id=actual_job.id,
+            company_name=row['company_name'],
+            date_hired=row['date_hired'],
+            date_end=row['date_end'],
+            gross_monthly_income=row['gross_monthly_income'],
+            employment_contract=row['employment_contract'],
+            job_position=row['job_position'],
+            employer_type=row['employer_type'],
+            is_international=row['is_international'],
+            country=row['country'],
+            region=row['region'],
+            city=row['city'],
+            job=actual_job,
+            user=actual_user,
+        )
+        db.add(new_data)
+        inserted.append(row)
+    db.commit()
+
+    # except Exception as e:
+    #     raise HTTPException(status_code=400, detail="Upload failed.")
+
+    try:
+        # Prepare the data for the report
+        data = [inserted, not_inserted, incomplete_column]
+        titles = ["Inserted", "Not Inserted", "Incomplete"]
+
+        user_instance = db.query(models.User).filter(models.User.id == user.id).first()
+
+        upload_result = generate_excel(data, titles)
+
+        # Create new UploadHistory instance
+        new_upload_history = models.UploadHistory(
+            type="Employment",
+            link=upload_result['url'],
+            user_id=user.id,
+            user=user_instance
+        )
+        db.add(new_upload_history)
+        db.commit()
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")

@@ -62,7 +62,7 @@ const AchievementUploadInput = () => {
         },
       };
       const response = await axiosPrivate.post(
-        "/uploads/upload_demo_profile/",
+        "/uploads/upload_achievement_profile/",
         formData,
         axiosConfig
       );
@@ -74,8 +74,8 @@ const AchievementUploadInput = () => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("profiles-all");
-        setMessage("user profiles processed successfully");
+        queryClient.invalidateQueries("achievements-all");
+        setMessage("achievements processed successfully");
         setSeverity("success");
       },
     }
@@ -132,7 +132,7 @@ const AchievementUploadInput = () => {
         {!isLoading && <Box sx={{ height: 4 }} />}
       </Box>
       <Grid item xs={12}>
-        <Tooltip title="upload bulk of user and pupqc background">
+        <Tooltip title="upload bulk of achievements profile">
           <Box
             sx={{
               display: "flex",

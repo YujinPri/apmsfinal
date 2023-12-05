@@ -62,7 +62,7 @@ const EmploymentUploadInput = () => {
         },
       };
       const response = await axiosPrivate.post(
-        "/uploads/upload_demo_profile/",
+        "/uploads/upload_employment_profile/",
         formData,
         axiosConfig
       );
@@ -74,8 +74,8 @@ const EmploymentUploadInput = () => {
         setOpenSnackbar(true);
       },
       onSuccess: (data, variables, context) => {
-        queryClient.invalidateQueries("all-user-profiles");
-        setMessage("user profiles processed successfully");
+        queryClient.invalidateQueries("employments-all");
+        setMessage("employment profiles processed successfully");
         setSeverity("success");
       },
     }

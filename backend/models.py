@@ -1,10 +1,9 @@
 from fastapi import Depends
-from backend.database import get_db
+from backend.database import get_db, Base
 from sqlalchemy.orm import Session
 import uuid
 from sqlalchemy import TIMESTAMP, Column, String, Boolean, text, Boolean, ForeignKey, Integer, Date, Text
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from database import Base
 from sqlalchemy.orm import relationship
 
 class User(Base):
@@ -219,6 +218,3 @@ class UploadHistory(Base):
     link = Column(String) # The Cloudinary Link of the PDF table 
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE")) #Uploaded by
     user = relationship("User", back_populates="upload_history")
-
-
-
