@@ -86,27 +86,6 @@ export const ManageSelections = () => {
           flexDirection: "column",
         }}
       >
-        <Breadcrumbs separator="-" aria-label="breadcrumb">
-          <RouterLink
-            to="/home"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              home
-            </Typography>
-          </RouterLink>
-          <Link
-            underline="hover"
-            color="text.primary"
-            href="#"
-            aria-current="page"
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              manage selections
-            </Typography>
-          </Link>
-        </Breadcrumbs>
-
         <Box
           position="sticky"
           top={63}

@@ -19,7 +19,6 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 async def login_user(*, username: str, password: str="", hashed_pass: str="", response: Response, db: Session):
     try:
-
         user = db.query(models.User).filter(models.User.username == username).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,

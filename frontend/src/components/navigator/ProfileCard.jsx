@@ -54,7 +54,6 @@ export const Profile = () => {
       <Card
         variant="outlined"
         sx={{
-          backgroundColor: (theme) => theme.palette.secondary.main,
           borderRadius: 2,
           display: "flex",
           flexDirection: "column",
@@ -91,7 +90,6 @@ export const Profile = () => {
       <Card
         variant="outlined"
         sx={{
-          backgroundColor: (theme) => theme.palette.secondary.main,
           borderRadius: 2,
           display: "flex",
           flexDirection: "column",

@@ -102,7 +102,7 @@ const Login = () => {
       else if (error.response?.status === 400)
         setMessage("Missing Username or Password");
       else if (error?.request)
-        setMessage("No response received from the server");
+        setMessage("There have been a connection issue, please try again");
       else setMessage("Error:" + error.message);
 
       setSeverity("error");

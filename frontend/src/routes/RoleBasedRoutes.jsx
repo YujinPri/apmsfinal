@@ -25,7 +25,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="home"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={1}>
+          <MainLayout mode={mode} setMode={setMode}>
             <Feed />
           </MainLayout>
         }
@@ -33,39 +33,23 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="explore"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={2}>
+          <MainLayout mode={mode} setMode={setMode}>
             <Explore />
           </MainLayout>
         }
       />
       <Route
-        path="announcements"
+        path="alumni-nexus"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={3}>
-            <Announcements />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="news"
-        element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={4}>
-            <News />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="events"
-        element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={5}>
-            <Events />
+          <MainLayout mode={mode} setMode={setMode}>
+            <Missing />
           </MainLayout>
         }
       />
       <Route
         path="profile/me"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+          <MainLayout mode={mode} setMode={setMode}>
             <UpdateProfile />
           </MainLayout>
         }
@@ -73,7 +57,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="profile/me/employment-details"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+          <MainLayout mode={mode} setMode={setMode}>
             <EditableEmploymentProfile />
           </MainLayout>
         }
@@ -81,7 +65,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="profile/me/educational-details"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+          <MainLayout mode={mode} setMode={setMode}>
             <EditableEducationProfile />
           </MainLayout>
         }
@@ -89,7 +73,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="profile/me/achievements-details"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={7}>
+          <MainLayout mode={mode} setMode={setMode}>
             <EditableAchievementModal />
           </MainLayout>
         }
@@ -97,7 +81,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
       <Route
         path="fundraise"
         element={
-          <MainLayout mode={mode} setMode={setMode} activeIndex={6}>
+          <MainLayout mode={mode} setMode={setMode}>
             <Fundraise />
           </MainLayout>
         }
@@ -154,7 +138,7 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
         <Route
           path="selections"
           element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={8}>
+            <MainLayout mode={mode} setMode={setMode}>
               <ManageSelections />
             </MainLayout>
           }
@@ -162,7 +146,15 @@ const RoleBasedRoutes = ({ mode, setMode }) => {
         <Route
           path="accounts"
           element={
-            <MainLayout mode={mode} setMode={setMode} activeIndex={9}>
+            <MainLayout mode={mode} setMode={setMode}>
+              <UploadProfiles />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="approve-accounts"
+          element={
+            <MainLayout mode={mode} setMode={setMode}>
               <UploadProfiles />
             </MainLayout>
           }

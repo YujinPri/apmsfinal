@@ -32,26 +32,6 @@ function Feed() {
         flexDirection: "column",
       }}
     >
-      <Breadcrumbs separator="-" aria-label="breadcrumb">
-        <RouterLink
-          to="/home"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <Typography variant="subtitle1" fontWeight={800}>
-            home
-          </Typography>
-        </RouterLink>
-        <Link
-          underline="hover"
-          color="text.primary"
-          href="#"
-          aria-current="page"
-        >
-          <Typography variant="subtitle1" fontWeight={800}>
-            feeds
-          </Typography>
-        </Link>
-      </Breadcrumbs>
       <Box
         sx={{
           backgroundColor: (theme) => theme.palette.common.main,
