@@ -38,51 +38,11 @@ def decode_linkedin_access_token(access_token):
         print("Error decoding access token")
         return None
 
-# Register a new user
-async def create_user(*, username: str = Form(...), email: str = Form(...), password: str = Form(...), 
-                      profile_picture: Optional[UploadFile] = File(None), db: Session, is_officer=False):
-    try:
-        # Check if email already exists
-        user = db.query(models.User).filter(models.User.email == email.lower()).first()
-        if user:
-            raise HTTPException(status_code=400, detail="Email is already in use")
-        
-        # Check if username already exists
-        user = db.query(models.User).filter(models.User.username == username.lower()).first()
-        if user:
-            raise HTTPException(status_code=400, detail="Username is already in use")
-
-        new_user = models.User(
-            username=username,
-            email=email,
-            role="officer" if is_officer else "publicuser",
-            password=utils.hash_password(password),
-            profile_picture=''  # You can set this to the actual profile picture if available.
-        )
-
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        
-        if profile_picture:
-            contents = await profile_picture.read()
-            filename = profile_picture.filename
-            folder = "Profiles"
-            result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{new_user.id}'])
-            # Save the URL of the image
-            new_user.profile_picture = result.get("url")
-            db.commit()
-            db.refresh(new_user)
-
-        return new_user
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Account creation failed")
-
 @router.post('/register/alumni', status_code=status.HTTP_201_CREATED)
 async def create_alumni(username: str = Form(...), email: str = Form(...), password: str = Form(...), first_name: str = Form(...), 
                         last_name: str = Form(...), recaptcha: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
     try:
+        
         async with httpx.AsyncClient() as client:
             response = await client.post(f"https://www.google.com/recaptcha/api/siteverify?secret={settings.RECAPTCHA_CODE_KEY}&response={recaptcha}")
             data = response.json()
@@ -130,16 +90,6 @@ async def create_alumni(username: str = Form(...), email: str = Form(...), passw
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail="Account creation failed")
-
-
-
-# Register a new officer user
-@router.post('/register/officer', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
-async def create_officer(username: str = Form(...), email: str = Form(...), first_name: str = Form(...), 
-                        last_name: str = Form(...), role: str = Form(...), passwordConfirm: str = Form(...), 
-                        verified: str = Form(...), password: str = Form(...), 
-                        profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
-    return await create_user(username=username, email=email, first_name=first_name, last_name=last_name, role=role, passwordConfirm=passwordConfirm, verified=verified, password=password, profile_picture=profile_picture, db=db)
 
 
 # Refresh access token

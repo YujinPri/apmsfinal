@@ -31,7 +31,7 @@ class User(Base):
     #contact details
     mobile_number = Column(String)
     telephone_number = Column(String)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True)
 
     #current residence
     is_international = Column(Boolean, nullable=False, server_default='False') 
@@ -59,7 +59,11 @@ class User(Base):
     date_start =  Column(Date)
     date_graduated = Column(Date)
     post_grad_act = Column(ARRAY(String))
+
+    #Employment Status
     present_employment_status = Column(String, server_default="unemployed")
+    unemployment_reason = Column(ARRAY(String))
+
     course_id = Column(UUID(as_uuid=True), ForeignKey('course.id', ondelete="CASCADE"))
     course = relationship("Course", back_populates="user", uselist=False)
 
@@ -77,12 +81,31 @@ class Achievement(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE"))
+    national_certification_id = Column(UUID(as_uuid=True), ForeignKey('national_certification.id', ondelete="CASCADE"))
+
     type_of_achievement = Column(String) # Bar Passing, Board Passing, Civil Service Passing, Certifications, Owned Business, 
     date_of_attainment =  Column(Date)
     description = Column(String)
     story = Column(Text)
     link_reference = Column(String)
     user = relationship("User", back_populates="achievement")
+    national_certification = relationship("NationalCertification", back_populates="achievements")
+
+class NationalCertification(Base):
+    __tablename__ = 'national_certification'
+
+    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
+    name = Column(String)
+    issuing_body = Column(String)
+    requirements = Column(Text)
+    link_reference = Column(String)
+    achievements = relationship("Achievement", back_populates="national_certification")
+    classifications = relationship("Classification", secondary="national_certification_classification", back_populates="national_certification", overlaps="national_certification_classifications")
+    national_certification_classifications = relationship("NationalCertificationClassification", back_populates="national_certification", overlaps="classifications")
+
 
 class Education(Base):
     __tablename__ = 'education'
@@ -171,6 +194,7 @@ class Course(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     name = Column(String, nullable=False, index=True)
+    in_pupqc = Column(Boolean, nullable=False, server_default='False')
     user = relationship("User", back_populates="course")
     education = relationship("Education", back_populates="course")
     classifications = relationship("Classification", secondary="course_classification", back_populates="courses", overlaps="course_classifications")
@@ -187,8 +211,10 @@ class Classification(Base):
     code = Column(String, nullable=False, index=True, unique=True)
     courses = relationship("Course", secondary="course_classification", back_populates="classifications", overlaps="course_classifications")
     jobs = relationship("Job", secondary="job_classification", back_populates="classifications", overlaps="job_classifications")
+    national_certifications = relationship("NationalCertification", secondary="national_certification_classification", back_populates="classifications", overlaps="national_certification_classifications")
     course_classifications = relationship("CourseClassification", back_populates="classification", overlaps="courses")
     job_classifications = relationship("JobClassification", back_populates="classification", overlaps="jobs")
+    national_certification_classifications = relationship("NationalCertificationClassification", back_populates="classification", overlaps="national_certifications")
 
 class CourseClassification(Base):
     __tablename__ = "course_classification"
@@ -206,6 +232,14 @@ class JobClassification(Base):
     job = relationship("Job", back_populates="job_classifications", overlaps="classifications,jobs")
     classification = relationship("Classification", back_populates="job_classifications", overlaps="job_classifications,classifications,jobs")
 
+class NationalCertificationClassification(Base):
+    __tablename__ = "national_certification_classification"
+
+    national_certification_id = Column(UUID(as_uuid=True), ForeignKey('national_certification.id', ondelete="CASCADE"), primary_key=True)
+    classification_id = Column(UUID(as_uuid=True), ForeignKey('classification.id', ondelete="CASCADE"), primary_key=True)
+    national_certification = relationship("NationalCertification", back_populates="national_certification_classifications", overlaps="classifications,national_certifications")
+    classification = relationship("Classification", back_populates="national_certification_classifications", overlaps="national_certification_classifications,classifications,national_certifications")
+
 class UploadHistory(Base):
     __tablename__ = "upload_history"
 
@@ -214,7 +248,6 @@ class UploadHistory(Base):
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     deleted_at = Column(TIMESTAMP(timezone=True))  # Deletion timestamp (null if not deleted)
     type = Column(String) # Upload User or Employment or Achievement
-    group = Column(Integer, primary_key=True, autoincrement=True)
     link = Column(String) # The Cloudinary Link of the PDF table 
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="CASCADE")) #Uploaded by
     user = relationship("User", back_populates="upload_history")

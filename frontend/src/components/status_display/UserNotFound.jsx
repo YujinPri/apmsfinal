@@ -20,7 +20,7 @@ function UserNotFound() {
       <Typography variant="h6" color="primary">
         Not Found
       </Typography>
-      <Typography variant="subtitle2" p={"1rem"}>
+      <Typography variant="subtitle2" p={"2rem"}>
         Sorry, the requested URL does not exist
       </Typography>
     </Box>
