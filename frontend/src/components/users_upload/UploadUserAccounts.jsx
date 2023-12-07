@@ -50,6 +50,8 @@ import EmploymentDataGrid from "./EmploymentDataGrid";
 import AchievementUploadInput from "./AchievementUploadInput";
 import AchievementDataGrid from "./AchievementDataGrid";
 import AllProfileDataGrid from "./AllProfileDataGrid";
+import TwoWayLinkUploadInput from "./TwoWayLinkUploadInput";
+import TwoWayLinkDataGrid from "./TwoWayLinkDataGrid";
 
 export const UploadProfiles = () => {
   const [value, setValue] = useState(0);
@@ -145,6 +147,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "display_all" ? 1 : 0,
             display: activeTab === "display_all" ? "flex" : "none",
@@ -178,6 +181,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "upload_profiles" ? 1 : 0,
             display: activeTab === "upload_profiles" ? "flex" : "none",
@@ -214,6 +218,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "upload_education" ? 1 : 0,
             display: activeTab === "upload_education" ? "flex" : "none",
@@ -250,6 +255,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "upload_employments" ? 1 : 0,
             display: activeTab === "upload_employments" ? "flex" : "none",
@@ -286,6 +292,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "upload_achievements" ? 1 : 0,
             display: activeTab === "upload_achievements" ? "flex" : "none",
@@ -322,6 +329,7 @@ export const UploadProfiles = () => {
             backgroundColor: (theme) => theme.palette.common.main,
             padding: 2,
             borderRadius: 3,
+            height: "75vh",
             position: "relative",
             opacity: activeTab === "two_way_link" ? 1 : 0,
             display: activeTab === "two_way_link" ? "flex" : "none",
@@ -344,10 +352,10 @@ export const UploadProfiles = () => {
             </Typography>
           </Grid>
           <Grid item xs={12}>
-            <AchievementUploadInput />
+            <TwoWayLinkUploadInput />
           </Grid>
           <Grid item xs={12}>
-            <AchievementDataGrid />
+            <TwoWayLinkDataGrid />
           </Grid>
         </Grid>
       )}

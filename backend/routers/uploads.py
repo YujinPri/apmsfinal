@@ -163,14 +163,6 @@ async def read_users(db: Session = Depends(get_db),
     result = []
     exclude_user_keys = ['password', '_sa_instance_state', 'employment', 'id', 'city_code', 'origin_region_code', 'created_at', 'updated_at', 'deleted_at', 'origin_city_code', 'barangay_code', 'origin_barangay_code', 'sub', 'region_code', 'job']
     exclude_employment_keys = ['job_id', 'user_id', '_sa_instance_state', 'city_code', 'region_code', 'id', 'city_code', 'region_code', 'created_at', 'updated_at', 'job']
-
-
-
-
-
-
-
-
    
     id_counter = 0
     for user in users:
@@ -178,7 +170,6 @@ async def read_users(db: Session = Depends(get_db),
         user_course_classification_ids = None
         if user.course and user.course.classifications:
             user_course_classification_ids = {classification.id for classification in user.course.classifications}
-            print(user_course_classification_ids)
 
         # If the user has no employment history
         if not user.employment:
@@ -197,8 +188,6 @@ async def read_users(db: Session = Depends(get_db),
                 if employment.job and employment.job.classifications:
                     job_classification_ids = {classification.id for classification in employment.job.classifications}
                 
-                print(job_classification_ids)
-
                 # Check if user_course_classification_ids and job_classification_ids are not None before performing the bitwise AND operation
                 if user_course_classification_ids is not None and job_classification_ids is not None:
                     aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
@@ -216,9 +205,11 @@ async def get_unclaimed_profile(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
-    unclaimed_profiles = db.query(models.User).filter_by(status="unclaimed").all()
+    unclaimed_profiles = db.query(models.User).filter_by(role="unclaimed").all()
     unclaimed = []
-    for index, unclaimed_profile in unclaimed_profiles:
+    index = 0
+    for unclaimed_profile in unclaimed_profiles:
+        index += 1
         unclaimed_dict = {
             "id": index,
             "last_name": unclaimed_profile.last_name,
@@ -246,6 +237,7 @@ def process_profile_data(df):
     # Create a password with random letters 
     alphabet = string.ascii_letters + string.digits
     df['password'] = [utils.hash_password(''.join(secrets.choice(alphabet) for _ in range(10))) for _ in range(len(df))]
+    df['role'] = ["alumni" for _ in range(len(df))]
 
     # Clean the data: trim leading/trailing whitespace
     df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
@@ -274,7 +266,7 @@ def process_profile_data(df):
     df['post_grad_act'] = df['post_grad_act'].apply(lambda x: process_post_grad_act(x.split(',')) if isinstance(x, str) else [])
 
     # Convert all other columns to string type
-    other_columns = ['student_number', 'username', 'first_name', 'last_name', 'email', 'gender', 'role', 'civil_status', 'headline', 'present_employment_status', 'country', 'region', 'city', 'barangay', 'origin_country', 'origin_region', 'origin_city', 'origin_barangay', 'course', 'mobile_number', 'telephone_number']
+    other_columns = ['student_number', 'username', 'first_name', 'last_name', 'email', 'gender', 'civil_status', 'headline', 'present_employment_status', 'country', 'region', 'city', 'barangay', 'origin_country', 'origin_region', 'origin_city', 'origin_barangay', 'course', 'mobile_number', 'telephone_number']
     for col in other_columns:
         df[col] = df[col].astype(str)
 
@@ -366,6 +358,16 @@ def process_unclaimed_data(df):
     # Clean the data: trim leading/trailing whitespace
     df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
 
+    #Create a random password for each users
+    alphabet = string.ascii_letters + string.digits
+    df['password'] = [utils.hash_password(''.join(secrets.choice(alphabet) for _ in range(10))) for _ in range(len(df))]
+    df['username'] = [f"{last_name}{''.join(secrets.choice(string.digits) for _ in range(4))}" for last_name in df['last_name']]
+
+
+    #Set all the role to unclaimed
+    df['role'] = ["unclaimed" for _ in range(len(df))]
+
+
     # Convert date columns to datetime objects
     date_columns = ['birthdate']
     for col in date_columns:
@@ -420,7 +422,7 @@ async def profile_upload(file: UploadFile = File(...), db: Session = Depends(get
     else:
         raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
     
-    expected_columns = ['student_number','username','first_name','last_name','email','gender','role','birthdate','mobile_number','telephone_number','headline','civil_status','date_graduated','course','is_international','country','region','city','barangay','origin_is_international','origin_country','origin_region','origin_city','origin_barangay', 'post_grad_act', 'present_employment_status', 'date_start']
+    expected_columns = ['student_number','username','first_name','last_name','email','gender','birthdate','mobile_number','telephone_number','headline','civil_status','date_graduated','course','is_international','country','region','city','barangay','origin_is_international','origin_country','origin_region','origin_city','origin_barangay', 'post_grad_act', 'present_employment_status', 'date_start']
     
     validate_columns(df, expected_columns)
 
@@ -797,35 +799,38 @@ async def achievement_upload(file: UploadFile = File(...), db: Session = Depends
     not_inserted = []  # List to store alumni that did not inserted
     incomplete_column = []
 
-    try:
-        for _, row in df.iterrows():
+    # try:
+    for _, row in df.iterrows():
 
-            # Check if required columns do have value
-            if not row['student_number'] or not row['birthdate'] or not row['first_name'] or not row['last_name']:
-                incomplete_column.append(row)
-                continue
+        # Check if required columns do have value
+        if not row['student_number'] or not row['birthdate'] or not row['first_name'] or not row['last_name']:
+            incomplete_column.append(row)
+            continue
 
-            actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
+        actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
 
-            # Check if there is an existing user already
-            if actual_user:
-                not_inserted.append(row)
-                continue
+        # Check if there is an existing user already
+        if actual_user:
+            not_inserted.append(row)
+            continue
 
-            # Create the new user
-            new_data = models.User(
-                student_number=row['student_number'],
-                birthdate=row['birthdate'],
-                first_name=row['first_name'],
-                last_name=row['last_name'],
-            )
+        # Create the new user
+        new_data = models.User(
+            student_number=row['student_number'],
+            birthdate=row['birthdate'],
+            first_name=row['first_name'],
+            last_name=row['last_name'],
+            role=row['role'],
+            password=row['password'],
+            username=row['username'],
+        )
 
-            db.add(new_data)
-            inserted.append(row)
-        db.commit()
+        db.add(new_data)
+        inserted.append(row)
+    db.commit()
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Upload failed.")
+    # except Exception as e:
+    #     raise HTTPException(status_code=400, detail="Upload failed.")
 
     try:
         # Prepare the data for the report
@@ -848,6 +853,6 @@ async def achievement_upload(file: UploadFile = File(...), db: Session = Depends
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
-    
+
 
     
