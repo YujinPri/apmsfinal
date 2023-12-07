@@ -76,7 +76,7 @@ async def get_demographic_profile(
     return {"length": len(profiles), "profiles": profiles}
 
 @router.get("/educations/all")
-async def get_demographic_profile(
+async def get_education_profile(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -104,7 +104,7 @@ async def get_demographic_profile(
     return {"length": len(educations), "educations": educations}
 
 @router.get("/employments/all")
-async def get_demographic_profile(
+async def get_employment_profile(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -134,7 +134,7 @@ async def get_demographic_profile(
     return {"length": len(employments), "employments": employments}
 
 @router.get("/achievements/all")
-async def get_demographic_profile(
+async def get_achievement_profile(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
@@ -155,6 +155,81 @@ async def get_demographic_profile(
     db.close() 
     # Close the database session
     return {"length": len(achievements), "achievements": achievements}
+
+@router.get("/all")        
+async def read_users(db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)):
+    users = db.query(models.User).options(joinedload(models.User.employment)).all()
+    result = []
+    exclude_user_keys = ['password', '_sa_instance_state', 'employment', 'id', 'city_code', 'origin_region_code', 'created_at', 'updated_at', 'deleted_at', 'origin_city_code', 'barangay_code', 'origin_barangay_code', 'sub', 'region_code', 'job']
+    exclude_employment_keys = ['job_id', 'user_id', '_sa_instance_state', 'city_code', 'region_code', 'id', 'city_code', 'region_code', 'created_at', 'updated_at', 'job']
+
+
+
+
+
+
+
+
+   
+    id_counter = 0
+    for user in users:
+        user_dict = {key: value for key, value in user.__dict__.items() if key not in exclude_user_keys}
+        user_course_classification_ids = None
+        if user.course and user.course.classifications:
+            user_course_classification_ids = {classification.id for classification in user.course.classifications}
+            print(user_course_classification_ids)
+
+        # If the user has no employment history
+        if not user.employment:
+            job_name = ''
+            aligned_with_academic_program = False
+            employment_dict = {key: None for key in models.Employment.__dict__ if key not in exclude_employment_keys}
+            result.append({'id': id_counter, 'aligned_with_academic_program': aligned_with_academic_program, 'job_name': job_name, **user_dict, **employment_dict})
+            id_counter += 1
+        else:
+            job_classification_ids = None
+
+            for employment in user.employment:
+                job_name = employment.job.name if employment.job and employment.job.name else ''
+
+                # Check if employment.job is not None and it has classifications
+                if employment.job and employment.job.classifications:
+                    job_classification_ids = {classification.id for classification in employment.job.classifications}
+                
+                print(job_classification_ids)
+
+                # Check if user_course_classification_ids and job_classification_ids are not None before performing the bitwise AND operation
+                if user_course_classification_ids is not None and job_classification_ids is not None:
+                    aligned_with_academic_program = bool(user_course_classification_ids & job_classification_ids)
+                else:
+                    aligned_with_academic_program = False
+                
+                employment_dict = {key: value for key, value in employment.__dict__.items() if key not in exclude_employment_keys}
+                result.append({'id': id_counter, 'aligned_with_academic_program': aligned_with_academic_program, 'job_name': job_name, **user_dict, **employment_dict})
+
+                id_counter += 1
+    return result
+   
+@router.get("/unclaimed/all")
+async def get_unclaimed_profile(
+    db: Session = Depends(get_db),
+    user: UserResponse = Depends(get_current_user)
+):
+    unclaimed_profiles = db.query(models.User).filter_by(status="unclaimed").all()
+    unclaimed = []
+    for index, unclaimed_profile in unclaimed_profiles:
+        unclaimed_dict = {
+            "id": index,
+            "last_name": unclaimed_profile.last_name,
+            "first_name": unclaimed_profile.first_name,
+            "birthdate": unclaimed_profile.birthdate,
+            "student_number": unclaimed_profile.student_number,
+        }
+        unclaimed.append(unclaimed_dict)
+    db.close() 
+    # Close the database session
+    return unclaimed
 
 def validate_columns(df, expected_columns):
     if not set(expected_columns).issubset(df.columns):
@@ -281,6 +356,28 @@ def process_employment_data(df):
 
     # Convert all other columns to string type
     other_columns = ['student_number', 'job', 'company_name', 'gross_monthly_income', 'employment_contract', 'job_position', 'employer_type', 'country', 'region', 'city']
+    for col in other_columns:
+        df[col] = df[col].astype(str)
+
+    return df
+
+def process_unclaimed_data(df):
+
+    # Clean the data: trim leading/trailing whitespace
+    df = df.apply(lambda col: col.str.strip() if col.dtype == 'object' else col)
+
+    # Convert date columns to datetime objects
+    date_columns = ['birthdate']
+    for col in date_columns:
+        date_format = "%Y-%m-%d"  # Adjust the format according to your actual date format
+        df[col] = pd.to_datetime(df[col], errors='coerce', format=date_format)
+
+    # Convert date columns to object type and then set NaT values to None
+    for col in date_columns:
+        df[col] = df[col].astype(object).where(pd.notna(df[col]), None)
+
+    # Convert all other columns to string type
+    other_columns = ['student_number', 'first_name', 'last_name']
     for col in other_columns:
         df[col] = df[col].astype(str)
 
@@ -675,3 +772,82 @@ async def achievement_upload(file: UploadFile = File(...), db: Session = Depends
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
+    
+@router.post("/upload_unclaimed_profile/")
+async def achievement_upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
+    if user.role not in ["admin", "officer"]:
+        raise HTTPException(status_code=401, detail="Unauthorized: Access Denied")
+
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file.file, encoding='ISO-8859-1')
+    elif file.filename.endswith('.xlsx'):
+        df = pd.read_excel(file.file, engine='openpyxl')
+    else:
+        raise HTTPException(status_code=400, detail="Upload failed: The file format is not supported.")
+    
+    expected_columns = ['student_number', 'first_name', 'last_name', 'birthdate']
+    
+    validate_columns(df, expected_columns)
+
+    # Process the data
+    df = process_unclaimed_data(df)
+
+    # Insert the data into the database
+    inserted = []
+    not_inserted = []  # List to store alumni that did not inserted
+    incomplete_column = []
+
+    try:
+        for _, row in df.iterrows():
+
+            # Check if required columns do have value
+            if not row['student_number'] or not row['birthdate'] or not row['first_name'] or not row['last_name']:
+                incomplete_column.append(row)
+                continue
+
+            actual_user = db.query(models.User).filter(models.User.student_number == row['student_number']).first()
+
+            # Check if there is an existing user already
+            if actual_user:
+                not_inserted.append(row)
+                continue
+
+            # Create the new user
+            new_data = models.User(
+                student_number=row['student_number'],
+                birthdate=row['birthdate'],
+                first_name=row['first_name'],
+                last_name=row['last_name'],
+            )
+
+            db.add(new_data)
+            inserted.append(row)
+        db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Upload failed.")
+
+    try:
+        # Prepare the data for the report
+        data = [inserted, not_inserted, incomplete_column]
+        titles = ["Inserted", "Not Inserted", "Incomplete"]
+
+        user_instance = db.query(models.User).filter(models.User.id == user.id).first()
+
+        upload_result = generate_excel(data, titles)
+
+        # Create new UploadHistory instance
+        new_upload_history = models.UploadHistory(
+            type="TwoWayLink",
+            link=upload_result['url'],
+            user_id=user.id,
+            user=user_instance
+        )
+        db.add(new_upload_history)
+        db.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while generating the report: {str(e)}")
+    
+
+    

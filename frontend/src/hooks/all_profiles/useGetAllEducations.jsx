@@ -1,4 +1,4 @@
-import useAxiosPrivate from "./useAxiosPrivate";
+import useAxiosPrivate from "../useAxiosPrivate";
 import { useQuery } from "react-query";
 
 const useGetAllEducations = () => {

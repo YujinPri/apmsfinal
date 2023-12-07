@@ -6,7 +6,7 @@ import {
   gridFilteredSortedRowIdsSelector,
   selectedGridRowsSelector,
 } from "@mui/x-data-grid";
-import useGetAllEmployments from "../../hooks/useGetAllEmployments";
+import useGetAllEmployments from "../../hooks/all_profiles/useGetAllEmployments";
 
 const EmploymentDataGrid = () => {
   const { data: allEmployments, isLoading: isLoadingAllEmployments } =

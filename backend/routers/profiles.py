@@ -478,7 +478,7 @@ async def get_user_employments(
     employments_data = []
 
     profile = db.query(models.User).filter(models.User.id == user.id).first()
-    employments = (db.query(models.Employment).filter(models.Employment.user_id == user.id).all())
+    employments = db.query(models.Employment).filter(models.Employment.user_id == user.id).all()
 
     # Access the user's course classifications from their profile
     user_course_classification_ids = None

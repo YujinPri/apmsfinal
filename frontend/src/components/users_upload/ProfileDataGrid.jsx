@@ -5,7 +5,7 @@ import {
   GridToolbar,
   gridFilteredSortedRowIdsSelector,
   selectedGridRowsSelector,
-} from "@mui/x-data-grid";import useGetAllProfiles from "../../hooks/useGetAllProfiles";
+} from "@mui/x-data-grid";import useGetAllProfiles from "../../hooks/all_profiles/useGetAllProfiles";
 
 const DemoProfileDataGrid = () => {
   const { data: allProfiles, isLoading: isLoadingAllProfiles } =

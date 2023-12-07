@@ -103,7 +103,7 @@ class NationalCertification(Base):
     requirements = Column(Text)
     link_reference = Column(String)
     achievements = relationship("Achievement", back_populates="national_certification")
-    classifications = relationship("Classification", secondary="national_certification_classification", back_populates="national_certification", overlaps="national_certification_classifications")
+    classifications = relationship("Classification", secondary="national_certification_classification", back_populates="national_certifications", overlaps="national_certification_classifications")
     national_certification_classifications = relationship("NationalCertificationClassification", back_populates="national_certification", overlaps="classifications")
 
 
@@ -150,7 +150,6 @@ class Employment(Base):
     #Job Informations
     job_id = Column(UUID(as_uuid=True), ForeignKey('job.id', ondelete="CASCADE"))
     company_name = Column(String)
-    
     
     #Job Length
     date_hired = Column(Date, index=True)

@@ -91,7 +91,6 @@ const AddEmploymentModal = ({ open, onClose }) => {
     isLoading: isLoadingCitiesMunicipalities,
   } = useCitiesMunicipalities(employmentProfile?.region_code);
 
-
   const mutation = useMutation(
     async (newProfile) => {
       const axiosConfig = {

@@ -32,13 +32,13 @@ import {
 import useGetCareerProfile from "../../hooks/useGetCareerProfile";
 import EmploymentProfile from "../profile_display/EmploymentProfile";
 import AchievementProfile from "../profile_display/AchievementProfile";
-import useGetVisitDemographicProfile from "../../hooks/useGetVisitDemographicProfile";
-import useGetVisitCheck from "../../hooks/useGetVisitCheck";
 import LoadingCircular from "../status_display/LoadingCircular";
 import UserNotFound from "../status_display/UserNotFound";
-import useGetVisitCareerProfile from "../../hooks/useGetVisitCareerProfile";
-import useGetVisitEmploymentProfile from "../../hooks/useGetVisitEmploymentProfile";
-import useGetVisitAchievementProfile from "../../hooks/useGetVisitAchievementProfile";
+import useGetVisitCheck from "../../hooks/display_profile/useGetVisitCheck";
+import useGetVisitCareerProfile from "../../hooks/display_profile/useGetVisitCareerProfile";
+import useGetVisitDemographicProfile from "../../hooks/display_profile/useGetVisitDemographicProfile";
+import useGetVisitEmploymentProfile from "../../hooks/display_profile/useGetVisitEmploymentProfile";
+import useGetVisitAchievementProfile from "../../hooks/display_profile/useGetVisitAchievementProfile";
 
 function DisplayProfile() {
   const { username } = useParams();

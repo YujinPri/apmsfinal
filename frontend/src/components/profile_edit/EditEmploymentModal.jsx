@@ -92,7 +92,7 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
         date_hired: dayjs(cachedData?.data.date_hired) || null,
         date_end: dayjs(cachedData?.data.date_end) || null,
         current_job: !cachedData?.data?.date_end,
-        
+
         is_international: cachedData?.data?.is_international || false,
         country_code: cachedData?.data?.country_code || "",
         country: cachedData?.data?.country || "",
@@ -180,8 +180,11 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
       employmentProfile.company_name == "" ||
       employmentProfile.date_hired == null ||
       (!employmentProfile.current_job && employmentProfile.date_end == null) ||
-      (!employmentProfile.is_international && employmentProfile.city == null && employmentProfile.region == null) ||
-      (employmentProfile.is_international && employmentProfile.country == null) ||
+      (!employmentProfile.is_international &&
+        employmentProfile.city == null &&
+        employmentProfile.region == null) ||
+      (employmentProfile.is_international &&
+        employmentProfile.country == null) ||
       employmentProfile.gross_monthly_income == "" ||
       employmentProfile.employment_contract == "" ||
       employmentProfile.job_position == "" ||
@@ -762,7 +765,9 @@ const EditEmploymentModal = ({ open, onClose, employmentID }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {openModal && <AddJob open={openModal} onClose={() => setOpenModal(false)} />}
+      {openModal && (
+        <AddJob open={openModal} onClose={() => setOpenModal(false)} />
+      )}
     </>
   );
 };

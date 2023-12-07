@@ -6,7 +6,7 @@ import {
   gridFilteredSortedRowIdsSelector,
   selectedGridRowsSelector,
 } from "@mui/x-data-grid";
-import useGetAllEducations from "../../hooks/useGetAllEducations";
+import useGetAllEducations from "../../hooks/all_profiles/useGetAllEducations";
 
 const EducationDataGrid = () => {
   const { data: allEducations, isLoading: isLoadingAllEducations } =

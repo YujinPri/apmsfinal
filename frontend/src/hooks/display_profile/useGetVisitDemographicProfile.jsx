@@ -1,15 +1,15 @@
-import useAxiosPrivate from "./useAxiosPrivate";
+import useAxiosPrivate from "../useAxiosPrivate";
 import { useQuery } from "react-query";
 
-const useGetVisitCareerProfile = (username) => {
+const useGetVisitDemographicProfile = (username) => {
   const axiosPrivate = useAxiosPrivate();
   const getData = async (username) => {
     return await axiosPrivate.get(
-      `/profiles/career_profile/visit/${username}`
+      `/profiles/demographic_profile/visit/${username}`
     );
   };
   return useQuery(
-    ["visit-career-profile", username],
+    ["visit-demographic-profile", username],
     () => getData(username),
     {
       staleTime: Infinity,
@@ -17,4 +17,4 @@ const useGetVisitCareerProfile = (username) => {
   );
 };
 
-export default useGetVisitCareerProfile;
+export default useGetVisitDemographicProfile;

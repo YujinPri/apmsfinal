@@ -6,7 +6,7 @@ import {
   gridFilteredSortedRowIdsSelector,
   selectedGridRowsSelector,
 } from "@mui/x-data-grid";
-import useGetAllAchievements from "../../hooks/useGetAllAchievements";
+import useGetAllAchievements from "../../hooks/all_profiles/useGetAllAchievements";
 
 const AchievementDataGrid = () => {
   const { data: allAchievements, isLoading: isLoadingAllAchievements } =
