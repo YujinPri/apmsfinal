@@ -16,7 +16,6 @@ def hash_password(password: str):
 
 def verify_password(*, password: str="", unhashed_original: str="", hashed_password: str):
     if unhashed_original: return unhashed_original == hash_password
-    print(unhashed_original)
     return bcrypt_context.verify(password, hashed_password)
 
 def authenticate_user(*, username: str, password: str="", hashedPassword: str="", db: Session):

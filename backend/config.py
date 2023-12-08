@@ -29,6 +29,9 @@ class Settings(BaseSettings):
 
     RECAPTCHA_CODE_KEY: str
 
+    YAGMAIL_USER: str
+    YAGMAIL_PASS: str
+
 
 
     class Config:

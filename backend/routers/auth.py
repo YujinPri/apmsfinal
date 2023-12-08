@@ -1,5 +1,6 @@
+import secrets
 import httpx
-from datetime import datetime, timedelta
+from datetime import date, datetime
 import json
 from fastapi import APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
 from pydantic import EmailStr
@@ -19,7 +20,7 @@ import string
 from backend.routers.user import login_user
 import requests
 import cloudinary.uploader
-
+from backend.mailer import EmailSender
 
 
 router = APIRouter()
@@ -38,8 +39,8 @@ def decode_linkedin_access_token(access_token):
         print("Error decoding access token")
         return None
 
-@router.post('/register/alumni', status_code=status.HTTP_201_CREATED)
-async def create_alumni(username: str = Form(...), email: str = Form(...), password: str = Form(...), first_name: str = Form(...), 
+@router.post('/register/alumni')
+async def create_alumni(student_number: str = Form(...), email: str = Form(...), birthdate: date = Form(...), first_name: str = Form(...), 
                         last_name: str = Form(...), recaptcha: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
     try:
         
@@ -52,44 +53,145 @@ async def create_alumni(username: str = Form(...), email: str = Form(...), passw
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {exc}")
         
-    # Check if email already exists
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Email is already in use")
+    # Check if the credential matches the one in two way link 
+    unclaimed_user = db.query(models.User).filter(
+        models.User.student_number == student_number,
+        models.User.last_name == last_name,
+        models.User.first_name == first_name,
+        models.User.birthdate == birthdate,
+        models.User.role == 'unclaimed'
+    ).first()
+
+    if not unclaimed_user:
+        raise HTTPException(status_code=400, detail="Provided details doesn't match any PUPQC Alumni records")
     
-    # Check if username already exists
-    user = db.query(models.User).filter(models.User.username == username).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Username is already in use")
+    #Create a random password for each users
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for _ in range(10))
 
     try:
-        new_user = models.User(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            role="public",
-            password=utils.hash_password(password),
-            profile_picture=''  
-        )
 
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        
+        subject = "APMS Login Credentials"
+        content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>APMS Alumni Account Registration Succeed!</title>
+            </head>
+            <body>
+                <p>Hello {unclaimed_user.first_name} {unclaimed_user.last_name},</p><br>
+                <p>Thank you for using the Alumni Performance Management System (APMS)!</p>
+                <p>Your journey into a world of possibilities begins now. Below are your login credentials:</p>
+                <p>username: {unclaimed_user.username}</p>
+                <p>password: {password}</p>
+                <p>Explore the limitless potential of your alumni experience with APMS. Dive into exciting features and opportunities that await you. Your success story starts here!</p>
+                <p>For security reasons, we encourage you to change your password as soon as possible. You can update your password in your account settings.</p>
+                <br>
+                <p>Best Regards,<br>APMS Team</p>
+            </body>
+            </html>
+            """
+        yagmail = EmailSender()
+        yagmail.send_email(email, subject, content)
+
+    except Exception as e:
+        error_message = "Error Sending Email"
+        raise HTTPException(status_code=400, detail=error_message)
+
+    try:
         if profile_picture:
             contents = await profile_picture.read()
             filename = profile_picture.filename
             folder = "Profiles"
-            result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{new_user.id}'])
+            result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{unclaimed_user.username}'])
             # Save the URL of the image
-            new_user.profile_picture = result.get("url")
-            db.commit()
+            unclaimed_user.profile_picture = result.get("url")
+        
+        unclaimed_user.password = utils.hash_password(password)
+        unclaimed_user.email = email
+        unclaimed_user.role = "alumni"
+
+        db.commit()
 
         return data
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Account creation failed")
+        raise HTTPException(status_code=400, detail="Account Registration failed")
+
+@router.post('/register/public_user')
+async def create_public_user(student_number: str = Form(...), email: str = Form(...), birthdate: date = Form(...), first_name: str = Form(...), last_name: str = Form(...), profile_picture: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
+
+    # Check if the credential matches the one in two way link 
+    check_student_number = db.query(models.User).filter(models.User.student_number == student_number).first()
+
+    if check_student_number:
+        raise HTTPException(status_code=400, detail="Student Number is already in use, please try logging in or contact us")
+
+    # Check if the credential matches the one in two way link 
+    check_email = db.query(models.User).filter(models.User.email == email).first()
+
+    if check_email:
+        raise HTTPException(status_code=400, detail="Email is already in use, please try logging in or contact us")
+    
+    #Create a random password for each users
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for _ in range(10))
+    username = last_name + ''.join(secrets.choice(string.digits) for _ in range(4))
+
+    try:
+        profile_url = ''
+        if profile_picture:
+                contents = await profile_picture.read()
+                filename = profile_picture.filename
+                folder = "Profiles"
+                result = cloudinary.uploader.upload(contents, public_id=f"{folder}/{filename}", tags=[f'profile_{username}'])
+                # Save the URL of the image
+                profile_url = result.get("url")
+
+        new_user = models.User(
+                    username=username,
+                    student_number=student_number,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    role="public",
+                    password=utils.hash_password(password),
+                    profile_picture = profile_url
+                )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Account Registration failed")
+
+
+    subject = "APMS Login Credentials"
+    content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>APMS Public User Account Registration Succeed!</title>
+        </head>
+        <body>
+            <p>Hello {first_name} {last_name},</p>
+
+            <p>Thank you for using the Alumni Performance Management System (APMS)!</p>
+            <br>
+            <p>Your journey into a world of possibilities begins now. Below are your login credentials:</p>
+            <p>username: {username}</p>
+            <p>password: {password}</p>
+            <p>Explore the limitless potential of your alumni experience with APMS. Dive into exciting features and opportunities that await you. Your success story starts here!</p>
+            <br>
+            <p>Noticed that you are currently registered as a public user. As a public user, you can edit your profile and provide more information. Filling up your profile will increase your chances of being approved by the admin user promptly. Take a moment to enhance your profile and make the most out of your alumni experience!</p>
+            <br>
+            <p>Best Regards,<br>APMS Team</p>
+        </body>
+        </html>
+        """
+    yagmail = EmailSender()
+    yagmail.send_email(email, subject, content)
 
 
 # Refresh access token

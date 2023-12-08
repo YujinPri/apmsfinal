@@ -1,7 +1,11 @@
+import { useState, useRef, forwardRef } from "react";
+import dayjs from "dayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useMutation, useQueryClient, useQuery } from "react-query";
-import React, { useState, useRef } from "react";
+import { IMaskInput } from "react-imask";
 import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../../api/axios";
@@ -9,11 +13,17 @@ import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 
 import {
+  Alert,
   Avatar,
   Button,
   Card,
   CardActionArea,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   Grid,
   InputLabel,
@@ -24,29 +34,23 @@ import {
   Typography,
 } from "@mui/material";
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
+const StudentNumberMask = forwardRef(function StudentNumberMask(props, ref) {
+  const { onChange, ...other } = props;
+  return (
+    <IMaskInput
+      {...other}
+      mask="0000-00000-AA-0"
+      definitions={{
+        A: /[A-Z]/,
+        0: /[0-9]/,
+      }}
+      inputRef={ref}
+      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      overwrite
+    />
+  );
 });
-
-const validatePassword = (password) => {
-  // Set Minimum length Requirement
-  if (password.length < 8) {
-    return false;
-  }
-
-  // Check for at least one digit
-  if (!/[0-9]/.test(password)) {
-    return false;
-  }
-
-  // Check for at least one special character
-  const specialCharacters = "!@#$%^&*\\(\\)-_=+\\[\\]{}|;:'\",.<>?/";
-  if (!new RegExp(`[${specialCharacters}]`).test(password)) {
-    return false;
-  }
-
-  return true;
-};
 
 const Register = () => {
   const navigate = useNavigate();
@@ -54,21 +58,41 @@ const Register = () => {
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
+    birthdate: null,
+    first_name: "",
+    last_name: "",
+    student_number: "",
     profile_picture: "",
     profile_picture_name: "Upload profile picture",
     profile_picture_url: "/default-profile-image.jpeg",
-    password: "",
-    confirmation_password: "",
   });
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prevProfile) => ({
       ...prevProfile,
       [name]: value,
+    }));
+  };
+
+  const handleDateChange = (date) => {
+    setFormData((prevProfile) => ({
+      ...prevProfile,
+      birthdate: date,
     }));
   };
 
@@ -102,6 +126,14 @@ const Register = () => {
         setMessage(error.response ? error.response.data.detail : error.message);
         setSeverity("error");
         setOpenSnackbar(true);
+        if (
+          error.response
+            ? error.response.data.detail
+            : error.message ==
+              "Provided details doesn't match any PUPQC Alumni records"
+        ) {
+          setOpenDialog(true);
+        }
       },
 
       onSuccess: (data, variables, context) => {
@@ -114,16 +146,59 @@ const Register = () => {
           profile_picture: "",
           last_name: "",
           first_name: "",
-          password: "",
-          confirmation_password: "",
+          student_number: "",
         });
 
         navigate("/login", {
           state: {
             message:
-              "successfully registered now please login your credentials",
-            snackbar: 
-              "successfully registered!"
+              "successfully registered! now please check your email for credentials",
+            snackbar: "successfully registered!",
+          },
+          replace: true,
+        });
+      },
+    }
+  );
+
+  const publicUserMutation = useMutation(
+    async (newProfile) => {
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+      const response = await axios.post(
+        "/auth/register/public_user",
+        newProfile,
+        axiosConfig
+      );
+    },
+    {
+      onError: (error) => {
+        setMessage(error.response ? error.response.data.detail : error.message);
+        setSeverity("error");
+        setOpenSnackbar(true);
+      },
+
+      onSuccess: (data, variables, context) => {
+        setMessage("successfully registered!");
+        setSeverity("success");
+
+        setFormData({
+          username: "",
+          email: "",
+          profile_picture: "",
+          last_name: "",
+          first_name: "",
+          student_number: "",
+        });
+
+        navigate("/login", {
+          state: {
+            message:
+              "successfully registered as public user! now please check your email for credentials",
+            snackbar: "successfully registered!",
           },
           replace: true,
         });
@@ -132,6 +207,13 @@ const Register = () => {
   );
 
   const { isLoading, isError, error, isSuccess } = mutation;
+
+  const {
+    isPublicUserLoading,
+    isPublicUserError,
+    publicUsererror,
+    isPublicUserSuccess,
+  } = publicUserMutation;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -144,203 +226,69 @@ const Register = () => {
       return;
     }
 
-    if (formData.confirmation_password != formData.password) {
-      setMessage("password does not match");
-      setSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-
-    if (!validatePassword(formData.password)) {
-      setMessage("password does not meet the requirements");
-      setSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-
     const payload = new FormData();
-    payload.append("username", formData.username);
+    payload.append("birthdate", formData.birthdate.format("YYYY-MM-DD"));
     payload.append("first_name", formData.first_name);
     payload.append("last_name", formData.last_name);
+    payload.append("student_number", formData.student_number);
     payload.append("email", formData.email);
-    payload.append("password", formData.password);
     payload.append("profile_picture", formData.profile_picture);
     payload.append("recaptcha", captchaValue);
 
     await mutation.mutateAsync(payload);
   };
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
+  const handleSubmitPublicUser = async (event) => {
+    event.preventDefault();
 
-    setOpenSnackbar(false);
+    const payload = new FormData();
+    payload.append("birthdate", formData.birthdate.format("YYYY-MM-DD"));
+    payload.append("first_name", formData.first_name);
+    payload.append("last_name", formData.last_name);
+    payload.append("student_number", formData.student_number);
+    payload.append("email", formData.email);
+    payload.append("profile_picture", formData.profile_picture);
+
+    await publicUserMutation.mutateAsync(payload);
   };
+
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <form className="box" onSubmit={handleSubmit}>
-        <Card
-          sx={{
-            maxWidth: 600,
-            padding: "20px 5px",
-          }}
+    <Grid container>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Register Instead as a Public User</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          <CardContent>
-            <Typography gutterBottom variant="h5">
-              alumni registration
+          <Typography variant="body1">
+            It appears that you've registered your credentials, but there is no
+            matching record of yours in the system. If you're confident in your
+            credentials, it's possible that the system does not yet have the
+            record for your batch.
+          </Typography>
+          <Typography variant="body1">
+            Consider our alternative:
+            <Typography variant="body1">
+              You may register as a Public User. This allows you to edit your
+              profile for further validation while waiting for admin approval
+              for full access.
             </Typography>
-            <Grid container spacing={1.5}>
-              <Tooltip title="click to update profile picture">
-                <Grid item xs={12}>
-                  {/* Profile Picture */}
-                  <CardActionArea component="label" htmlFor="profile-picture">
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        padding: 2,
-                      }}
-                    >
-                      <input
-                        type="file"
-                        accept="image/*"
-                        id="profile-picture"
-                        name="profile_picture"
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
-                      />
-
-                      <Avatar
-                        alt="Profile"
-                        src={formData?.profile_picture_url}
-                        sx={{ width: "100px", height: "100px" }}
-                      />
-                      <Typography variant="body2">
-                        {formData?.profile_picture_name}
-                      </Typography>
-                    </Box>
-                  </CardActionArea>
-                </Grid>
-              </Tooltip>
-              <Grid xs={12} item>
-                <TextField
-                  name="username"
-                  label="username"
-                  placeholder="input username"
-                  variant="outlined"
-                  fullWidth
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                {/* First Name */}
-                <TextField
-                  name="first_name"
-                  label="first name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  required
-                  sx={{ width: "100%" }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                {/* Last Name */}
-                <TextField
-                  name="last_name"
-                  label="last name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  required
-                  sx={{ width: "100%" }}
-                />
-              </Grid>
-
-              <Grid xs={12} item>
-                <TextField
-                  name="email"
-                  label="email"
-                  type="email"
-                  placeholder="input email"
-                  variant="outlined"
-                  fullWidth
-                  onChange={handleChange}
-                  value={formData.email}
-                  required
-                />
-              </Grid>
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  name="password"
-                  label="password"
-                  placeholder="Input password"
-                  variant="outlined"
-                  fullWidth
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input"
-                  required
-                />
-              </Grid>
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  name="confirmation_password"
-                  label="confirm password"
-                  placeholder="confirm password"
-                  variant="outlined"
-                  fullWidth
-                  type="password"
-                  value={formData.confirmation_password}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginTop: "1rem",
-                }}
-              >
-                <ReCAPTCHA
-                  ref={recaptcha}
-                  sitekey={`${import.meta.env.VITE_RECAPTCHA_HTML_KEY}`}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2 }}
-                  fullWidth
-                >
-                  register
-                </Button>
-              </Grid>
-            </Grid>
-            <Link
-              to={"/login"}
-              style={{ display: "block", textAlign: "center", marginTop: 8 }}
-            >
-              login instead
-            </Link>
-          </CardContent>
-        </Card>
-      </form>
+          </Typography>
+          <Typography variant="body1" mt={"1.5rem"}>
+            Would you like to proceed as a public user first?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ padding: 3 }}>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            onClick={handleSubmitPublicUser}
+            variant="contained"
+            color="primary"
+            disabled={isPublicUserLoading}
+          >
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
@@ -350,12 +298,165 @@ const Register = () => {
           {message}
         </Alert>
       </Snackbar>
-      {isLoading ? (
-        <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
-          <LinearProgress />
-        </Box>
-      ) : null}
-    </Box>
+      <Box sx={{ width: "100%", position: "relative", top: 0 }}>
+        {isLoading && <LinearProgress />}
+        {!isLoading && <Box sx={{ height: 4 }} />}
+      </Box>
+      <Grid
+        item
+        container
+        xs={12}
+        height={"99vh"}
+        sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}
+      >
+        <Grid item xs={7}>
+          <Typography gutterBottom variant="h5">
+            Alumni Registration
+          </Typography>
+        </Grid>
+        <Grid
+          item
+          xs={5}
+          ml={"auto"}
+          height={"50vh"}
+          p={2}
+          pt={"10vh"}
+          container
+          spacing={2}
+        >
+          <Grid item xs={12}>
+            <Tooltip title="click to update profile picture">
+              {/* Profile Picture */}
+              <CardActionArea component="label" htmlFor="profile-picture">
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="profile-picture"
+                    name="profile_picture"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+
+                  <Avatar
+                    alt="Profile"
+                    src={formData?.profile_picture_url}
+                    sx={{ width: "100px", height: "100px" }}
+                  />
+                  <Typography variant="body2">
+                    {formData?.profile_picture_name}
+                  </Typography>
+                </Box>
+              </CardActionArea>
+            </Tooltip>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              variant="outlined"
+              fullWidth
+              label="Student Number"
+              value={formData?.student_number}
+              onChange={handleChange}
+              name="student_number"
+              required
+              InputProps={{
+                inputComponent: StudentNumberMask,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="first_name"
+              label="First Name"
+              value={formData.first_name}
+              onChange={handleChange}
+              required
+              sx={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="last_name"
+              label="Last Name"
+              value={formData.last_name}
+              onChange={handleChange}
+              required
+              sx={{ width: "100%" }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]} sx={{ padding: 0 }}>
+                <DemoItem>
+                  <DatePicker
+                    name="birthdate"
+                    label="Birthdate"
+                    value={formData?.birthdate}
+                    onChange={handleDateChange}
+                    renderInput={(params) => <TextField {...params} />}
+                    required
+                  />
+                </DemoItem>
+              </DemoContainer>
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="email"
+              label="Email"
+              type="email"
+              placeholder="Input Email"
+              variant="outlined"
+              fullWidth
+              onChange={handleChange}
+              value={formData.email}
+              required
+            />
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: "1rem",
+            }}
+          >
+            <ReCAPTCHA
+              ref={recaptcha}
+              sitekey={`${import.meta.env.VITE_RECAPTCHA_HTML_KEY}`}
+            />
+          </Grid>
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              width={"100%"}
+              onClick={handleSubmit}
+              variant="contained"
+              color="primary"
+              disabled={isLoading}
+              mx={"auto"}
+            >
+              Register
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Link
+              to={"/login"}
+              style={{ display: "block", textAlign: "center" }}
+            >
+              login instead
+            </Link>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 };
 
