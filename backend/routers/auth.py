@@ -2,7 +2,8 @@ import secrets
 import httpx
 from datetime import date, datetime
 import json
-from fastapi import APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile
+from backend.config import settings
+from fastapi import APIRouter, File, Form, Request, Response, status, Depends, HTTPException, UploadFile, Body
 from pydantic import EmailStr
 from fastapi.security import OAuth2PasswordRequestForm 
 from typing import Annotated, Optional
@@ -38,6 +39,78 @@ def decode_linkedin_access_token(access_token):
         # Handle decoding errors
         print("Error decoding access token")
         return None
+    
+
+@router.post('/password_reset')
+async def create_alumni( email: str = Body(...), recaptcha: str = Body(...),  db: Session = Depends(get_db)):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f"https://www.google.com/recaptcha/api/siteverify?secret={settings.RECAPTCHA_CODE_KEY}&response={recaptcha}")
+            data = response.json()
+
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=400, detail=f"An error occurred while verifying the captcha: {exc}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {exc}")
+    
+    user = db.query(models.User).filter(models.User.email == email).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Email doesn't match any PUPQC Alumni records")
+    
+    try:
+        #Create Unique Code
+        alphabet = string.ascii_letters + string.digits
+        code = ''.join(secrets.choice(alphabet) for _ in range(20))
+        user.reset_code = code
+        db.commit()
+
+        subject = "APMS Account Password Reset"
+        content = f"""
+           <!DOCTYPE html>
+                <html>
+
+                <head>
+                    <title>APMS Alumni Account Password Reset</title>
+                </head>
+
+                <body>
+                    <p>Hello {user.first_name} {user.last_name},</p><br>
+                    <p>This email includes a one-time use code for resetting your password. Click the link below to access the APMS password reset page</p>
+                    <p><a href="{settings.RESET_FORM_LINK}/{email}/{code}">Click this to Reset Password</a></p>
+                    <p>Best Regards,<br>APMS Team</p>
+                </body>
+
+                </html>
+            """
+        yagmail = EmailSender()
+        yagmail.send_email(email, subject, content)
+
+    except Exception as e:
+        error_message = "Error Sending Email"
+        raise HTTPException(status_code=400, detail=error_message)
+
+    
+@router.post('/password_change')
+async def create_alumni( email: str = Body(...), code: str = Body(...), password: str = Body(...),  db: Session = Depends(get_db)):
+    
+    user = db.query(models.User).filter(models.User.email == email, models.User.reset_code == code).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="The Reset Password Link has already Expired")
+    
+    try:
+        user.password = utils.hash_password(password)
+        user.reset_code = ''
+        db.commit()
+
+    except Exception as e:
+        error_message = "Error Reseting Password"
+        raise HTTPException(status_code=400, detail=error_message)
+
+    
+
+
 
 @router.post('/register/alumni')
 async def create_alumni(student_number: str = Form(...), email: str = Form(...), birthdate: date = Form(...), first_name: str = Form(...), 
@@ -46,7 +119,6 @@ async def create_alumni(student_number: str = Form(...), email: str = Form(...),
         
         async with httpx.AsyncClient() as client:
             response = await client.post(f"https://www.google.com/recaptcha/api/siteverify?secret={settings.RECAPTCHA_CODE_KEY}&response={recaptcha}")
-            data = response.json()
 
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=400, detail=f"An error occurred while verifying the captcha: {exc}")
@@ -112,8 +184,6 @@ async def create_alumni(student_number: str = Form(...), email: str = Form(...),
         unclaimed_user.role = "alumni"
 
         db.commit()
-
-        return data
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail="Account Registration failed")

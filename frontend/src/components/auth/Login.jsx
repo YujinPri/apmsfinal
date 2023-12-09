@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { useMutation, useQueryClient, useQuery } from "react-query";
 import LinearProgress from "@mui/material/LinearProgress";
 import axios from "../../api/axios";
-import { useLinkedIn } from "react-linkedin-login-oauth2";
-import linkedin from "react-linkedin-login-oauth2/assets/linkedin.png";
 import LinkedInLogin from "./LinkedInLogin";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 import {
   Button,
   Card,
@@ -20,6 +20,13 @@ import {
   FormControlLabel,
   Tooltip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -33,17 +40,17 @@ const Login = () => {
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/home";
   const refreshMessage =
-    location.state?.message || "ready to relive memories? just loginn!";
+    location.state?.message || "Ready to relive Memories? Just Loginn!";
   const snackbarMessage = location.state?.snackbar || "";
 
   const userRef = useRef();
-
+  const recaptcha = useRef();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [forgotPass, setForgotPass] = useState(false);
+  const [open, setOpenSnackbar] = useState(false);
   const [severity, setSeverity] = useState("error");
 
   useEffect(() => {
@@ -54,11 +61,59 @@ const Login = () => {
     if (snackbarMessage) {
       setMessage(snackbarMessage);
       setSeverity("success");
-      setOpen(true);
+      setOpenSnackbar(true);
     }
   }, []);
 
-  const submitLogin = async () => {
+  const ResetMutation = useMutation(
+    async (details) => {
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      await axios.post(`/auth/password_reset`, details, axiosConfig);
+    },
+    {
+      onError: (error) => {
+        setMessage(error.response ? error.response.data.detail : error.message);
+        setSeverity("error");
+        setOpenSnackbar(true);
+      },
+      onSuccess: (data, variables, context) => {
+        setMessage("Password Reset Successful");
+        setSeverity("success");
+      },
+    }
+  );
+
+  const LoginMutation = useMutation(
+    async (details) => {
+      const axiosConfig = {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        withCredentials: true, // Set this to true for cross-origin requests with credentials
+      };
+
+      await axios.post(`/users/auth/token`, details, axiosConfig);
+    },
+    {
+      onError: (error) => {
+        setMessage(error.response ? error.response.data.detail : error.message);
+        setSeverity("error");
+        setOpenSnackbar(true);
+      },
+      onSuccess: (response) => {
+        const data = response?.data;
+        setAuth(username, data?.role, data?.access_token);
+        navigate(from, { replace: true });
+      },
+    }
+  );
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const dataString =
       "grant_type=&username=" +
       username +
@@ -66,55 +121,38 @@ const Login = () => {
       password +
       "&scope=&client_id=&client_secret=";
 
-    const headers = {
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
+    await LoginMutation.mutateAsync(dataString);
 
-    const axiosConfig = {
-      headers,
-      withCredentials: true, // Set this to true for cross-origin requests with credentials
-    };
-
-    try {
-      setLoading(true);
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/users/auth/token",
-        dataString,
-        axiosConfig
-      );
-      const data = response?.data;
-
-      if (response.status !== 200) {
-        setMessage(data.detail);
-        setSeverity("error");
-      }
-
-      const access_token = data?.access_token;
-      const role = data?.role;
-      setAuth(username, role, access_token);
-
-      setUsername("");
-      setPassword("");
-
-      navigate(from, { replace: true });
-    } catch (error) {
-      if (error.response) setMessage(error?.response?.data?.detail);
-      else if (error.response?.status === 400)
-        setMessage("Missing Username or Password");
-      else if (error?.request)
-        setMessage("There have been a connection issue, please try again");
-      else setMessage("Error:" + error.message);
-
-      setSeverity("error");
-      setOpen(true);
-    }
-
-    setLoading(false);
+    setOpenSnackbar(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmitForgotPassword = async (e) => {
     e.preventDefault();
-    submitLogin();
+
+    const captchaValue = recaptcha.current.getValue();
+    if (!captchaValue) {
+      setMessage("Please Verify the reCAPTCHA");
+      setSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    if (!email) {
+      setMessage("Input Email");
+      setSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    const data = {
+      email: email,
+      recaptcha: captchaValue,
+    };
+
+    const payload = JSON.stringify(data);
+    setForgotPass(false);
+
+    await ResetMutation.mutateAsync(payload);
+
+    setOpenSnackbar(true);
   };
 
   const handleClose = (event, reason) => {
@@ -122,7 +160,7 @@ const Login = () => {
       return;
     }
 
-    setOpen(false);
+    setOpenSnackbar(false);
   };
 
   const handleChange = (event) => {
@@ -133,9 +171,55 @@ const Login = () => {
     localStorage.setItem("persist", persist);
   }, [persist]);
 
+  const { isLoading: isLoginLoading } = LoginMutation;
+  const { isLoading: isResetLoading } = ResetMutation;
+
   return (
     <>
-      {loading && (
+      <Dialog open={forgotPass} onClose={() => setForgotPass(false)}>
+        <DialogTitle>Forgot Password</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+        >
+          <Typography variant="subtitle1">
+            Please input your Registered Email account
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <TextField
+              name="email"
+              label="Email"
+              type="email"
+              placeholder="Input Email"
+              variant="outlined"
+              fullWidth
+              onChange={(event) => {
+                setEmail(event.target.value);
+              }}
+              value={email}
+              required
+            />
+            <ReCAPTCHA
+              ref={recaptcha}
+              sitekey={`${import.meta.env.VITE_RECAPTCHA_HTML_KEY}`}
+            />
+          </Box>
+          <Typography variant="body2">
+            After a successful transaction please check your email and follow
+            the emailed instruction there
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ padding: 3 }}>
+          <Button onClick={() => setForgotPass(false)}>Cancel</Button>
+          <Button
+            onClick={handleSubmitForgotPassword}
+            variant="contained"
+            color="primary"
+          >
+            Reset Password
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {(isLoginLoading || isResetLoading) && (
         <Box sx={{ width: "100%", position: "fixed", top: 0 }}>
           <LinearProgress />
         </Box>
@@ -153,88 +237,98 @@ const Login = () => {
           alignItems: "center",
         }}
       >
-        <form className="box" onSubmit={handleSubmit}>
-          <Card
-            style={{
-              maxWidth: 600,
-              padding: "20px 5px",
-            }}
-          >
-            <CardContent>
-              <Typography gutterBottom variant="h5">
-                alumni login
-              </Typography>
-              <Typography
-                gutterBottom
-                color="textSecondary"
-                variant="body2"
-                component="p"
-              >
-                {refreshMessage}
-              </Typography>
-              <Grid container spacing={1.5}>
-                <Grid xs={12} item>
-                  <TextField
-                    label="username"
-                    inputRef={userRef}
-                    placeholder="input username"
-                    variant="outlined"
-                    fullWidth
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="password"
-                    placeholder="Input password"
-                    variant="outlined"
-                    fullWidth
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input"
-                    required
-                  />
-                </Grid>
-                <Box p={2} sx={{ width: "100%", m: "0 auto" }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2 }}
-                    fullWidth
-                  >
-                    login
-                  </Button>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={persist}
-                        onChange={handleChange}
-                        inputProps={{ "aria-label": "controlled" }}
-                      />
-                    }
-                    label="remember me on this device"
-                  />
-                </Box>
+        <Card
+          style={{
+            maxWidth: 600,
+            padding: "20px 5px",
+          }}
+        >
+          <CardContent>
+            <Typography variant="h5">Alumni Login</Typography>
+            <Typography
+              color="textSecondary"
+              variant="body2"
+              component="p"
+              my={2}
+            >
+              {refreshMessage}
+            </Typography>
+            <Grid container spacing={1.5}>
+              <Grid xs={12} item>
+                <TextField
+                  label="Username"
+                  inputRef={userRef}
+                  placeholder="input username"
+                  variant="outlined"
+                  fullWidth
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
               </Grid>
-              <LinkedInLogin />
-              <Link
-                to="/register"
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  marginTop: 8,
-                }}
+
+              <Grid
+                item
+                xs={12}
+                display={"flex"}
+                flexDirection={"column"}
+                gap={1}
               >
-                sign up instead
-              </Link>
-            </CardContent>
-          </Card>
-        </form>
+                <TextField
+                  label="Password"
+                  placeholder="Input password"
+                  variant="outlined"
+                  fullWidth
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input"
+                  required
+                />
+                <Typography
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => setForgotPass(true)}
+                  variant="body2"
+                >
+                  Forgot Password?
+                </Typography>
+              </Grid>
+              <Box p={2} sx={{ width: "100%", m: "0 auto" }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  fullWidth
+                  onClick={handleSubmit}
+                >
+                  login
+                </Button>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={persist}
+                      onChange={handleChange}
+                      inputProps={{ "aria-label": "controlled" }}
+                    />
+                  }
+                  label="remember me on this device"
+                />
+              </Box>
+            </Grid>
+            <LinkedInLogin />
+            <Link
+              to="/register"
+              style={{
+                display: "block",
+                textAlign: "center",
+                marginTop: 8,
+              }}
+            >
+              sign up instead
+            </Link>
+          </CardContent>
+        </Card>
       </Box>
     </>
   );

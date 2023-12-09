@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     YAGMAIL_USER: str
     YAGMAIL_PASS: str
 
+    RESET_FORM_LINK: str
+
 
 
     class Config:

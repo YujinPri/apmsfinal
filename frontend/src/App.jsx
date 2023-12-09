@@ -19,6 +19,7 @@ import PersistLogin from "./routes/persistLogin";
 import LinkedInRedirect from "./components/auth/LinkedInRedirect";
 import { ReactQueryDevtools } from "react-query/devtools";
 import RoleBasedRoutes from "./routes/RoleBasedRoutes";
+import ResetPassword from "./components/auth/ResetPassword";
 const App = () => {
   const [mode, setMode] = useState("light");
   const theme = createTheme({
@@ -78,6 +79,10 @@ const App = () => {
             <Route path="/" element={<PublicRoutes />}>
               <Route path="register" element={<Register />} />
               <Route path="login" element={<Login />} />
+              <Route
+                path="resetpassword/:email/:code"
+                element={<ResetPassword />}
+              />
               <Route
                 path="oauth/redirect/linkedin"
                 element={<LinkedInRedirect />}

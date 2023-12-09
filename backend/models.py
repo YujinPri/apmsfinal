@@ -16,6 +16,7 @@ class User(Base):
     role = Column(String, server_default='public', nullable=False, index=True)
     sub = Column(String, unique=True, index=True)
     password = Column(String, nullable=False)
+    reset_code = Column(String)
 
     #alumni information
     profile_picture = Column(String, server_default="#")

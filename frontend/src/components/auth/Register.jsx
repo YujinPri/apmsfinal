@@ -23,6 +23,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  CircularProgress,
+  Backdrop,
   DialogTitle,
   FormControl,
   Grid,
@@ -59,6 +61,7 @@ const Register = () => {
   const [severity, setSeverity] = useState("error");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     birthdate: null,
@@ -254,7 +257,13 @@ const Register = () => {
 
   return (
     <Grid container>
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isPublicUserLoading || isLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Register Instead as a Public User</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
@@ -283,7 +292,6 @@ const Register = () => {
             onClick={handleSubmitPublicUser}
             variant="contained"
             color="primary"
-            disabled={isPublicUserLoading}
           >
             Proceed
           </Button>
@@ -310,7 +318,7 @@ const Register = () => {
         sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}
       >
         <Grid item xs={7}>
-          <Typography gutterBottom variant="h5">
+          <Typography variant="h5">
             Alumni Registration
           </Typography>
         </Grid>
