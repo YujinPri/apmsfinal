@@ -23,6 +23,6 @@ frontend/*.sln
 frontend/*.sw?
 frontend/.env.development
 __pycache__
-apmsvenv/
+venv/
 .env
 
